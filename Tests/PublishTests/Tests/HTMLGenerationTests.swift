@@ -291,7 +291,7 @@ final class HTMLGenerationTests: PublishTestCase {
         XCTAssertTrue(tagListHTML.contains("tagA"))
         XCTAssertTrue(tagListHTML.contains("tagB"))
 
-        let tagDetails = try folder.file(at: "Output/tags/tagA/index.html")
+        let tagDetails = try folder.file(at: "Output/tags/taga/index.html")
         XCTAssertTrue(try tagDetails.readAsString().contains("tagA"))
     }
 }
