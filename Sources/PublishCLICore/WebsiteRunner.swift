@@ -19,7 +19,7 @@ internal struct WebsiteRunner {
         let portNumber = 8000
 
         print("""
-        🌍 Starting web server at localhost:\(portNumber)
+        🌍 Starting web server at http://localhost:\(portNumber)
 
         Press any key to stop the server and exit
         """)
