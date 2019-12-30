@@ -46,7 +46,7 @@ Each website built using Publish can freely decide what kind of sections and met
 
 ## Start out simple, and customize when needed
 
-While Publish offers a really powerful API that enables almost every aspect of the website generation process to be customized and tweaked, it also ships with a suite of convenience APIs that aims makes it as quick and easy as possible to get started.
+While Publish offers a really powerful API that enables almost every aspect of the website generation process to be customized and tweaked, it also ships with a suite of convenience APIs that aims to make it as quick and easy as possible to get started.
 
 To start generating the *Delicious Recipes* website we defined above, all we need is a single line of code, that tells Publish which theme to use to generate our website’s HTML:
 
