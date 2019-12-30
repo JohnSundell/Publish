@@ -271,7 +271,7 @@ try DeliciousRecipes().publish(using: [
 ])
 ```
 
-Even when added to a pipeline, deployment steps are disabled by default, and are only executed when the `--deploy` command line flag was passed (which can be added through Xcode’s `Product > Scheme > Edit Sceheme...` menu), or by running the command line tool using `publish deploy`.
+Even when added to a pipeline, deployment steps are disabled by default, and are only executed when the `--deploy` command line flag was passed (which can be added through Xcode’s `Product > Scheme > Edit Scheme...` menu), or by running the command line tool using `publish deploy`.
 
 Publish can also start a `localhost` web server for local testing and development, by using the `publish run` command.
 
