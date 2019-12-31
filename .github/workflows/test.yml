@@ -1,0 +1,18 @@
+name: Run Tests
+on: push
+
+jobs:
+  test-macOS:
+    runs-on: macOS-latest
+    steps:
+      - uses: actions/checkout@v1.0.0
+      - name: Run tests with SwiftPM
+        run: swift test
+  test-linux:
+    runs-on: ubuntu-latest
+    container:
+      image: swift:5.1.3
+    steps:
+      - uses: actions/checkout@v1.0.0
+      - name: Run tests with SwiftPM
+        run: swift test
