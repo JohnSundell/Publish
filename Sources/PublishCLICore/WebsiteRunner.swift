@@ -38,6 +38,6 @@ internal struct WebsiteRunner {
 private extension WebsiteRunner {
     func resolveOutputFolder() throws -> Folder {
         do { return try folder.subfolder(named: "Output") }
-        catch { throw CLIError.outputfolderNotFound }
+        catch { throw CLIError.outputFolderNotFound }
     }
 }
