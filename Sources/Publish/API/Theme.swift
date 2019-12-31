@@ -22,7 +22,7 @@ public struct Theme<Site: Website> {
 
     /// Create a new theme instance.
     /// - parameter factory: The HTML factory to use to create the theme's HTML.
-    /// - parameter resouces: A set of paths to any resources that the theme uses.
+    /// - parameter resources: A set of paths to any resources that the theme uses.
     ///   These resources will be copied into the website's output folder before
     ///   the theme is used, and should be relative to the root folder of the Swift
     ///   package that this theme is defined in.

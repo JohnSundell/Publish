@@ -7,7 +7,7 @@
 import Foundation
 import Plot
 
-/// Configuration type used to customize how a podast feed is generated when
+/// Configuration type used to customize how a podcast feed is generated when
 /// using the `generatePodcastFeed` step. To use a default implementation,
 /// use `PodcastFeedConfiguration.default`.
 public final class PodcastFeedConfiguration<Site: Website>: RSSFeedConfiguration {

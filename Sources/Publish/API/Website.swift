@@ -15,9 +15,9 @@ public typealias WebsiteItemMetadata = Decodable & Hashable
 /// Protocol used to define a Publish-based website.
 /// You conform to this protocol using a custom type, which is then used to
 /// infer various information about your website when generating its various
-/// HTML pages and resouces. A website is then published using a pipeline made
+/// HTML pages and resources. A website is then published using a pipeline made
 /// up of `PublishingStep` values, which is constructed using the `publish` method.
-/// To generate the neccessary bootstrapping for conforming to this protocol, use
+/// To generate the necessary bootstrapping for conforming to this protocol, use
 /// the `publish new` command line tool.
 public protocol Website {
     /// The enum type used to represent the website's section IDs.
