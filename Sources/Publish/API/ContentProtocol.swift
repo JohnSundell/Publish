@@ -10,7 +10,7 @@ import Foundation
 public protocol ContentProtocol {
     /// The location's title. When parsing a location from Markdown,
     /// the top-level H1 heading will be used as the location's title,
-    /// which can also be overriden using the `title` metadata key.
+    /// which can also be overridden using the `title` metadata key.
     var title: String { get set }
     /// A description of the location. When parsing a location from
     /// Markdown, a description may be defined using the `description`

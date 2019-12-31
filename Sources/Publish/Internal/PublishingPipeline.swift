@@ -41,7 +41,7 @@ extension PublishingPipeline {
             } catch let error as PublishingErrorConvertible {
                 throw error.publishingError(forStepNamed: step.name)
             } catch {
-                let message = "An unknown error occured: \(error.localizedDescription)"
+                let message = "An unknown error occurred: \(error.localizedDescription)"
                 throw PublishingError(infoMessage: message)
             }
         }

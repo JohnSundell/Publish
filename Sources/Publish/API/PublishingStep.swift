@@ -237,7 +237,7 @@ public extension PublishingStep {
 public extension PublishingStep {
     /// Copy the website's main resources into its output folder
     /// - parameter originPath: The path that the resource folder is located at.
-    /// - parameter targetFolderPath: ny specific path to copy the resources to.
+    /// - parameter targetFolderPath: Any specific path to copy the resources to.
     ///   If `nil`, then the resources will be copied to the output folder itself.
     /// - parameter includeFolder: Whether the resource folder itself, or just its
     ///   contents, should be copied. Default: `false`.
