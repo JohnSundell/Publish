@@ -45,27 +45,8 @@ public struct CLI {
             let runner = WebsiteRunner(folder: folder)
             try runner.run()
 		case "update":
-			let tmpDir = "$TMPDIR/Publish"
-			print("updating")
-			try shellOut(to: "echo `\(tmpDir)`")
-//			try shellOut(to: .removeFile(from: tmpDir,arguments: ["-rf"]))
-			if let _ = try? shellOut(to: .gitClone(url: URL(string: "https://github.com/JohnSundell/Publish.git")!, to:  tmpDir)) {
-
-			}
-			else {
-				let tmpGit = "git --git-dir=\(tmpDir)/.git  --work-tree=\(tmpDir)"
-				let thisVersion = try shellOut(to: " git --git-dir $TMPDIR/Publish/.git describe --abbrev=0 --tags")
-				let remoteLatestVersion = try shellOut(to: #"\#(tmpGit) ls-remote --tags --refs --sort="v:refname" origin  | tail -n1 | sed 's/.*\///'"#)
-				guard thisVersion < remoteLatestVersion else {
-					return print("current publish is up to date")
-				}
-				try shellOut(to: "\(tmpGit) pull")
-				print("install to \(remoteLatestVersion)")
-			}
-			try	shellOut(to: [
-				"make -f \(tmpDir)/Makefile"
-			])
-			print("✅ update complete")
+			let runner = UpdateCLI(publishRepositoryURL: publishRepositoryURL)
+			try runner.run()
         default:
             outputHelpText()
         }
