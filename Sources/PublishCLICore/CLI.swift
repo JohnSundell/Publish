@@ -44,6 +44,16 @@ public struct CLI {
         case "run":
             let runner = WebsiteRunner(folder: folder)
             try runner.run()
+		case "update":
+			let tmpDir = "$TMPDIR/Publish"
+			print("updating")
+			try shellOut(to: "echo `\(tmpDir)`")
+			try shellOut(to: .removeFile(from: tmpDir,arguments: ["-rf"]))
+			try shellOut(to: .gitClone(url: URL(string: "https://github.com/JohnSundell/Publish.git")!, to:  tmpDir))
+			let str = try	shellOut(to: [
+				"make -f \(tmpDir)/Makefile"
+			])
+			print(str)
         default:
             outputHelpText()
         }
@@ -67,6 +77,8 @@ private extension CLI {
                for the website in the current folder.
         - deploy: Generate and deploy the website in the current
                folder, according to its deployment method.
+		- update: update to newest version and install
+			   from https://github.com/JohnSundell/Publish
         """)
     }
 }
