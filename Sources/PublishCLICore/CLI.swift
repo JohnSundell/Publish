@@ -48,12 +48,24 @@ public struct CLI {
 			let tmpDir = "$TMPDIR/Publish"
 			print("updating")
 			try shellOut(to: "echo `\(tmpDir)`")
-			try shellOut(to: .removeFile(from: tmpDir,arguments: ["-rf"]))
-			try shellOut(to: .gitClone(url: URL(string: "https://github.com/JohnSundell/Publish.git")!, to:  tmpDir))
-			let str = try	shellOut(to: [
+//			try shellOut(to: .removeFile(from: tmpDir,arguments: ["-rf"]))
+			if let _ = try? shellOut(to: .gitClone(url: URL(string: "https://github.com/JohnSundell/Publish.git")!, to:  tmpDir)) {
+
+			}
+			else {
+				let tmpGit = "git --git-dir=\(tmpDir)/.git  --work-tree=\(tmpDir)"
+				let thisVersion = try shellOut(to: " git --git-dir $TMPDIR/Publish/.git describe --abbrev=0 --tags")
+				let remoteLatestVersion = try shellOut(to: #"\#(tmpGit) ls-remote --tags --refs --sort="v:refname" origin  | tail -n1 | sed 's/.*\///'"#)
+				guard thisVersion < remoteLatestVersion else {
+					return print("current publish is up to date")
+				}
+				try shellOut(to: "\(tmpGit) pull")
+				print("install to \(remoteLatestVersion)")
+			}
+			try	shellOut(to: [
 				"make -f \(tmpDir)/Makefile"
 			])
-			print(str)
+			print("✅ update complete")
         default:
             outputHelpText()
         }
@@ -77,8 +89,8 @@ private extension CLI {
                for the website in the current folder.
         - deploy: Generate and deploy the website in the current
                folder, according to its deployment method.
-		- update: update to newest version and install
-			   from https://github.com/JohnSundell/Publish
+        - update: update to newest version and install
+        	   from https://github.com/JohnSundell/Publish
         """)
     }
 }
