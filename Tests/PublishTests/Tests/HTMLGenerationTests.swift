@@ -79,6 +79,28 @@ final class HTMLGenerationTests: PublishTestCase {
         )
     }
 
+    func testGeneratingNestedItemHTML() throws {
+        htmlFactory.makeItemHTML = { item, _ in
+            HTML(.body(.text(item.title)))
+        }
+
+        try publishWebsite(
+            using: Theme(htmlFactory: htmlFactory),
+            content: [
+                "one/2019/12/a.md": """
+                    # A
+                    """,
+                "two/2020/01/b.md": """
+                    # B
+                    """
+            ],
+            expectedHTML: [
+                "one/2019/12/a/index.html": "A",
+                "two/2020/01/b/index.html": "B"
+            ]
+        )
+    }
+
     func testGeneratingPageHTML() throws {
         htmlFactory.makePageHTML = { page, _ in
             HTML(.body(.text(page.title)))
@@ -302,6 +324,7 @@ extension HTMLGenerationTests {
             ("testGeneratingIndexHTML", testGeneratingIndexHTML),
             ("testGeneratingSectionHTML", testGeneratingSectionHTML),
             ("testGeneratingItemHTML", testGeneratingItemHTML),
+            ("testGeneratingNestedItemHTML", testGeneratingNestedItemHTML),
             ("testGeneratingPageHTML", testGeneratingPageHTML),
             ("testGeneratingTagHTML", testGeneratingTagHTML),
             ("testCleaningUpOldHTMLFiles", testCleaningUpOldHTMLFiles),
