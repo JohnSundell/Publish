@@ -31,7 +31,11 @@ private extension SiteMapGenerator {
     func makeSiteMap(for sections: [Section<Site>], pages: [Page], site: Site) -> SiteMap {
         SiteMap(
             .forEach(sections) { section in
-                .group(
+                guard !excludedPaths.contains(section.path) else {
+                    return .empty
+                }
+
+                return .group(
                     .url(
                         .loc(site.url(for: section)),
                         .changefreq(.daily),
