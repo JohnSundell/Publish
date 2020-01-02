@@ -11,5 +11,6 @@ internal extension Folder {
         let root: Folder
         let output: Folder
         let `internal`: Folder
+        let caches: Folder
     }
 }

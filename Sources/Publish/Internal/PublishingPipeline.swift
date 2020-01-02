@@ -24,11 +24,25 @@ extension PublishingPipeline {
             shouldEmptyOutputFolder: stepKind == .generation
         )
 
-        var context = PublishingContext(site: site, folders: folders)
-
         let steps = self.steps.flatMap { step in
             runnableSteps(ofKind: stepKind, from: step)
         }
+
+        guard let firstStep = steps.first else {
+            throw PublishingError(
+                infoMessage: """
+                \(site.name) has no \(stepKind.rawValue) steps.
+                """
+            )
+        }
+
+        var context = PublishingContext(
+            site: site,
+            folders: folders,
+            firstStepName: firstStep.name
+        )
+
+        context.generationWillBegin()
 
         postNotification(named: "WillStart")
         CommandLine.output("Publishing \(site.name) (\(steps.count) steps)", as: .info)
@@ -37,6 +51,7 @@ extension PublishingPipeline {
             do {
                 let message = "[\(index + 1)/\(steps.count)] \(step.name)"
                 CommandLine.output(message, as: .info)
+                context.prepareForStep(named: step.name)
                 try step.closure(&context)
             } catch let error as PublishingErrorConvertible {
                 throw error.publishingError(forStepNamed: step.name)
@@ -75,10 +90,23 @@ private extension PublishingPipeline {
         }
 
         do {
-            return try Folder.Group(
+            let outputFolder = try root.createSubfolderIfNeeded(
+                withName: outputFolderName
+            )
+
+            let internalFolder = try root.createSubfolderIfNeeded(
+                withName: ".publish"
+            )
+
+            let cacheFolder = try internalFolder.createSubfolderIfNeeded(
+                withName: "Caches"
+            )
+
+            return Folder.Group(
                 root: root,
-                output: root.createSubfolder(named: outputFolderName),
-                internal: root.createSubfolderIfNeeded(withName: ".publish")
+                output: outputFolder,
+                internal: internalFolder,
+                caches: cacheFolder
             )
         } catch {
             throw PublishingError(

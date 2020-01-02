@@ -10,14 +10,10 @@ import Plot
 /// Configuration type used to customize how an RSS feed is generated
 /// when using the `generateRSSFeed` step. To use a default implementation,
 /// use `RSSFeedConfiguration.default`.
-public class RSSFeedConfiguration {
-    /// The path that the feed should be generated at.
+public struct RSSFeedConfiguration: FeedConfiguration {
     public var targetPath: Path
-    /// The feed's TTL (or "Time to live") time interval.
     public var ttlInterval: TimeInterval
-    /// The maximum number of items that the feed should contain.
     public var maximumItemCount: Int
-    /// How the feed should be indented.
     public var indentation: Indentation.Kind?
 
     /// Initialize a new configuration instance.
