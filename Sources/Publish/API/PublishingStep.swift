@@ -39,8 +39,8 @@ public extension PublishingStep {
     /// - parameter condition: The condition that determines whether the
     ///   step should be run or not.
     /// - parameter step: The step to run if the condition is `true`.
-    static func `if`(_ condition: Bool, _ step: Self) -> Self {
-        condition ? step : .empty
+    static func `if`(_ condition: Bool, _ step: @autoclosure () -> Self) -> Self {
+        condition ? step() : .empty
     }
 
     /// Conditionally run a step if an optional isn't `nil`.
