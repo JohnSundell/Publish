@@ -44,15 +44,18 @@ internal struct MarkdownFileHandler<Site: Website> {
                 }
 
                 do {
-                    var path = file.nameExcludingExtension
+                    let fileName = file.nameExcludingExtension
+                    let path: Path
 
                     if let parentPath = file.parent?.path(relativeTo: subfolder) {
-                        path = parentPath + path
+                        path = Path(parentPath).appendingComponent(fileName)
+                    } else {
+                        path = Path(fileName)
                     }
 
                     let item = try factory.makeItem(
                         fromFile: file,
-                        at: Path(path),
+                        at: path,
                         sectionID: sectionID
                     )
 
