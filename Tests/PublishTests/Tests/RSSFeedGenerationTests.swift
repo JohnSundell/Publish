@@ -76,6 +76,26 @@ final class RSSFeedGenerationTests: PublishTestCase {
 
         XCTAssertNotEqual(feedA, feedB)
     }
+
+    func testNotReusingPreviousFeedIfItemWasAdded() throws {
+        let folder = try Folder.createTemporary()
+        let itemA = Item.stub()
+        let itemB = Item.stub().setting(\.lastModified, to: itemA.lastModified)
+
+        try generateFeed(in: folder, generationSteps: [
+            .addItem(itemA)
+        ])
+
+        let feedA = try folder.file(at: "Output/feed.rss").readAsString()
+
+        try generateFeed(in: folder, generationSteps: [
+            .addItem(itemA),
+            .addItem(itemB)
+        ])
+
+        let feedB = try folder.file(at: "Output/feed.rss").readAsString()
+        XCTAssertNotEqual(feedA, feedB)
+    }
 }
 
 extension RSSFeedGenerationTests {
@@ -84,18 +104,26 @@ extension RSSFeedGenerationTests {
             ("testOnlyIncludingSpecifiedSections", testOnlyIncludingSpecifiedSections),
             ("testConvertingRelativeLinksToAbsolute", testConvertingRelativeLinksToAbsolute),
             ("testReusingPreviousFeedIfNoItemsWereModified", testReusingPreviousFeedIfNoItemsWereModified),
-            ("testNotReusingPreviousFeedIfConfigChanged", testNotReusingPreviousFeedIfConfigChanged)
+            ("testNotReusingPreviousFeedIfConfigChanged", testNotReusingPreviousFeedIfConfigChanged),
+            ("testNotReusingPreviousFeedIfItemWasAdded", testNotReusingPreviousFeedIfItemWasAdded)
         ]
     }
 }
 
 private extension RSSFeedGenerationTests {
-    func generateFeed(in folder: Folder,
-                      config: RSSFeedConfiguration = .default,
-                      date: Date = Date(),
-                      content: [Path : String] = [:]) throws {
+    typealias Site = WebsiteStub.WithoutItemMetadata
+
+    func generateFeed(
+        in folder: Folder,
+        config: RSSFeedConfiguration = .default,
+        generationSteps: [PublishingStep<Site>] = [
+            .addMarkdownFiles()
+        ],
+        date: Date = Date(),
+        content: [Path : String] = [:]
+    ) throws {
         try publishWebsite(in: folder, using: [
-            .addMarkdownFiles(),
+            .group(generationSteps),
             .generateRSSFeed(
                 including: [.one],
                 config: config,

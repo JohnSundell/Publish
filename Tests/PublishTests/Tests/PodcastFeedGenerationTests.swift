@@ -82,6 +82,47 @@ final class PodcastFeedGenerationTests: PublishTestCase {
 
         XCTAssertNotEqual(feedA, feedB)
     }
+
+    func testNotReusingPreviousFeedIfItemWasAdded() throws {
+        let folder = try Folder.createTemporary()
+
+        let audio = try Audio(
+            url: require(URL(string: "https://audio.mp3")),
+            duration: Audio.Duration(),
+            byteSize: 55
+        )
+
+        let itemA = Item<Site>(
+            path: "a",
+            sectionID: .one,
+            metadata: .init(podcast: .init()),
+            content: Content(audio: audio)
+        )
+
+        let itemB = Item<Site>(
+            path: "b",
+            sectionID: .one,
+            metadata: .init(podcast: .init()),
+            content: Content(
+                lastModified: itemA.lastModified,
+                audio: audio
+            )
+        )
+
+        try generateFeed(in: folder, generationSteps: [
+            .addItem(itemA)
+        ])
+
+        let feedA = try folder.file(at: "Output/feed.rss").readAsString()
+
+        try generateFeed(in: folder, generationSteps: [
+            .addItem(itemA),
+            .addItem(itemB)
+        ])
+
+        let feedB = try folder.file(at: "Output/feed.rss").readAsString()
+        XCTAssertNotEqual(feedA, feedB)
+    }
 }
 
 extension PodcastFeedGenerationTests {
@@ -90,13 +131,15 @@ extension PodcastFeedGenerationTests {
             ("testOnlyIncludingSpecifiedSection", testOnlyIncludingSpecifiedSection),
             ("testConvertingRelativeLinksToAbsolute", testConvertingRelativeLinksToAbsolute),
             ("testReusingPreviousFeedIfNoItemsWereModified", testReusingPreviousFeedIfNoItemsWereModified),
-            ("testNotReusingPreviousFeedIfConfigChanged", testNotReusingPreviousFeedIfConfigChanged)
+            ("testNotReusingPreviousFeedIfConfigChanged", testNotReusingPreviousFeedIfConfigChanged),
+            ("testNotReusingPreviousFeedIfItemWasAdded", testNotReusingPreviousFeedIfItemWasAdded)
         ]
     }
 }
 
 private extension PodcastFeedGenerationTests {
-    typealias Configuration = PodcastFeedConfiguration<WebsiteStub.WithPodcastMetadata>
+    typealias Site = WebsiteStub.WithPodcastMetadata
+    typealias Configuration = PodcastFeedConfiguration<Site>
 
     func makeConfigStub() throws -> Configuration {
         try Configuration(
@@ -123,12 +166,17 @@ private extension PodcastFeedGenerationTests {
         """
     }
 
-    func generateFeed(in folder: Folder,
-                      config: Configuration? = nil,
-                      date: Date = Date(),
-                      content: [Path : String] = [:]) throws {
+    func generateFeed(
+        in folder: Folder,
+        config: Configuration? = nil,
+        generationSteps: [PublishingStep<Site>] = [
+            .addMarkdownFiles()
+        ],
+        date: Date = Date(),
+        content: [Path : String] = [:]
+    ) throws {
         try publishWebsiteWithPodcast(in: folder, using: [
-            .addMarkdownFiles(),
+            .group(generationSteps),
             .generatePodcastFeed(
                 for: .one,
                 config: config ?? makeConfigStub(),
