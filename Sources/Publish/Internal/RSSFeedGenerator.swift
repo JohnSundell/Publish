@@ -27,7 +27,7 @@ internal struct RSSFeedGenerator<Site: Website> {
         items.sort { $0.date > $1.date }
 
         if let date = context.lastGenerationDate, let cache = oldCache {
-            if cache.config == config {
+            if cache.config == config, cache.itemCount == items.count {
                 let newlyModifiedItem = items.first { $0.lastModified > date }
 
                 guard newlyModifiedItem != nil else {
@@ -38,7 +38,7 @@ internal struct RSSFeedGenerator<Site: Website> {
 
         let feed = makeFeed(containing: items).render(indentedBy: config.indentation)
 
-        let newCache = Cache(config: config, feed: feed)
+        let newCache = Cache(config: config, feed: feed, itemCount: items.count)
         try cacheFile.write(newCache.encoded())
         try outputFile.write(feed)
     }
@@ -48,6 +48,7 @@ private extension RSSFeedGenerator {
     struct Cache: Codable {
         let config: RSSFeedConfiguration
         let feed: String
+        let itemCount: Int
     }
 
     func makeFeed(containing items: [Item<Site>]) -> RSS {
