@@ -62,7 +62,7 @@ public extension Website {
     /// - parameter deploymentMethod: How to deploy the website.
     /// - parameter additionalSteps: Any additional steps to add to the publishing
     ///   pipeline. Will be executed right before the HTML generation process begins.
-    /// - parameter plugins: Plugins to be installed beforehand.
+    /// - parameter plugins: Plugins to be installed at the start of the publishing process.
     /// - parameter file: The file that this method is called from (auto-inserted).
     /// - parameter line: The line that this method is called from (auto-inserted).
     @discardableResult
