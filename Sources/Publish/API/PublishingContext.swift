@@ -308,11 +308,15 @@ private extension PublishingContext {
 
     mutating func updateLastGenerationDate() throws {
         let fileName = "lastGenerationDate"
-        let newString = String(Int(ceil(Date().timeIntervalSince1970)))
+        let newString = String(Date().timeIntervalSince1970)
 
         if let file = try? folders.internal.file(named: fileName) {
-            let oldInterval = try TimeInterval(file.readAsInt())
-            lastGenerationDate = Date(timeIntervalSince1970: oldInterval)
+            let oldInterval = try TimeInterval(file.readAsString())
+
+            lastGenerationDate = oldInterval.map {
+                Date(timeIntervalSince1970: $0)
+            }
+
             try file.write(newString)
         } else {
             let file = try folders.internal.createFile(named: fileName)

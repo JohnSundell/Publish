@@ -59,10 +59,7 @@ final class PodcastFeedGenerationTests: PublishTestCase {
 
         XCTAssertEqual(feedA, feedB)
 
-        try FileManager.default.setAttributes([
-            .modificationDate: newDate
-        ], ofItemAtPath: contentFile.path)
-
+        try contentFile.append("New content")
         try generateFeed(in: folder, date: newDate)
         let feedC = try folder.file(at: "Output/feed.rss").readAsString()
 
