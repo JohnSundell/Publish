@@ -38,10 +38,13 @@ final class SiteMapGenerationTests: PublishTestCase {
         let site = try publishWebsite(in: folder, using: [
             .addItem(.stub(withPath: "itemA")),
             .addItem(.stub(withPath: "itemB")),
+            .addItem(.stub(withPath: "itemC", sectionID: .two)),
+            .addItem(.stub(withPath: "itemD", sectionID: .two)),
             .addPage(.stub(withPath: "pageA")),
             .addPage(.stub(withPath: "pageB")),
             .generateSiteMap(excluding: [
                 "one/itemB",
+                "two",
                 "pageB"
             ])
         ])
@@ -57,6 +60,8 @@ final class SiteMapGenerationTests: PublishTestCase {
 
         let unexpectedLocations = [
             "https://swiftbysundell.com/one/itemB",
+            "https://swiftbysundell.com/two/itemC",
+            "https://swiftbysundell.com/two/itemD",
             "https://swiftbysundell.com/pageB"
         ]
 
@@ -69,6 +74,8 @@ final class SiteMapGenerationTests: PublishTestCase {
         }
 
         XCTAssertNotNil(site.sections[.one].item(at: "itemB"))
+        XCTAssertNotNil(site.sections[.two].item(at: "itemC"))
+        XCTAssertNotNil(site.sections[.two].item(at: "itemD"))
         XCTAssertNotNil(site.pages["pageB"])
     }
 }
