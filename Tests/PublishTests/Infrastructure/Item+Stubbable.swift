@@ -24,8 +24,12 @@ extension Item: Stubbable where Site == WebsiteStub.WithoutItemMetadata {
     }
 
     static func stub(withSectionID sectionID: WebsiteStub.SectionID) -> Self {
+        stub(withPath: Path(.unique()), sectionID: sectionID)
+    }
+
+    static func stub(withPath path: Path, sectionID: WebsiteStub.SectionID) -> Self {
         Item(
-            path: Path(.unique()),
+            path: path,
             sectionID: sectionID,
             metadata: Site.ItemMetadata(),
             tags: [],
