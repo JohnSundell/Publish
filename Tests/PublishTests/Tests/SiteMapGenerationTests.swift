@@ -60,6 +60,7 @@ final class SiteMapGenerationTests: PublishTestCase {
 
         let unexpectedLocations = [
             "https://swiftbysundell.com/one/itemB",
+            "https://swiftbysundell.com/two",
             "https://swiftbysundell.com/two/itemC",
             "https://swiftbysundell.com/two/itemD",
             "https://swiftbysundell.com/pageB"

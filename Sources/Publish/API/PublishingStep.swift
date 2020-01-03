@@ -351,6 +351,7 @@ public extension PublishingStep {
     /// Generate a site map for the website, which is an XML file used
     /// for search engine indexing.
     /// - parameter excludedPaths: Any paths to exclude from the site map.
+    ///   Adding a section's path to the list removes the entire section, including all its items.
     /// - parameter indentation: How the site map should be indented.
     static func generateSiteMap(excluding excludedPaths: Set<Path> = [],
                                 indentedBy indentation: Indentation.Kind? = nil) -> Self {
