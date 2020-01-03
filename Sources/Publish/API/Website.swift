@@ -62,6 +62,7 @@ public extension Website {
     /// - parameter deploymentMethod: How to deploy the website.
     /// - parameter additionalSteps: Any additional steps to add to the publishing
     ///   pipeline. Will be executed right before the HTML generation process begins.
+    /// - parameter plugins: Plugins to be installed beforehand.
     /// - parameter file: The file that this method is called from (auto-inserted).
     /// - parameter line: The line that this method is called from (auto-inserted).
     @discardableResult
@@ -72,10 +73,12 @@ public extension Website {
                  rssFeedConfig: RSSFeedConfiguration? = .default,
                  deployedUsing deploymentMethod: DeploymentMethod<Self>? = nil,
                  additionalSteps: [PublishingStep<Self>] = [],
+                 plugins: [Plugin<Self>] = [],
                  file: StaticString = #file) throws -> PublishedWebsite<Self> {
         try publish(
             at: path,
             using: [
+                .group(plugins.map(PublishingStep.installPlugin)),
                 .optional(.copyResources()),
                 .addMarkdownFiles(),
                 .sortItems(by: \.date, order: .descending),
