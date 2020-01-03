@@ -31,13 +31,19 @@ public struct PublishingContext<Site: Website> {
     public private(set) var pages = [Path : Page]()
     /// A set containing all tags that are currently being used website-wide.
     public var allTags: Set<Tag> { tagCache.tags ?? gatherAllTags() }
+    /// Any date when the website was last generated.
+    public private(set) var lastGenerationDate: Date?
 
     private let folders: Folder.Group
     private var tagCache = TagCache()
+    private var stepName: String
 
-    internal init(site: Site, folders: Folder.Group) {
+    internal init(site: Site,
+                  folders: Folder.Group,
+                  firstStepName: String) {
         self.site = site
         self.folders = folders
+        self.stepName = firstStepName
 
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm"
@@ -160,6 +166,18 @@ public extension PublishingContext {
         }
     }
 
+    /// Return either an existing or newly created cache file for the
+    /// current publishing step. Cache files are scoped to the step
+    /// that they're created within, and can't be shared among steps.
+    /// Cache files aren't deleted in between publishing processes.
+    /// - parameter name: The name of the cache file to return.
+    /// - throws: An error in case a new file couldn't be created.
+    func cacheFile(named name: String) throws -> File {
+        let folderName = stepName.normalized()
+        let folder = try folders.caches.createSubfolderIfNeeded(withName: folderName)
+        return try folder.createFileIfNeeded(withName: name.normalized())
+    }
+
     /// Return all items within this website, sorted by a given key path.
     /// - parameter sortingKeyPath: The key path to sort the items by.
     /// - parameter order: The order to use when sorting the items.
@@ -249,6 +267,14 @@ public extension PublishingContext {
 }
 
 internal extension PublishingContext {
+    mutating func generationWillBegin() {
+        try? updateLastGenerationDate()
+    }
+
+    mutating func prepareForStep(named name: String) {
+        stepName = name
+    }
+
     func makeMarkdownContentFactory() -> MarkdownContentFactory<Site> {
         MarkdownContentFactory(
             parser: markdownParser,
@@ -278,6 +304,24 @@ internal extension PublishingContext {
 private extension PublishingContext {
     final class TagCache {
         var tags: Set<Tag>?
+    }
+
+    mutating func updateLastGenerationDate() throws {
+        let fileName = "lastGenerationDate"
+        let newString = String(Date().timeIntervalSince1970)
+
+        if let file = try? folders.internal.file(named: fileName) {
+            let oldInterval = try TimeInterval(file.readAsString())
+
+            lastGenerationDate = oldInterval.map {
+                Date(timeIntervalSince1970: $0)
+            }
+
+            try file.write(newString)
+        } else {
+            let file = try folders.internal.createFile(named: fileName)
+            try file.write(newString)
+        }
     }
 
     func gatherAllTags() -> Set<Tag> {

@@ -26,6 +26,7 @@ final class DeploymentTests: PublishTestCase {
         var deployed = false
 
         try publishWebsite(using: [
+            .step(named: "Custom") { _ in },
             .deploy(using: DeploymentMethod(name: "Deploy") { _ in
                 deployed = true
             })
@@ -46,7 +47,8 @@ final class DeploymentTests: PublishTestCase {
             },
             .installPlugin(Plugin(name: "Skipped") { _ in
                 pluginInstalled = true
-            })
+            }),
+            .deploy(using: DeploymentMethod(name: "Deploy") { _ in })
         ])
 
         XCTAssertFalse(generationPerformed)
