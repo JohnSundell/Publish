@@ -6,6 +6,7 @@
 
 import XCTest
 import Publish
+import Plot
 import Ink
 
 final class PluginTests: PublishTestCase {
@@ -39,13 +40,35 @@ final class PluginTests: PublishTestCase {
         XCTAssertEqual(items.first?.path, "one/a")
         XCTAssertEqual(items.first?.body.html, "<div><p>Hello</p></div>")
     }
+
+    func testAddingPluginToDefaultPipeline() throws {
+        let htmlFactory = HTMLFactoryMock<WebsiteStub.WithoutItemMetadata>()
+        htmlFactory.makeIndexHTML = { content, _ in
+            HTML(.body(content.body.node))
+        }
+
+        try publishWebsite(
+            using: Theme(htmlFactory: htmlFactory),
+            content: ["index.md": "Hello, World!"],
+            plugins: [Plugin(name: "Plugin") { context in
+                context.markdownParser.addModifier(Modifier(
+                    target: .paragraphs,
+                    closure: { html, _ in
+                        "<section>\(html)</section>"
+                    }
+                ))
+            }],
+            expectedHTML: ["index.html": "<section><p>Hello, World!</p></section>"]
+        )
+    }
 }
 
 extension PluginTests {
     static var allTests: Linux.TestList<PluginTests> {
         [
             ("testAddingContentUsingPlugin", testAddingContentUsingPlugin),
-            ("testAddingInkModifierUsingPlugin", testAddingInkModifierUsingPlugin)
+            ("testAddingInkModifierUsingPlugin", testAddingInkModifierUsingPlugin),
+            ("testAddingPluginToDefaultPipeline", testAddingPluginToDefaultPipeline)
         ]
     }
 }

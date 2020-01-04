@@ -10,7 +10,11 @@ import Plot
 /// Configuration type used to customize how a podcast feed is generated when
 /// using the `generatePodcastFeed` step. To use a default implementation,
 /// use `PodcastFeedConfiguration.default`.
-public final class PodcastFeedConfiguration<Site: Website>: RSSFeedConfiguration {
+public struct PodcastFeedConfiguration<Site: Website>: FeedConfiguration {
+    public var targetPath: Path
+    public var ttlInterval: TimeInterval
+    public var maximumItemCount: Int
+    public var indentation: Indentation.Kind?
     /// The type of the podcast. See `PodcastType`.
     public var type: PodcastType
     /// A URL that points to the podcast's main image.
@@ -64,6 +68,10 @@ public final class PodcastFeedConfiguration<Site: Website>: RSSFeedConfiguration
         newFeedURL: URL? = nil,
         indentation: Indentation.Kind? = nil
     ) {
+        self.targetPath = targetPath
+        self.ttlInterval = ttlInterval
+        self.maximumItemCount = maximumItemCount
+        self.indentation = indentation
         self.type = type
         self.imageURL = imageURL
         self.copyrightText = copyrightText
@@ -74,10 +82,5 @@ public final class PodcastFeedConfiguration<Site: Website>: RSSFeedConfiguration
         self.subcategory = subcategory
         self.isExplicit = isExplicit
         self.newFeedURL = newFeedURL
-
-        super.init(targetPath: targetPath,
-                   ttlInterval: ttlInterval,
-                   maximumItemCount: maximumItemCount,
-                   indentation: indentation)
     }
 }

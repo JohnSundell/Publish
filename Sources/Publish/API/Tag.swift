@@ -20,16 +20,6 @@ public extension Tag {
     /// Return a normalized string representation of this tag, which can
     /// be used to form URLs or identifiers.
     func normalizedString() -> String {
-        String(string.lowercased().compactMap { character in
-            if character.isWhitespace {
-                return "-"
-            }
-
-            if character.isLetter || character.isNumber {
-                return character
-            }
-
-            return nil
-        })
+        string.normalized()
     }
 }

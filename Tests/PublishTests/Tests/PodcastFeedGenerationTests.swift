@@ -12,16 +12,9 @@ final class PodcastFeedGenerationTests: PublishTestCase {
     func testOnlyIncludingSpecifiedSection() throws {
         let folder = try Folder.createTemporary()
 
-        try publishWebsiteWithPodcast(in: folder, using: [
-            .addMarkdownFiles(),
-            .generatePodcastFeed(for: .one, config: makeConfigStub())
-        ], content: [
+        try generateFeed(in: folder, content: [
             "one/a.md": """
-            ---
-            audio.url: https://audio.mp3
-            audio.duration: 05:02
-            audio.size: 12345
-            ---
+            \(makeStubbedAudioMetadata())
             # Included
             """,
             "two/b": "# Not included"
@@ -35,16 +28,9 @@ final class PodcastFeedGenerationTests: PublishTestCase {
     func testConvertingRelativeLinksToAbsolute() throws {
         let folder = try Folder.createTemporary()
 
-        try publishWebsiteWithPodcast(in: folder, using: [
-            .addMarkdownFiles(),
-            .generatePodcastFeed(for: .one, config: makeConfigStub())
-        ], content: [
+        try generateFeed(in: folder, content: [
             "one/item.md": """
-            ---
-            audio.url: https://audio.mp3
-            audio.duration: 05:02
-            audio.size: 12345
-            ---
+            \(makeStubbedAudioMetadata())
             BEGIN [Link](/page) ![Image](/image.png) [Link](https://apple.com) END
             """
         ])
@@ -58,20 +44,105 @@ final class PodcastFeedGenerationTests: PublishTestCase {
         <a href="https://apple.com">Link</a>
         """)
     }
+
+    func testReusingPreviousFeedIfNoItemsWereModified() throws {
+        let folder = try Folder.createTemporary()
+        let contentFile = try folder.createFile(at: "Content/one/item.md")
+        try contentFile.write(makeStubbedAudioMetadata())
+
+        try generateFeed(in: folder)
+        let feedA = try folder.file(at: "Output/feed.rss").readAsString()
+
+        let newDate = Date().addingTimeInterval(60 * 60)
+        try generateFeed(in: folder, date: newDate)
+        let feedB = try folder.file(at: "Output/feed.rss").readAsString()
+
+        XCTAssertEqual(feedA, feedB)
+
+        try contentFile.append("New content")
+        try generateFeed(in: folder, date: newDate)
+        let feedC = try folder.file(at: "Output/feed.rss").readAsString()
+
+        XCTAssertNotEqual(feedB, feedC)
+    }
+
+    func testNotReusingPreviousFeedIfConfigChanged() throws {
+        let folder = try Folder.createTemporary()
+        let contentFile = try folder.createFile(at: "Content/one/item.md")
+        try contentFile.write(makeStubbedAudioMetadata())
+
+        try generateFeed(in: folder)
+        let feedA = try folder.file(at: "Output/feed.rss").readAsString()
+
+        var newConfig = try makeConfigStub()
+        newConfig.author.name = "New author name"
+        let newDate = Date().addingTimeInterval(60 * 60)
+        try generateFeed(in: folder, config: newConfig, date: newDate)
+        let feedB = try folder.file(at: "Output/feed.rss").readAsString()
+
+        XCTAssertNotEqual(feedA, feedB)
+    }
+
+    func testNotReusingPreviousFeedIfItemWasAdded() throws {
+        let folder = try Folder.createTemporary()
+
+        let audio = try Audio(
+            url: require(URL(string: "https://audio.mp3")),
+            duration: Audio.Duration(),
+            byteSize: 55
+        )
+
+        let itemA = Item<Site>(
+            path: "a",
+            sectionID: .one,
+            metadata: .init(podcast: .init()),
+            content: Content(audio: audio)
+        )
+
+        let itemB = Item<Site>(
+            path: "b",
+            sectionID: .one,
+            metadata: .init(podcast: .init()),
+            content: Content(
+                lastModified: itemA.lastModified,
+                audio: audio
+            )
+        )
+
+        try generateFeed(in: folder, generationSteps: [
+            .addItem(itemA)
+        ])
+
+        let feedA = try folder.file(at: "Output/feed.rss").readAsString()
+
+        try generateFeed(in: folder, generationSteps: [
+            .addItem(itemA),
+            .addItem(itemB)
+        ])
+
+        let feedB = try folder.file(at: "Output/feed.rss").readAsString()
+        XCTAssertNotEqual(feedA, feedB)
+    }
 }
 
 extension PodcastFeedGenerationTests {
     static var allTests: Linux.TestList<PodcastFeedGenerationTests> {
         [
             ("testOnlyIncludingSpecifiedSection", testOnlyIncludingSpecifiedSection),
-            ("testConvertingRelativeLinksToAbsolute", testConvertingRelativeLinksToAbsolute)
+            ("testConvertingRelativeLinksToAbsolute", testConvertingRelativeLinksToAbsolute),
+            ("testReusingPreviousFeedIfNoItemsWereModified", testReusingPreviousFeedIfNoItemsWereModified),
+            ("testNotReusingPreviousFeedIfConfigChanged", testNotReusingPreviousFeedIfConfigChanged),
+            ("testNotReusingPreviousFeedIfItemWasAdded", testNotReusingPreviousFeedIfItemWasAdded)
         ]
     }
 }
 
 private extension PodcastFeedGenerationTests {
-    func makeConfigStub() throws -> PodcastFeedConfiguration<WebsiteStub.WithPodcastMetadata> {
-        try PodcastFeedConfiguration(
+    typealias Site = WebsiteStub.WithPodcastMetadata
+    typealias Configuration = PodcastFeedConfiguration<Site>
+
+    func makeConfigStub() throws -> Configuration {
+        try Configuration(
             targetPath: .defaultForRSSFeed,
             imageURL: require(URL(string: "image.png")),
             copyrightText: "John Appleseed 2019",
@@ -83,5 +154,34 @@ private extension PodcastFeedGenerationTests {
             subtitle: "Subtitle",
             category: "Category"
         )
+    }
+
+    func makeStubbedAudioMetadata() -> String {
+        """
+        ---
+        audio.url: https://audio.mp3
+        audio.duration: 05:02
+        audio.size: 12345
+        ---
+        """
+    }
+
+    func generateFeed(
+        in folder: Folder,
+        config: Configuration? = nil,
+        generationSteps: [PublishingStep<Site>] = [
+            .addMarkdownFiles()
+        ],
+        date: Date = Date(),
+        content: [Path : String] = [:]
+    ) throws {
+        try publishWebsiteWithPodcast(in: folder, using: [
+            .group(generationSteps),
+            .generatePodcastFeed(
+                for: .one,
+                config: config ?? makeConfigStub(),
+                date: date
+            )
+        ], content: content)
     }
 }

@@ -11,29 +11,51 @@ internal struct PodcastFeedGenerator<Site: Website> where Site.ItemMetadata: Pod
     let sectionID: Site.SectionID
     let config: PodcastFeedConfiguration<Site>
     let context: PublishingContext<Site>
+    let date: Date
 
     func generate() throws {
+        let outputFile = try context.createOutputFile(at: config.targetPath)
+        let cacheFile = try context.cacheFile(named: "feed")
+        let oldCache = try? cacheFile.read().decoded() as Cache
         let section = context.sections[sectionID]
         let items = section.items.sorted(by: { $0.date > $1.date })
 
+        if let date = context.lastGenerationDate, let cache = oldCache {
+            if cache.config == config, cache.itemCount == items.count {
+                let newlyModifiedItem = items.first { $0.lastModified > date }
+
+                guard newlyModifiedItem != nil else {
+                    return try outputFile.write(cache.feed)
+                }
+            }
+        }
+
         let feed = try makeFeed(containing: items, section: section)
-        let file = try context.createOutputFile(at: config.targetPath)
-        try file.write(feed.render(indentedBy: config.indentation))
+            .render(indentedBy: config.indentation)
+
+        let newCache = Cache(config: config, feed: feed, itemCount: items.count)
+        try cacheFile.write(newCache.encoded())
+        try outputFile.write(feed)
     }
 }
 
 private extension PodcastFeedGenerator {
+    struct Cache: Codable {
+        let config: PodcastFeedConfiguration<Site>
+        let feed: String
+        let itemCount: Int
+    }
+
     func makeFeed(containing items: [Item<Site>],
-                  section: Section<Site>,
-                  currentDate: Date = Date()) throws -> PodcastFeed {
+                  section: Section<Site>) throws -> PodcastFeed {
         try PodcastFeed(
             .unwrap(config.newFeedURL, Node.newFeedURL),
             .title(context.site.name),
             .description(config.description),
             .link(context.site.url(for: section)),
             .language(context.site.language),
-            .lastBuildDate(currentDate, timeZone: context.dateFormatter.timeZone),
-            .pubDate(currentDate, timeZone: context.dateFormatter.timeZone),
+            .lastBuildDate(date, timeZone: context.dateFormatter.timeZone),
+            .pubDate(date, timeZone: context.dateFormatter.timeZone),
             .ttl(Int(config.ttlInterval)),
             .atomLink(context.site.url(for: config.targetPath)),
             .copyright(config.copyrightText),

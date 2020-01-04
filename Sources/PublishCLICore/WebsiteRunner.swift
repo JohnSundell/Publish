@@ -25,10 +25,15 @@ internal struct WebsiteRunner {
         """)
 
         DispatchQueue.global().async {
-            _ = try? shellOut(
-                to: "python -m SimpleHTTPServer \(self.portNumber)",
-                at: outputFolder.path
-            )
+            do {
+                _ = try shellOut(
+                    to: "python -m SimpleHTTPServer \(portNumber)",
+                    at: outputFolder.path
+                )
+            } catch let error {
+                let message = (error as? ShellOutError)?.message ?? error.localizedDescription
+                print("Encountered error: \(message)")
+            }
         }
 
         _ = readLine()

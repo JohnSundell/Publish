@@ -148,6 +148,26 @@ final class ErrorTests: PublishTestCase {
             )
         )
     }
+
+    func testErrorForNoPublishingSteps() throws {
+        assertErrorThrown(
+            try publishWebsite(using: []),
+            PublishingError(
+                infoMessage: "WebsiteName has no generation steps."
+            )
+        )
+
+        CommandLine.arguments.append("--deploy")
+
+        assertErrorThrown(
+            try publishWebsite(using: []),
+            PublishingError(
+                infoMessage: "WebsiteName has no deployment steps."
+            )
+        )
+
+        CommandLine.arguments.removeLast()
+    }
 }
 
 extension ErrorTests {
@@ -160,7 +180,8 @@ extension ErrorTests {
             ("testErrorForMissingPage", testErrorForMissingPage),
             ("testErrorForThrowingDuringPageMutation", testErrorForThrowingDuringPageMutation),
             ("testErrorForMissingFolder", testErrorForMissingFolder),
-            ("testErrorForMissingFile", testErrorForMissingFile)
+            ("testErrorForMissingFile", testErrorForMissingFile),
+            ("testErrorForNoPublishingSteps", testErrorForNoPublishingSteps)
         ]
     }
 }
