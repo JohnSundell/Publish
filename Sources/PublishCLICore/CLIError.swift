@@ -9,6 +9,7 @@ internal enum CLIError: Error {
     case notASwiftPackage
     case failedToResolveSwiftPackageName
     case outputFolderNotFound
+	case missingNewContentPath
     case failedToStartLocalhostServer(Error)
 }
 
@@ -23,6 +24,8 @@ extension CLIError: CustomStringConvertible {
             return "Failed to resolve the Swift package's name."
         case .outputFolderNotFound:
             return "The website's Output folder couldn't be found."
+		case .missingNewContentPath:
+			return "Please provide new content file Path"
         case .failedToStartLocalhostServer(let error):
             return "Failed to start localhost server (\(error))"
         }

@@ -13,7 +13,7 @@ final class CLITests: PublishTestCase {
     func testProjectGeneration() throws {
         #if INCLUDE_CLI
         let folder = try Folder.createTemporary()
-        try makeCLI(in: folder, command: "new").run(in: folder)
+        try makeCLI(in: folder, command: "init").run(in: folder)
         try makeCLI(in: folder, command: "generate").run(in: folder)
         #endif
     }

@@ -27,14 +27,21 @@ public struct CLI {
         }
 
         switch arguments[1] {
+		case "init":
+			let generator = ProjectGenerator(
+				folder: folder,
+				publishRepositoryURL: publishRepositoryURL,
+				publishVersion: publishVersion
+			)
+			try generator.generate()
         case "new":
-            let generator = ProjectGenerator(
-                folder: folder,
-                publishRepositoryURL: publishRepositoryURL,
-                publishVersion: publishVersion
-            )
-
-            try generator.generate()
+			guard arguments.count >= 3 else {
+				throw CLIError.missingNewContentPath
+			}
+			let newFilePath = arguments.last!
+			let generator = NewContentGenerator(
+			folder: folder, filePath: newFilePath)
+			try generator.generate()
         case "generate":
             let generator = WebsiteGenerator(folder: folder)
             try generator.generate()
