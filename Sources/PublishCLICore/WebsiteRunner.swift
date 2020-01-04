@@ -10,13 +10,13 @@ import ShellOut
 
 internal struct WebsiteRunner {
     let folder: Folder
+    var portNumber = 8000
 
     func run() throws {
         let generator = WebsiteGenerator(folder: folder)
         try generator.generate()
 
         let outputFolder = try resolveOutputFolder()
-        let portNumber = 8000
 
         print("""
         🌍 Starting web server at http://localhost:\(portNumber)
@@ -26,7 +26,7 @@ internal struct WebsiteRunner {
 
         DispatchQueue.global().async {
             _ = try? shellOut(
-                to: "python -m SimpleHTTPServer \(portNumber)",
+                to: "python -m SimpleHTTPServer \(self.portNumber)",
                 at: outputFolder.path
             )
         }
