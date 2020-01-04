@@ -68,8 +68,8 @@ private extension CLI {
         and deploy existing ones.
 
         Available commands:
-
-        - new: Set up a new website in the current folder.
+        - init: Set up a new website in the current folder.
+        - new [FilePath]: Generate a new Content template at path.
         - generate: Generate the website in the current folder.
         - run: Generate and run a localhost server on port 8000
                for the website in the current folder.

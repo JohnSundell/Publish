@@ -285,12 +285,31 @@ $ cd Publish
 $ make
 ```
 
-Then, create a new folder for your new website project and simply run `publish new` within it to get started:
+Then, create a new folder for your new website project and simply run `publish init` within it to get started:
 
 ```
 $ mkdir MyWebsite
 $ cd MyWebsite
-$ publish new
+$ publish init
+```
+
+To create a new content for your website, simply run `publish new [FilePath]` to get started:
+
+```
+$ publish new fold/markdown.md
+.
+├── Content/
+│   ├── fold/
+│   │   └── markdown.md <--------- Generated file
+│   ├── index.md
+│   └── posts/
+│       ├── first-post.md
+│       └── index.md
+├── Package.swift
+├── Resources/
+└── Sources/
+	└── Publishdemo/	
+		└── main.swift
 ```
 
 Finally, run `open Package.swift` to open up the project in Xcode to start building your new website.
