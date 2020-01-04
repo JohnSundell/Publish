@@ -14,6 +14,7 @@ final class CLITests: PublishTestCase {
         #if INCLUDE_CLI
         let folder = try Folder.createTemporary()
         try makeCLI(in: folder, command: "init").run(in: folder)
+		try makeCLI(in: folder, command: "new ATestContent").run(in: folder)
         try makeCLI(in: folder, command: "generate").run(in: folder)
         #endif
     }
