@@ -19,7 +19,7 @@ internal struct ProjectGenerator {
         self.folder = folder
         self.publishRepositoryURL = publishRepositoryURL
         self.publishVersion = publishVersion
-        self.siteName = Self.makeSiteName(folderName: folder.name)
+        self.siteName = folder.name.asSiteName()
     }
 
     func generate() throws {
@@ -153,24 +153,16 @@ private extension Folder {
     }
 }
 
-internal extension ProjectGenerator {
-    static func makeSiteName(folderName: String) -> String {
-        let letters = folderName.filter { $0.isLetter }
+private extension String {
+    func asSiteName() -> Self {
+        let letters = filter { $0.isLetter }
         guard !letters.isEmpty else {
-            return defaultSiteName
+            return "SiteName"
         }
         return String(letters).capitalizingFirstLetter()
     }
     
-    static var defaultSiteName: String { "SiteName" }
-}
-
-private extension String {
-    func capitalizingFirstLetter() -> String {
+    private func capitalizingFirstLetter() -> String {
         return prefix(1).capitalized + dropFirst()
-    }
-
-    mutating func capitalizeFirstLetter() {
-        self = self.capitalizingFirstLetter()
     }
 }
