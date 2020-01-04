@@ -27,7 +27,7 @@ internal struct WebsiteRunner {
         DispatchQueue.global().async {
             do {
                 _ = try shellOut(
-                    to: "python -m SimpleHTTPServer \(portNumber)",
+                    to: "python -m SimpleHTTPServer \(self.portNumber)",
                     at: outputFolder.path
                 )
             } catch let error {
