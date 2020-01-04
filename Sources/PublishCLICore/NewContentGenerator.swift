@@ -26,14 +26,11 @@ internal struct NewContentGenerator {
 		self.siteName = String(folder.name.capitalized.filter { $0.isLetter })
 		self.filePath = filePath
 	}
+	private var file:File!
 	
 	func generate() throws {
 
 		try generateContent()
-		
-		print("""
-			✅ Generated new content to \(filePath).md
-			""")
 	}
 }
 
@@ -60,8 +57,11 @@ private extension NewContentGenerator {
 		let dateFormatter = DateFormatter()
 		dateFormatter.dateFormat = "yyyy-MM-dd HH:mm"
 		dateFormatter.timeZone = .current
-		
-		let file = try contentFolder.createFile(named: "\(fileName).md")
+		var fileName = self.fileName
+		if !fileName.hasSuffix(".md") {
+			fileName += ".md"
+		}
+		let file = try contentFolder.createFile(named: fileName)
 			
 		try file.write(
 			"""
@@ -73,7 +73,9 @@ private extension NewContentGenerator {
 			# <#New Content Title#>
 			
 			""")
-		print(file)
+		print("""
+			✅ Generated new content at \(file.path)
+			""")
 	}
 	
 }
