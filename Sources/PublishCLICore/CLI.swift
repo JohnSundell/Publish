@@ -42,8 +42,13 @@ public struct CLI {
             let deployer = WebsiteDeployer(folder: folder)
             try deployer.deploy()
         case "run":
-            let runner = WebsiteRunner(folder: folder)
-            try runner.run()
+            if arguments.count > 2, arguments[2].contains("-p=") || arguments[2].contains("--port="), let portNumber = extractPortNumber(from: arguments[2]) {
+                let runner = WebsiteRunner(folder: folder, portNumber: portNumber)
+                try runner.run()
+            } else {
+                let runner = WebsiteRunner(folder: folder)
+                try runner.run()
+            }
         default:
             outputHelpText()
         }
@@ -63,10 +68,17 @@ private extension CLI {
 
         - new: Set up a new website in the current folder.
         - generate: Generate the website in the current folder.
-        - run: Generate and run a localhost server on port 8000
-               for the website in the current folder.
+        - run: Generate and run a localhost server on default port 8000
+               for the website in the current folder. Use the
+               "-p=" or "--port=" option for customizing the default port.
         - deploy: Generate and deploy the website in the current
                folder, according to its deployment method.
         """)
+    }
+    
+    private func extractPortNumber(from argument: String) -> Int? {
+        let equalSignIndex = argument.firstIndex(of: "=")!
+        let portNumberString = String(argument.suffix(from: argument.index(after: equalSignIndex)))
+        return Int(portNumberString)
     }
 }
