@@ -38,7 +38,8 @@ public struct CLI {
 			guard arguments.count >= 3 else {
 				throw CLIError.missingNewContentPath
 			}
-			let newFilePath = arguments.last!
+			let newFilePath = arguments[2]
+			print(newFilePath)
 			let generator = NewContentGenerator(
 			folder: folder, filePath: newFilePath)
 			try generator.generate()
