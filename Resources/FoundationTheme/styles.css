@@ -79,6 +79,11 @@ a {
     padding: 20px;
     border-radius: 20px;
     background-color: #eee;
+    margin-bottom: 20px;
+}
+
+.item-list > li:last-child {
+    margin-bottom: 0;
 }
 
 .item-list h1 {
@@ -148,5 +153,11 @@ footer {
 
     header {
         background-color: #000;
+    }
+}
+
+@media(max-width: 600px) {
+    .wrapper {
+        padding: 40px 20px;
     }
 }
