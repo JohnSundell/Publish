@@ -10,7 +10,7 @@ import ShellOut
 
 internal struct WebsiteRunner {
     let folder: Folder
-    var portNumber = 8000
+    var portNumber: Int
 
     func run() throws {
         let generator = WebsiteGenerator(folder: folder)

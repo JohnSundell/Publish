@@ -81,9 +81,9 @@ private extension CLI {
                 }
                 return portNumber
             default:
-                return 8000
+                return 8000 // default portNumber
             }
         }
-        return 8000 // Default Port Number
+        return 8000 // default portNumber
     }
 }
