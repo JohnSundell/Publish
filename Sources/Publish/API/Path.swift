@@ -10,6 +10,7 @@ import Foundation
 /// location or to a resource, such as a file or image.
 public struct Path: StringWrapper {
     public var string: String
+    public var absolute: Bool
 
     public init(_ string: String, absolute: Bool = false) {
         self.string = string
