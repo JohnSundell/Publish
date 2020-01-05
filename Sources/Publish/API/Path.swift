@@ -11,8 +11,9 @@ import Foundation
 public struct Path: StringWrapper {
     public var string: String
 
-    public init(_ string: String) {
+    public init(_ string: String, absolute: Bool = false) {
         self.string = string
+        self.absolute = absolute
     }
 }
 
@@ -27,7 +28,7 @@ public extension Path {
     /// Convert this path into an absolute string, which can be used to
     /// refer to locations and resources based on the root of a website.
     var absoluteString: String {
-        if string.first == "/" { return string }
+        if string.first == "/" || self.absolute { return string }
         return "/" + string
     }
 
