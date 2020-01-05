@@ -285,6 +285,8 @@ $ cd Publish
 $ make
 ```
 
+_**Note**: If you encounter an error while running `make`, ensure that you have your Command Line Tools location set from Xcode's preferences. It's in Preferences > Locations > Locations > Command Line Tools. The dropdown will be blank if it hasn't been set yet._
+
 Then, create a new folder for your new website project and simply run `publish new` within it to get started:
 
 ```
