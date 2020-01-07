@@ -34,6 +34,7 @@ internal struct MarkdownContentFactory<Site: Website> {
         return Item(
             path: path,
             sectionID: sectionID,
+            resourceFilename: file.name,
             metadata: metadata,
             tags: tags ?? [],
             content: content,

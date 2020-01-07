@@ -19,7 +19,10 @@ public struct Item<Site: Website>: AnyItem, Hashable {
     /// this item is for.
     public var metadata: Site.ItemMetadata
     public var tags: [Tag]
+    /// The absolute path to this item relative to the root of the site
     public var path: Path { makeAbsolutePath() }
+    /// The name of the resource file used to generate this item
+    public let resourceFilename: String?
     public var content: Content
     public var rssProperties: ItemRSSProperties
 
@@ -35,11 +38,13 @@ public struct Item<Site: Website>: AnyItem, Hashable {
     /// - parameter rssProperties: Properties customizing the item's RSS representation.
     public init(path: Path,
                 sectionID: Site.SectionID,
+                resourceFilename: String? = nil,
                 metadata: Site.ItemMetadata,
                 tags: [Tag] = [],
                 content: Content = Content(),
                 rssProperties: ItemRSSProperties = .init()) {
         self.relativePath = path
+        self.resourceFilename = resourceFilename
         self.sectionID = sectionID
         self.metadata = metadata
         self.tags = tags
