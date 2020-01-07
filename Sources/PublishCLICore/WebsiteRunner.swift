@@ -41,7 +41,7 @@ internal struct WebsiteRunner {
             }
 
             serverProcess.terminate()
-            exit(0)
+            exit(1)
         }
 
         _ = readLine()
