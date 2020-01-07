@@ -37,6 +37,14 @@ internal struct WebsiteRunner {
         }
 
         _ = readLine()
+        
+        print("""
+        🔌 Shutting down...
+        """)
+        _ = try shellOut(
+            to: "kill -9 `ps -ef | grep SimpleHTTPServer | grep \(self.portNumber) | awk '{print $2}'`",
+            at: outputFolder.path
+        )
     }
 }
 
