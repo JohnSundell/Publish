@@ -30,7 +30,7 @@ internal struct WebsiteRunner {
         serverQueue.async {
             do {
                 _ = try shellOut(
-                    to: "python -m SimpleHTTPServer \(self.portNumber)",
+                    to: "python -m http.server \(self.portNumber)",
                     at: outputFolder.path,
                     process: serverProcess
                 )
