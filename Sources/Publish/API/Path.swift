@@ -27,7 +27,9 @@ public extension Path {
     /// Convert this path into an absolute string, which can be used to
     /// refer to locations and resources based on the root of a website.
     var absoluteString: String {
-        if string.first == "/" { return string }
+        guard string.first != "/" else { return string }
+        guard !string.hasPrefix("http://") else { return string }
+        guard !string.hasPrefix("https://") else { return string }
         return "/" + string
     }
 
