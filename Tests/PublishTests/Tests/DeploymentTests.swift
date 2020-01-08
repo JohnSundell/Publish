@@ -82,29 +82,29 @@ final class DeploymentTests: PublishTestCase {
         let container = try Folder.createTemporary()
         let remote = try container.createSubfolder(named: "Remote.git")
         let repo = try container.createSubfolder(named: "Repo")
-		
-		try shellOut(to: [
-			"git init",
-		], at: remote.path)
-		
-		// First generate
-		try publishWebsite(in: repo, using: [
-			.generateHTML(withTheme: .foundation)
-		])
-		
-		// Then deploy
-		CommandLine.arguments.append("--deploy")
-		
-		XCTAssertThrowsError(
-			try publishWebsite(in: repo,
-							   using: [
-								.deploy(using: .git(remote.path))
-			]),
-			"Expected an error to be thrown") {
-				(error) in
-				XCTAssert(error is PublishingError)
-		}
-	}
+
+        try shellOut(to: [
+            "git init",
+        ], at: remote.path)
+        
+        // First generate
+        try publishWebsite(in: repo, using: [
+            .generateHTML(withTheme: .foundation)
+        ])
+
+        // Then deploy
+        CommandLine.arguments.append("--deploy")
+
+        XCTAssertThrowsError(
+            try publishWebsite(in: repo,
+                               using: [
+                                .deploy(using: .git(remote.path))
+            ]),
+            "Expected an error to be thrown") {
+                (error) in
+                XCTAssert(error is PublishingError)
+        }
+    }
 }
 
 extension DeploymentTests {
@@ -112,7 +112,8 @@ extension DeploymentTests {
         [
             ("testDeploymentSkippedByDefault", testDeploymentSkippedByDefault),
             ("testGenerationStepsAndPluginsSkippedWhenDeploying", testGenerationStepsAndPluginsSkippedWhenDeploying),
-            ("testGitDeploymentMethod", testGitDeploymentMethod)
+            ("testGitDeploymentMethod", testGitDeploymentMethod),
+            ("testGitDeploymentMethodWithError",testGitDeploymentMethodWithError)
         ]
     }
 }
