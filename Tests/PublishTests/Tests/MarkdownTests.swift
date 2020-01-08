@@ -26,6 +26,16 @@ final class MarkdownTests: PublishTestCase {
         XCTAssertEqual(item.title, "Overridden title")
     }
 
+    func testParsingFileWithOverriddenPath() throws {
+        let item = try generateItem(fromMarkdown: """
+        ---
+        path: overridden-path
+        ---
+        """)
+
+        XCTAssertEqual(item.path, "one/overridden-path")
+    }
+
     func testParsingFileWithBuiltInMetadata() throws {
         let item = try generateItem(fromMarkdown: """
         ---
@@ -135,6 +145,7 @@ extension MarkdownTests {
         [
             ("testParsingFileWithTitle", testParsingFileWithTitle),
             ("testParsingFileWithOverriddenTitle", testParsingFileWithOverriddenTitle),
+            ("testParsingFileWithOverriddenPath", testParsingFileWithOverriddenPath),
             ("testParsingFileWithBuiltInMetadata", testParsingFileWithBuiltInMetadata),
             ("testParsingFileWithCustomMetadata", testParsingFileWithCustomMetadata),
             ("testParsingPageInNestedFolder", testParsingPageInNestedFolder),

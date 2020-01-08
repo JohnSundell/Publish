@@ -26,6 +26,7 @@ internal struct MarkdownContentFactory<Site: Website> {
         let decoder = makeMetadataDecoder(for: markdown)
 
         let metadata = try Site.ItemMetadata(from: decoder)
+        let path = try decoder.decodeIfPresent("path", as: Path.self) ?? path
         let tags = try decoder.decodeIfPresent("tags", as: [Tag].self)
         let content = try makeContent(fromMarkdown: markdown, file: file, decoder: decoder)
         let rssProperties = try decoder.decodeIfPresent("rss", as: ItemRSSProperties.self)
