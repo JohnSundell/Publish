@@ -82,29 +82,35 @@ private extension PublishingPipeline {
 
     func setUpFolders(withExplicitRootPath path: Path?,
                       shouldEmptyOutputFolder: Bool) throws -> Folder.Group {
-        let root = try resolveRootFolder(withExplicitPath: path)
+        let sourceFolder = try resolveDestinationFolder(withExplicitPath: path)
+        let intermediateFolder = try sourceFolder.createSubfolderIfNeeded(
+            withName: ".intermediate"
+        )
+
         let outputFolderName = "Output"
 
         if shouldEmptyOutputFolder {
-            try? root.subfolder(named: outputFolderName).empty()
+            try? intermediateFolder.empty()
+            try? sourceFolder.subfolder(named: outputFolderName).empty()
         }
 
         do {
-            let outputFolder = try root.createSubfolderIfNeeded(
+            let intermediateOutputFolder = try intermediateFolder.createSubfolderIfNeeded(
                 withName: outputFolderName
             )
 
-            let internalFolder = try root.createSubfolderIfNeeded(
+            let internalFolder = try sourceFolder.createSubfolderIfNeeded(
                 withName: ".publish"
             )
 
-            let cacheFolder = try internalFolder.createSubfolderIfNeeded(
+            let cacheFolder = try sourceFolder.createSubfolderIfNeeded(
                 withName: "Caches"
             )
 
             return Folder.Group(
-                root: root,
-                output: outputFolder,
+                source: sourceFolder,
+                intermediate: intermediateFolder,
+                intermediateOutput: intermediateOutputFolder,
                 internal: internalFolder,
                 caches: cacheFolder
             )
@@ -116,7 +122,7 @@ private extension PublishingPipeline {
         }
     }
 
-    func resolveRootFolder(withExplicitPath path: Path?) throws -> Folder {
+    func resolveDestinationFolder(withExplicitPath path: Path?) throws -> Folder {
         if let path = path {
             do {
                 return try Folder(path: path.string)

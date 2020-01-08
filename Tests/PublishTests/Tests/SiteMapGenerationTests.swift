@@ -18,7 +18,8 @@ final class SiteMapGenerationTests: PublishTestCase {
             .generateSiteMap()
         ])
 
-        let file = try folder.file(at: "Output/sitemap.xml")
+        let intermediateFolder = try folder.subfolder(at: ".intermediate")
+        let file = try intermediateFolder.file(at: "Output/sitemap.xml")
         let siteMap = try file.readAsString()
 
         let expectedLocations = [
@@ -49,7 +50,8 @@ final class SiteMapGenerationTests: PublishTestCase {
             ])
         ])
 
-        let file = try folder.file(at: "Output/sitemap.xml")
+        let intermediateFolder = try folder.subfolder(at: ".intermediate")
+        let file = try intermediateFolder.file(at: "Output/sitemap.xml")
         let siteMap = try file.readAsString()
 
         let expectedLocations = [

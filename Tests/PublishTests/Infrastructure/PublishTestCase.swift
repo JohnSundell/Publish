@@ -20,7 +20,7 @@ class PublishTestCase: XCTestCase {
             in: folder,
             using: steps,
             files: content,
-            filePathPrefix: "Content/"
+            filePathPrefix: ".intermediate/Content/"
         )
     }
 
@@ -72,7 +72,7 @@ class PublishTestCase: XCTestCase {
             in: folder,
             using: steps,
             files: content,
-            filePathPrefix: "Content/"
+            filePathPrefix: ".intermediate/Content/"
         )
     }
 
@@ -81,7 +81,7 @@ class PublishTestCase: XCTestCase {
                       allowWhitelistedFiles: Bool = true,
                       file: StaticString = #file,
                       line: UInt = #line) throws {
-        let outputFolder = try folder.subfolder(named: "Output")
+        let outputFolder = try folder.subfolder(at: ".intermediate/Output")
 
         let whitelistedPaths: Set<Path> = [
             "index.html",
@@ -140,7 +140,7 @@ class PublishTestCase: XCTestCase {
         try performWebsitePublishing(
             using: steps,
             files: content,
-            filePathPrefix: "Content/"
+            filePathPrefix: ".intermediate/Content/"
         )
     }
 
@@ -200,11 +200,18 @@ private extension PublishTestCase {
     ) throws -> PublishedWebsite<T> {
         let folder = try folder ?? Folder.createTemporary()
 
-        try addFiles(withContent: files, to: folder, pathPrefix: filePathPrefix)
-
         return try T().publish(
             at: Path(folder.path),
-            using: steps
+            using: [
+                .if(
+                    steps.count > 0,
+                    .run { [unowned self] _ in try self.addFiles(withContent: files, to: folder, pathPrefix: filePathPrefix) }
+                ),
+                .if(
+                    steps.count > 0,
+                    .group(steps)
+                )
+            ]
         )
     }
 }

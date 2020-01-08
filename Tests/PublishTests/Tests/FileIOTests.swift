@@ -5,8 +5,9 @@
 */
 
 import XCTest
-import Publish
+@testable import Publish
 import Files
+import Plot
 
 final class FileIOTests: PublishTestCase {
     func testCopyingFile() throws {
@@ -17,7 +18,8 @@ final class FileIOTests: PublishTestCase {
             .copyFile(at: "File")
         ])
 
-        let file = try folder.file(at: "Output/File")
+        let intermediateFolder = try folder.subfolder(at: ".intermediate")
+        let file = try intermediateFolder.file(at: "Output/File")
         XCTAssertEqual(try file.readAsString(), "Hello, world!")
     }
 
@@ -29,7 +31,8 @@ final class FileIOTests: PublishTestCase {
             .copyFile(at: "File", to: "Custom/Path")
         ])
 
-        let file = try folder.file(at: "Output/Custom/Path/File")
+        let intermediateFolder = try folder.subfolder(at: ".intermediate")
+        let file = try intermediateFolder.file(at: "Output/Custom/Path/File")
         XCTAssertEqual(try file.readAsString(), "Hello, world!")
     }
 
@@ -43,39 +46,47 @@ final class FileIOTests: PublishTestCase {
             }
         ])
 
-        XCTAssertNotNil(try? folder.subfolder(at: "Output/Subfolder"))
+        let intermediateFolder = try folder.subfolder(at: ".intermediate")
+        XCTAssertNotNil(try? intermediateFolder.subfolder(at: "Output/Subfolder"))
     }
 
     func testCopyingResourcesWithFolder() throws {
         let folder = try Folder.createTemporary()
-        let resourcesFolder = try folder.createSubfolder(named: "Resources")
-        try resourcesFolder.createFile(named: "File").write("Hello")
-        let nestedFolder = try resourcesFolder.createSubfolder(named: "Subfolder")
-        try nestedFolder.createFile(named: "Nested").write("World!")
 
         try publishWebsite(in: folder, using: [
+            .run { context in
+                let resourcesFolder = try folder.createSubfolder(named: ".intermediate/Resources")
+                try resourcesFolder.createFile(named: "File").write("Hello")
+                let nestedFolder = try resourcesFolder.createSubfolder(named: "Subfolder")
+                try nestedFolder.createFile(named: "Nested").write("World!")
+            },
             .copyResources(includingFolder: true)
         ])
 
-        let rootFile = try folder.file(at: "Output/Resources/File")
-        let nestedFile = try folder.file(at: "Output/Resources/Subfolder/Nested")
+        let intermediateFolder = try folder.subfolder(at: ".intermediate")
+        let rootFile = try intermediateFolder.file(at: "Output/Resources/File")
+        let nestedFile = try intermediateFolder.file(at: "Output/Resources/Subfolder/Nested")
         XCTAssertEqual(try rootFile.readAsString(), "Hello")
         XCTAssertEqual(try nestedFile.readAsString(), "World!")
     }
 
     func testCopyingResourcesWithoutFolder() throws {
         let folder = try Folder.createTemporary()
-        let resourcesFolder = try folder.createSubfolder(named: "Resources")
-        try resourcesFolder.createFile(named: "File").write("Hello")
-        let nestedFolder = try resourcesFolder.createSubfolder(named: "Subfolder")
-        try nestedFolder.createFile(named: "Nested").write("World!")
 
         try publishWebsite(in: folder, using: [
+            .run { context in
+                let resourcesFolder = try folder.createSubfolder(named: ".intermediate/Resources")
+                try resourcesFolder.createFile(named: "File").write("Hello")
+                let nestedFolder = try resourcesFolder.createSubfolder(named: "Subfolder")
+                try nestedFolder.createFile(named: "Nested").write("World!")
+
+            },
             .copyResources()
         ])
 
-        let rootFile = try folder.file(at: "Output/File")
-        let nestedFile = try folder.file(at: "Output/Subfolder/Nested")
+        let intermediateFolder = try folder.subfolder(at: ".intermediate")
+        let rootFile = try intermediateFolder.file(at: "Output/File")
+        let nestedFile = try intermediateFolder.file(at: "Output/Subfolder/Nested")
         XCTAssertEqual(try rootFile.readAsString(), "Hello")
         XCTAssertEqual(try nestedFile.readAsString(), "World!")
     }
@@ -90,8 +101,9 @@ final class FileIOTests: PublishTestCase {
             }
         ])
 
-        XCTAssertNotNil(try? folder.subfolder(named: "A"))
-        XCTAssertNotNil(try? folder.file(at: "B/file"))
+        let intermediateFolder = try folder.subfolder(at: ".intermediate")
+        XCTAssertNotNil(try? intermediateFolder.subfolder(named: "A"))
+        XCTAssertNotNil(try? intermediateFolder.file(at: "B/file"))
     }
 
     func testRetrievingOutputFolder() throws {
@@ -122,6 +134,72 @@ final class FileIOTests: PublishTestCase {
 
         XCTAssertEqual(itemFile?.name, "index.html")
     }
+
+    func testCopyingContentAndResourceFilesToIntermediateFolder() throws {
+        let folder = try Folder.createTemporary()
+        try folder.createFile(named: "not-copied-file").write("💥")
+        let resourcesFolder = try folder.createSubfolder(named: "Resources")
+        try resourcesFolder.createFile(named: "resource").write("I'm resource!")
+        let contentFolder = try folder.createSubfolder(named: "Content")
+        try contentFolder.createFile(named: "index.md").write("I'm index.md!")
+        try contentFolder.createSubfolder(named: "nested").createFile(at: "nested.md").write("I'm nested.md!")
+
+        try publishWebsite(in: folder, using: [
+            .copyContentAndResourceFilesToIntermediateFolder()
+        ])
+
+        let intermediateFolder = try folder.subfolder(at: ".intermediate")
+        XCTAssertNil(try? intermediateFolder.file(at: "not-copied-file"))
+        XCTAssertEqual(try intermediateFolder.file(at: "Resources/resource").readAsString(), "I'm resource!")
+        XCTAssertEqual(try intermediateFolder.file(at: "Content/index.md").readAsString(), "I'm index.md!")
+        XCTAssertEqual(try intermediateFolder.file(at: "Content/nested/nested.md").readAsString(), "I'm nested.md!")
+    }
+
+    func testCopyingCustomThemeFilesToIntermediateFolder() throws {
+        let folder = try Folder.createTemporary()
+        try folder.createFile(named: "Package.swift")
+
+        let customThemeFolder = try folder.createSubfolder(at: "theme-subfolder")
+        let customThemeFile = try customThemeFolder.createFile(named: "MockTheme.swift")
+        try customThemeFolder.createFile(named: "resource1").write("🎨")
+        try customThemeFolder.createSubfolder(named: "subfolder").createFile(named: "nested-resource").write("🎨🎨")
+
+        let customThemeResources = ThemeResources(
+            paths: [
+                "theme-subfolder/resource1",
+                "theme-subfolder/subfolder/nested-resource"
+            ],
+            themeCreationPath: Path(customThemeFile.path)
+        )
+
+        try publishWebsite(in: folder, using: [
+            .copyThemeResourcesToIntermediateFolder(resources: customThemeResources)
+        ])
+
+        let intermediateOutputFolder = try folder.subfolder(at: ".intermediate/Output")
+        XCTAssertEqual(try intermediateOutputFolder.file(at: "resource1").readAsString(), "🎨")
+        XCTAssertEqual(try intermediateOutputFolder.file(at: "nested-resource").readAsString(), "🎨🎨")
+    }
+
+    func testCopyingIntermediateOutputToFinalDestination() throws {
+        let destinationFolder = try Folder.createTemporary()
+
+        try publishWebsite(in: destinationFolder, using: [
+            .run { context in
+                let intermediateOutputFolder = try destinationFolder.subfolder(at: ".intermediate/Output")
+                try intermediateOutputFolder.createFile(named: "File").write("Hello, world!")
+                let subfolder = try intermediateOutputFolder.createSubfolder(named: "Subfolder")
+                try subfolder.createFile(named: "Nested").write("World!")
+            },
+            .copyIntermediateOutputToFinalDestination()
+        ])
+
+        let destinationOutput = try destinationFolder.subfolder(at: "Output")
+        let file = try destinationOutput.file(at: "File")
+        let nestedFile = try destinationOutput.file(at: "Subfolder/Nested")
+        XCTAssertEqual(try file.readAsString(), "Hello, world!")
+        XCTAssertEqual(try nestedFile.readAsString(), "World!")
+    }
 }
 
 extension FileIOTests {
@@ -134,7 +212,10 @@ extension FileIOTests {
             ("testCopyingResourcesWithoutFolder", testCopyingResourcesWithoutFolder),
             ("testCreatingRootLevelFolder", testCreatingRootLevelFolder),
             ("testRetrievingOutputFolder", testRetrievingOutputFolder),
-            ("testRetrievingOutputFile", testRetrievingOutputFile)
+            ("testRetrievingOutputFile", testRetrievingOutputFile),
+            ("testCopyingIntermediateOutputToFinalDestination", testCopyingIntermediateOutputToFinalDestination),
+            ("testCopyingCustomThemeFilesToIntermediateFolder", testCopyingCustomThemeFilesToIntermediateFolder),
+            ("testCopyingContentAndResourceFilesToIntermediateFolder", testCopyingContentAndResourceFilesToIntermediateFolder)
         ]
     }
 }

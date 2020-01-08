@@ -296,24 +296,25 @@ final class HTMLGenerationTests: PublishTestCase {
             ]
         )
 
-        let siteIndex = try folder.file(at: "Output/index.html")
+        let intermediateFolder = try folder.subfolder(at: ".intermediate")
+        let siteIndex = try intermediateFolder.file(at: "Output/index.html")
         XCTAssertTrue(try siteIndex.readAsString().contains("WebsiteName"))
 
-        let sectionIndex = try folder.file(at: "Output/one/index.html")
+        let sectionIndex = try intermediateFolder.file(at: "Output/one/index.html")
         XCTAssertTrue(try sectionIndex.readAsString().contains("SectionTitle"))
 
-        let item = try folder.file(at: "Output/one/item/index.html")
+        let item = try intermediateFolder.file(at: "Output/one/item/index.html")
         XCTAssertTrue(try item.readAsString().contains("ItemTitle"))
 
-        let page = try folder.file(at: "Output/page/index.html")
+        let page = try intermediateFolder.file(at: "Output/page/index.html")
         XCTAssertTrue(try page.readAsString().contains("PageTitle"))
 
-        let tagList = try folder.file(at: "Output/tags/index.html")
+        let tagList = try intermediateFolder.file(at: "Output/tags/index.html")
         let tagListHTML = try tagList.readAsString()
         XCTAssertTrue(tagListHTML.contains("tagA"))
         XCTAssertTrue(tagListHTML.contains("tagB"))
 
-        let tagDetails = try folder.file(at: "Output/tags/taga/index.html")
+        let tagDetails = try intermediateFolder.file(at: "Output/tags/taga/index.html")
         XCTAssertTrue(try tagDetails.readAsString().contains("tagA"))
     }
 }

@@ -34,7 +34,7 @@ public struct PublishingContext<Site: Website> {
     /// Any date when the website was last generated.
     public private(set) var lastGenerationDate: Date?
 
-    private let folders: Folder.Group
+    internal let folders: Folder.Group
     private var tagCache = TagCache()
     private var stepName: String
 
@@ -53,19 +53,24 @@ public struct PublishingContext<Site: Website> {
 }
 
 public extension PublishingContext {
+    func intermediateFolder(at path: Path) throws -> Folder {
+        do { return try folders.intermediate.subfolder(at: path.string) }
+        catch { throw FileIOError(path: path, reason: .folderNotFound) }
+    }
+
     /// Retrieve a folder at a given path, starting from the website's root folder.
     /// - parameter path: The path to retrieve a folder for.
     /// - throws: An error in case the folder couldn't be found.
-    func folder(at path: Path) throws -> Folder {
-        do { return try folders.root.subfolder(at: path.string) }
+    func sourceFolder(at path: Path) throws -> Folder {
+        do { return try folders.source.subfolder(at: path.string) }
         catch { throw FileIOError(path: path, reason: .folderNotFound) }
     }
 
     /// Retrieve a file at a given path, starting from the website's root folder.
     /// - parameter path: The path to retrieve a file for.
     /// - throws: An error in case the file couldn't be found.
-    func file(at path: Path) throws -> File {
-        do { return try folders.root.file(at: path.string) }
+    func sourceFile(at path: Path) throws -> File {
+        do { return try folders.source.file(at: path.string) }
         catch { throw FileIOError(path: path, reason: .fileNotFound) }
     }
 
@@ -73,7 +78,7 @@ public extension PublishingContext {
     /// - parameter path: The path to retrieve a folder for.
     /// - throws: An error in case the folder couldn't be found.
     func outputFolder(at path: Path) throws -> Folder {
-        do { return try folders.output.subfolder(at: path.string) }
+        do { return try folders.intermediateOutput.subfolder(at: path.string) }
         catch { throw FileIOError(path: path, reason: .folderNotFound) }
     }
 
@@ -81,7 +86,7 @@ public extension PublishingContext {
     /// - parameter path: The path to retrieve a file for.
     /// - throws: An error in case the file couldn't be found.
     func outputFile(at path: Path) throws -> File {
-        do { return try folders.output.file(at: path.string) }
+        do { return try folders.intermediateOutput.file(at: path.string) }
         catch { throw FileIOError(path: path, reason: .fileNotFound) }
     }
 
@@ -89,28 +94,28 @@ public extension PublishingContext {
     /// - parameter path: The path to create a folder at.
     /// - throws: An error in case the folder couldn't be created.
     func createFolder(at path: Path) throws -> Folder {
-        try createFolder(at: path, in: folders.root)
+        try createFolder(at: path, in: folders.intermediate)
     }
 
     /// Create a file at a given path, starting from the website's root folder.
     /// - parameter path: The path to create a file at.
     /// - throws: An error in case the file couldn't be created.
     func createFile(at path: Path) throws -> File {
-        try createFile(at: path, in: folders.root)
+        try createFile(at: path, in: folders.intermediate)
     }
 
     /// Create a folder at a given path within the website's output folder.
     /// - parameter path: The path to create a folder at.
     /// - throws: An error in case the folder couldn't be created.
     func createOutputFolder(at path: Path) throws -> Folder {
-        try createFolder(at: path, in: folders.output)
+        try createFolder(at: path, in: folders.intermediateOutput)
     }
 
     /// Create a file at a given path within the website's output folder.
     /// - parameter path: The path to create a file at.
     /// - throws: An error in case the file couldn't be created.
     func createOutputFile(at path: Path) throws -> File {
-        try createFile(at: path, in: folders.output)
+        try createFile(at: path, in: folders.intermediateOutput)
     }
 
     /// Copy a folder at a given path into the website's output folder.
@@ -119,7 +124,7 @@ public extension PublishingContext {
     ///   If `nil`, then the folder will be copied to the output folder itself.
     func copyFolderToOutput(from originPath: Path,
                             to targetFolderPath: Path? = nil) throws {
-        let folder = try self.folder(at: originPath)
+        let folder = try self.sourceFolder(at: originPath)
         try copyFolderToOutput(folder, targetFolderPath: targetFolderPath)
     }
 
@@ -129,8 +134,36 @@ public extension PublishingContext {
     ///   If `nil`, then the file will be copied to the output folder itself.
     func copyFileToOutput(from originPath: Path,
                           to targetFolderPath: Path? = nil) throws {
-        let file = try self.file(at: originPath)
+        let file = try self.sourceFile(at: originPath)
         try copyFileToOutput(file, targetFolderPath: targetFolderPath)
+    }
+
+    /// TODO: this can be reused in wider scope to not duplicate code
+    func copyContents(of sourceFolder: Folder, to destinationFolder: Folder) throws {
+        try sourceFolder.files.forEach { file in
+            try copy(file, to: destinationFolder)
+        }
+        try sourceFolder.subfolders.forEach { subfolder in
+            try copy(subfolder, to: destinationFolder)
+        }
+    }
+
+    /// TODO: this can be reused in wider scope to not duplicate code
+    func copy(_ file: File, to destinationFolder: Folder) throws {
+        do {
+            try file.copy(to: destinationFolder)
+        } catch {
+            throw FileIOError(path: Path(file.path), reason: .fileCopyingFailed)
+        }
+    }
+
+    /// TODO: this can be reused in wider scope to not duplicate code
+    func copy(_ sourceFolder: Folder, to destinationFolder: Folder) throws {
+        do {
+            try sourceFolder.copy(to: destinationFolder)
+        } catch {
+            throw FileIOError(path: Path(sourceFolder.path), reason: .folderCopyingFailed)
+        }
     }
 
     /// Create a folder suitable for deployment. Any existing folder will be emptied
@@ -158,8 +191,8 @@ public extension PublishingContext {
         }
 
         do {
-            try folders.output.subfolders.forEach { try $0.copy(to: folder) }
-            try folders.output.files.forEach { try $0.copy(to: folder) }
+            try folders.intermediateOutput.subfolders.forEach { try $0.copy(to: folder) }
+            try folders.intermediateOutput.files.forEach { try $0.copy(to: folder) }
             return folder
         } catch {
             throw FileIOError(path: path, reason: .folderCreationFailed)
@@ -345,9 +378,9 @@ private extension PublishingContext {
         }
 
         do {
-            try location.copy(to: targetFolder ?? folders.output)
+            try location.copy(to: targetFolder ?? folders.intermediateOutput)
         } catch {
-            let path = Path(location.path(relativeTo: folders.root))
+            let path = Path(location.path(relativeTo: folders.source))
             throw FileIOError(path: path, reason: errorReason)
         }
     }

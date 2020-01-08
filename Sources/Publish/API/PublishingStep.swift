@@ -66,6 +66,10 @@ public extension PublishingStep {
         }
     }
 
+    static func run(closure: @escaping Closure) -> Self {
+        return step(named: "Run closure", kind: .system, body: closure)
+    }
+
     /// Install a plugin into this publishing process.
     /// - parameter plugin: The plugin to install.
     static func installPlugin(_ plugin: Plugin<Site>) -> Self {
@@ -130,7 +134,7 @@ public extension PublishingStep {
     /// - parameter path: The path of the Markdown folder to add (default: `Content`).
     static func addMarkdownFiles(at path: Path = "Content") -> Self {
         step(named: "Add Markdown files from '\(path)' folder") { context in
-            let folder = try context.folder(at: path)
+            let folder = try context.intermediateFolder(at: path)
             try MarkdownFileHandler().addMarkdownFiles(in: folder, to: &context)
         }
     }
@@ -235,20 +239,17 @@ public extension PublishingStep {
 // MARK: - Files and folders
 
 public extension PublishingStep {
-    /// Copy the website's main resources into its output folder
-    /// - parameter originPath: The path that the resource folder is located at.
-    /// - parameter targetFolderPath: Any specific path to copy the resources to.
-    ///   If `nil`, then the resources will be copied to the output folder itself.
-    /// - parameter includeFolder: Whether the resource folder itself, or just its
-    ///   contents, should be copied. Default: `false`.
     static func copyResources(
-        at originPath: Path = "Resources",
-        to targetFolderPath: Path? = nil,
         includingFolder includeFolder: Bool = false
     ) -> Self {
-        copyFiles(at: originPath,
-                  to: targetFolderPath,
-                  includingFolder: includeFolder)
+        step(named: "Copy resources to output folder") { context in
+            let resourcesFolder = try context.folders.intermediate.subfolder(at: "Resources")
+            if includeFolder {
+                try context.copy(resourcesFolder, to: context.folders.intermediateOutput)
+            } else {
+                try context.copyContents(of: resourcesFolder, to: context.folders.intermediateOutput)
+            }
+        }
     }
 
     /// Copy a file at a given path into the website's output folder.
@@ -277,7 +278,7 @@ public extension PublishingStep {
         includingFolder includeFolder: Bool = false
     ) -> Self {
         step(named: "Copy '\(originPath)' files") { context in
-            let folder = try context.folder(at: originPath)
+            let folder = try context.sourceFolder(at: originPath)
 
             if includeFolder {
                 try context.copyFolderToOutput(
@@ -301,11 +302,49 @@ public extension PublishingStep {
             }
         }
     }
+
+    static func copyIntermediateOutputToFinalDestination() throws -> Self {
+        step(named: "Copy intermediate files to final destination") { context in
+            let intermediateOutput = try context.folders.intermediate.subfolder(at: "Output")
+            if let existingOutputFolder = try? context.folders.source.subfolder(at: "Output") {
+                try context.copyContents(of: intermediateOutput, to: existingOutputFolder)
+            } else { // `/Output` folder does not yet exist
+                try context.copy(intermediateOutput, to: context.folders.source)
+            }
+        }
+    }
+
+    static func copyContentAndResourceFilesToIntermediateFolder() -> Self {
+        step(named: "Copy `Content/`, `Resources/` to intermediate folder") { context in
+            if let resourcesFolder = try? context.folders.source.subfolder(at: "Resources") {
+                try context.copy(resourcesFolder, to: context.folders.intermediate)
+            }
+            if let contentFolder = try? context.folders.source.subfolder(at: "Content") {
+                try context.copy(contentFolder, to: context.folders.intermediate)
+            }
+        }
+    }
+
+    internal static func copyThemeResourcesToIntermediateFolder(resources: ThemeResources) -> Self {
+        step(named: "Copy theme resources to intermediate folder") { context in
+            let themeCreationFile = try File(path: resources.themeCreationPath.string)
+            let packageFolder = try themeCreationFile.resolveSwiftPackageFolder()
+
+            for themeResourcePath in resources.paths {
+                let themeFile = try packageFolder.file(at: themeResourcePath.string)
+                try context.copy(themeFile, to: context.folders.intermediateOutput)
+            }
+        }
+    }
 }
 
 // MARK: - Generation
 
 public extension PublishingStep {
+            }
+        }
+    }
+
     /// Generate the website's HTML using a given theme.
     /// - parameter theme: The theme to use to generate the website's HTML.
     /// - parameter indentation: How each HTML file should be indented.

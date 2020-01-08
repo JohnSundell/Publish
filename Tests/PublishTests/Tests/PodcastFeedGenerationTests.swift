@@ -20,7 +20,8 @@ final class PodcastFeedGenerationTests: PublishTestCase {
             "two/b": "# Not included"
         ])
 
-        let feed = try folder.file(at: "Output/feed.rss").readAsString()
+        let intermediateFolder = try folder.subfolder(at: ".intermediate")
+        let feed = try intermediateFolder.file(at: "Output/feed.rss").readAsString()
         XCTAssertTrue(feed.contains("Included"))
         XCTAssertFalse(feed.contains("Not included"))
     }
@@ -35,7 +36,8 @@ final class PodcastFeedGenerationTests: PublishTestCase {
             """
         ])
 
-        let feed = try folder.file(at: "Output/feed.rss").readAsString()
+        let intermediateFolder = try folder.subfolder(at: ".intermediate")
+        let feed = try intermediateFolder.file(at: "Output/feed.rss").readAsString()
         let substring = feed.substrings(between: "BEGIN ", and: " END").first
 
         XCTAssertEqual(substring, """
@@ -51,17 +53,18 @@ final class PodcastFeedGenerationTests: PublishTestCase {
         try contentFile.write(makeStubbedAudioMetadata())
 
         try generateFeed(in: folder)
-        let feedA = try folder.file(at: "Output/feed.rss").readAsString()
+        let intermediateFolder = try folder.subfolder(at: ".intermediate")
+        let feedA = try intermediateFolder.file(at: "Output/feed.rss").readAsString()
 
         let newDate = Date().addingTimeInterval(60 * 60)
         try generateFeed(in: folder, date: newDate)
-        let feedB = try folder.file(at: "Output/feed.rss").readAsString()
+        let feedB = try intermediateFolder.file(at: "Output/feed.rss").readAsString()
 
         XCTAssertEqual(feedA, feedB)
 
         try contentFile.append("New content")
         try generateFeed(in: folder, date: newDate)
-        let feedC = try folder.file(at: "Output/feed.rss").readAsString()
+        let feedC = try intermediateFolder.file(at: "Output/feed.rss").readAsString()
 
         XCTAssertNotEqual(feedB, feedC)
     }
@@ -72,13 +75,14 @@ final class PodcastFeedGenerationTests: PublishTestCase {
         try contentFile.write(makeStubbedAudioMetadata())
 
         try generateFeed(in: folder)
-        let feedA = try folder.file(at: "Output/feed.rss").readAsString()
+        let intermediateFolder = try folder.subfolder(at: ".intermediate")
+        let feedA = try intermediateFolder.file(at: "Output/feed.rss").readAsString()
 
         var newConfig = try makeConfigStub()
         newConfig.author.name = "New author name"
         let newDate = Date().addingTimeInterval(60 * 60)
         try generateFeed(in: folder, config: newConfig, date: newDate)
-        let feedB = try folder.file(at: "Output/feed.rss").readAsString()
+        let feedB = try intermediateFolder.file(at: "Output/feed.rss").readAsString()
 
         XCTAssertNotEqual(feedA, feedB)
     }
@@ -113,14 +117,15 @@ final class PodcastFeedGenerationTests: PublishTestCase {
             .addItem(itemA)
         ])
 
-        let feedA = try folder.file(at: "Output/feed.rss").readAsString()
+        let intermediateFolder = try folder.subfolder(at: ".intermediate")
+        let feedA = try intermediateFolder.file(at: "Output/feed.rss").readAsString()
 
         try generateFeed(in: folder, generationSteps: [
             .addItem(itemA),
             .addItem(itemB)
         ])
 
-        let feedB = try folder.file(at: "Output/feed.rss").readAsString()
+        let feedB = try intermediateFolder.file(at: "Output/feed.rss").readAsString()
         XCTAssertNotEqual(feedA, feedB)
     }
 }
@@ -170,6 +175,7 @@ private extension PodcastFeedGenerationTests {
         in folder: Folder,
         config: Configuration? = nil,
         generationSteps: [PublishingStep<Site>] = [
+            .copyContentAndResourceFilesToIntermediateFolder(),
             .addMarkdownFiles()
         ],
         date: Date = Date(),

@@ -14,7 +14,6 @@ internal struct HTMLGenerator<Site: Website> {
     let context: PublishingContext<Site>
 
     func generate() throws {
-        try copyThemeResources()
         try generateIndexHTML()
         try generateSectionHTML()
         try generatePageHTML()
@@ -23,28 +22,6 @@ internal struct HTMLGenerator<Site: Website> {
 }
 
 private extension HTMLGenerator {
-    func copyThemeResources() throws {
-        guard !theme.resourcePaths.isEmpty else {
-            return
-        }
-
-        let creationFile = try File(path: theme.creationPath.string)
-        let packageFolder = try creationFile.resolveSwiftPackageFolder()
-
-        for path in theme.resourcePaths {
-            do {
-                let file = try packageFolder.file(at: path.string)
-                try context.copyFileToOutput(file, targetFolderPath: nil)
-            } catch {
-                throw PublishingError(
-                    path: path,
-                    infoMessage: "Failed to copy theme resource",
-                    underlyingError: error
-                )
-            }
-        }
-    }
-
     func generateIndexHTML() throws {
         let html = try theme.makeIndexHTML(context.index, context)
         let indexFile = try context.createOutputFile(at: "index.html")

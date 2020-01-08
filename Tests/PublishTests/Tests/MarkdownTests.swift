@@ -115,10 +115,12 @@ final class MarkdownTests: PublishTestCase {
 
     func testParsingPageInNestedFolder() throws {
         let folder = try Folder.createTemporary()
-        let pageFile = try folder.createFile(at: "Content/my/custom/page.md")
-        try pageFile.write("# MyPage")
 
         let site = try publishWebsite(in: folder, using: [
+            .run { _ in
+                let pageFile = try folder.createFile(at: ".intermediate/Content/my/custom/page.md")
+                try pageFile.write("# MyPage")
+            },
             .addMarkdownFiles()
         ])
 
@@ -127,11 +129,13 @@ final class MarkdownTests: PublishTestCase {
 
     func testNotParsingNonMarkdownFiles() throws {
         let folder = try Folder.createTemporary()
-        try folder.createFile(at: "Content/image.png")
-        try folder.createFile(at: "Content/one/image.png")
-        try folder.createFile(at: "Content/custom/image.png")
 
         let site = try publishWebsite(in: folder, using: [
+            .run { _ in
+                try folder.createFile(at: ".intermediate/Content/image.png")
+                try folder.createFile(at: ".intermediate/Content/one/image.png")
+                try folder.createFile(at: ".intermediate/Content/custom/image.png")
+            },
             .addMarkdownFiles()
         ])
 

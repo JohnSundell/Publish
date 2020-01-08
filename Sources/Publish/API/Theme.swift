@@ -17,8 +17,7 @@ public struct Theme<Site: Website> {
     internal let makePageHTML: (Page, PublishingContext<Site>) throws -> HTML
     internal let makeTagListHTML: (TagListPage, PublishingContext<Site>) throws -> HTML?
     internal let makeTagDetailsHTML: (TagDetailsPage, PublishingContext<Site>) throws -> HTML?
-    internal let resourcePaths: Set<Path>
-    internal let creationPath: Path
+    internal let resources: ThemeResources
 
     /// Create a new theme instance.
     /// - parameter factory: The HTML factory to use to create the theme's HTML.
@@ -29,7 +28,7 @@ public struct Theme<Site: Website> {
     /// - parameter file: The file that this method is called from (auto-inserted).
     public init<T: HTMLFactory>(
         htmlFactory factory: T,
-        resourcePaths resources: Set<Path> = [],
+        resourcePaths: Set<Path> = [],
         file: StaticString = #file
     ) where T.Site == Site {
         makeIndexHTML = factory.makeIndexHTML
@@ -38,7 +37,14 @@ public struct Theme<Site: Website> {
         makePageHTML = factory.makePageHTML
         makeTagListHTML = factory.makeTagListHTML
         makeTagDetailsHTML = factory.makeTagDetailsHTML
-        resourcePaths = resources
-        creationPath = Path("\(file)")
+        self.resources = ThemeResources(
+            paths: resourcePaths,
+            themeCreationPath: Path("\(file)")
+        )
     }
+}
+
+internal struct ThemeResources {
+    internal let paths: Set<Path>
+    internal let themeCreationPath: Path
 }

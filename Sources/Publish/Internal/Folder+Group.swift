@@ -8,9 +8,15 @@ import Files
 
 internal extension Folder {
     struct Group {
-        let root: Folder
-        let output: Folder
+        /// Folder containing original contents to process (including `Contant/` and `Resources/` subfolders).
+        let source: Folder
+        /// `.intermediate` subfolder within `source`.
+        let intermediate: Folder
+        /// `Output` subfolder within `.intermediate`.
+        let intermediateOutput: Folder
+        /// `.internal` subfolder within `source`.
         let `internal`: Folder
+        /// `Caches` subfolder within `source`.
         let caches: Folder
     }
 }

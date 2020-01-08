@@ -79,6 +79,8 @@ public extension Website {
             at: path,
             using: [
                 .group(plugins.map(PublishingStep.installPlugin)),
+                .copyContentAndResourceFilesToIntermediateFolder(),
+                .copyThemeResourcesToIntermediateFolder(resources: theme.resources),
                 .optional(.copyResources()),
                 .addMarkdownFiles(),
                 .sortItems(by: \.date, order: .descending),
@@ -91,6 +93,7 @@ public extension Website {
                     )
                 },
                 .generateSiteMap(indentedBy: indentation),
+                .copyIntermediateOutputToFinalDestination(),
                 .unwrap(deploymentMethod, PublishingStep.deploy)
             ],
             file: file

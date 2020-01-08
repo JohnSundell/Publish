@@ -67,7 +67,8 @@ final class DeploymentTests: PublishTestCase {
 
         // First generate
         try publishWebsite(in: repo, using: [
-            .generateHTML(withTheme: .foundation)
+            .generateHTML(withTheme: .foundation),
+            .copyIntermediateOutputToFinalDestination()
         ])
 
         // Then deploy
