@@ -87,9 +87,9 @@ try DeliciousRecipes().publish(
         )),
         // Add default titles to all sections
         .step(named: "Default section titles") { context in
-            guard section.title.isEmpty else { return }
-        
             context.mutateAllSections { section in
+                guard section.title.isEmpty else { return }
+                
                 switch section.id {
                 case .recipes:
                     section.title = "My recipes"
