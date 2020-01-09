@@ -297,6 +297,10 @@ $ publish new
 
 Finally, run `open Package.swift` to open up the project in Xcode to start building your new website.
 
+## Additional documentation
+
+You can find a growing collection of additional documentation about Publish’s various features and capabilities within the [Documentation folder](Documentation).
+
 ## Design and goals
 
 Publish was first and foremost designed to be a powerful and heavily customizable tool for building static websites in Swift — starting with [Swift by Sundell](https://swiftbysundell.com), a website which has over 300 individual pages and a pipeline consisting of over 25 publishing steps.
