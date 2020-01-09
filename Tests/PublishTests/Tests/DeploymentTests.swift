@@ -78,6 +78,7 @@ final class DeploymentTests: PublishTestCase {
         let indexFile = try remote.file(named: "index.html")
         XCTAssertFalse(try indexFile.readAsString().isEmpty)
     }
+
 	func testGitDeploymentMethodWithError() throws {
         let container = try Folder.createTemporary()
         let remote = try container.createSubfolder(named: "Remote.git")
