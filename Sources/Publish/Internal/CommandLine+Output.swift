@@ -6,7 +6,7 @@
 
 import Foundation
 
-internal extension CommandLine {
+public extension CommandLine {
     enum OutputKind {
         case info
         case warning
