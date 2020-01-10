@@ -206,10 +206,12 @@ final class HTMLGenerationTests: PublishTestCase {
             expectedHTML: [
                 "one/index.html": "one",
                 "two/index.html": "two",
-                "three/index.html": "three"
+                "three/index.html": "three",
+                "custom-raw-value/index.html": "custom-raw-value"
             ]
         )
     }
+    
 
     func testNotGeneratingTagHTMLForIncompatibleTheme() throws {
         htmlFactory.makeTagListHTML = nil
@@ -225,6 +227,7 @@ final class HTMLGenerationTests: PublishTestCase {
                 "one/index.html": "",
                 "two/index.html": "",
                 "three/index.html": "",
+                "custom-raw-value/index.html": "",
                 "one/item/index.html": ""
             ],
             allowWhitelistedOutputFiles: false
@@ -245,6 +248,7 @@ final class HTMLGenerationTests: PublishTestCase {
                 "one/index.html": "",
                 "two/index.html": "",
                 "three/index.html": "",
+                "custom-raw-value/index.html": "",
                 "one/item/index.html": ""
             ],
             allowWhitelistedOutputFiles: false
@@ -257,6 +261,7 @@ final class HTMLGenerationTests: PublishTestCase {
 
         try publishWebsite(in: folder, using: [
             .addItem(Item.stub(withPath: "item").setting(\.tags, to: ["tag"])),
+            .addItem(Item.stub(withPath: "rawValueItem", sectionID: .customRawValue).setting(\.tags, to: ["tag"])),
             .generateHTML(withTheme: theme, fileMode: .standAloneFiles)
         ])
 
@@ -267,7 +272,9 @@ final class HTMLGenerationTests: PublishTestCase {
                 "one/index.html": "",
                 "two/index.html": "",
                 "three/index.html": "",
+                "custom-raw-value/index.html": "",
                 "one/item.html": "",
+                "custom-raw-value/rawValueItem.html": "",
                 "tags/index.html": "",
                 "tags/tag.html": ""
             ],

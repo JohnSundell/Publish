@@ -27,6 +27,10 @@ final class WebsiteTests: PublishTestCase {
     func testPathForSectionID() {
         XCTAssertEqual(website.path(for: .one), "one")
     }
+    
+    func testPathForSectionIDWithRawValue() {
+        XCTAssertEqual(website.path(for: .customRawValue), "custom-raw-value")
+    }
 
     func testDefaultPathForTag() {
         let tag = Tag("some tag")
@@ -85,6 +89,7 @@ extension WebsiteTests {
             ("testDefaultTagListPath", testDefaultTagListPath),
             ("testCustomTagListPath", testCustomTagListPath),
             ("testPathForSectionID", testPathForSectionID),
+            ("testPathForSectionIDWithRawValue", testPathForSectionIDWithRawValue),
             ("testDefaultPathForTag", testDefaultPathForTag),
             ("testCustomPathForTag", testCustomPathForTag),
             ("testDefaultURLForTag", testDefaultURLForTag),

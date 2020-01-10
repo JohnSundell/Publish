@@ -10,7 +10,7 @@ import Plot
 
 class WebsiteStub {
     enum SectionID: String, WebsiteSectionID {
-        case one, two, three
+        case one, two, three, customRawValue = "custom-raw-value"
     }
 
     var url = URL(string: "https://swiftbysundell.com")!
