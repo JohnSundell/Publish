@@ -1,6 +1,6 @@
 # How to express custom metadata values using Markdown
 
-Publish enables each website to define its own site-specific item metadata, through its `Website.ItemMetadata` type. When adding items using Markdown, those values can then be expressed by adding a metadata header at the top of a file (commonly known as *front matter*).
+Publish enables each website to define its own site-specific item metadata, through its `Website.ItemMetadata` type. When adding items using Markdown, those values can then be expressed by adding a metadata header at the top of a file (within other tools referred to as *front matter*).
 
 Let’s say that we’re building an shopping website, and that we’ve defined a custom `productPrice` item metadata value, like this:
 
