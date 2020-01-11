@@ -67,6 +67,7 @@ public extension Website {
     /// - parameter line: The line that this method is called from (auto-inserted).
     @discardableResult
     func publish(withTheme theme: Theme<Self>,
+                 variables variablesConfiguration: VariablesConfiguration? = nil,
                  indentation: Indentation.Kind? = nil,
                  at path: Path? = nil,
                  rssFeedSections: Set<SectionID> = Set(SectionID.allCases),
@@ -81,6 +82,7 @@ public extension Website {
                 .group(plugins.map(PublishingStep.installPlugin)),
                 .copyContentAndResourceFilesToIntermediateFolder(),
                 .copyThemeResourcesToIntermediateFolder(resources: theme.resources),
+                .unwrap(variablesConfiguration) { configuration in .substituteVariables(using: configuration) },
                 .optional(.copyResources()),
                 .addMarkdownFiles(),
                 .sortItems(by: \.date, order: .descending),

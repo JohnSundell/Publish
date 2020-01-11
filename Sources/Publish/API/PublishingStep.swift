@@ -341,7 +341,12 @@ public extension PublishingStep {
 // MARK: - Generation
 
 public extension PublishingStep {
-            }
+    /// Substitutes variables in all intermediate files (including files in subfolders).
+    /// - Parameter configuration: Substitution configuration.
+    static func substituteVariables(using configuration: VariablesConfiguration) -> Self {
+        step(named: "Substitute variables") { context in
+            let substitution = VariablesSubstitution(configuration: configuration)
+            try substitution.recursivelySubstituteVariables(in: context.folders.intermediate)
         }
     }
 
