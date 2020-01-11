@@ -56,6 +56,6 @@ internal extension Item {
 
 private extension Item {
     func makeAbsolutePath() -> Path {
-        "\(sectionID)/\(relativePath)"
+        "\(sectionID.rawValue)/\(relativePath)"
     }
 }
