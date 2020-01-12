@@ -56,6 +56,41 @@ final class MarkdownTests: PublishTestCase {
         XCTAssertEqual(item.video, .youTube(id: "12345"))
     }
 
+    func testParsingFileWithCapitalizedMetadataKeys() throws {
+
+        let markdown = """
+        ---
+        Description: Description
+        Tags: One, Two, Three
+        Date: 2019-12-14 10:30
+        ---
+        """
+
+        let site = try publishWebsite(
+            using: [
+            .step(named: "Set key decoding strategy") { context in
+                context.keyDecodingStrategy = .capitalized
+            },
+            .addMarkdownFiles()
+            ], content: [
+                "one/markdown.md" : markdown
+        ])
+
+        let item = try require(site.sections[.one].items.first)
+
+        var expectedDateComponents = DateComponents()
+        expectedDateComponents.calendar = .autoupdatingCurrent
+        expectedDateComponents.year = 2019
+        expectedDateComponents.month = 12
+        expectedDateComponents.day = 14
+        expectedDateComponents.hour = 10
+        expectedDateComponents.minute = 30
+
+        XCTAssertEqual(item.description, "Description")
+        XCTAssertEqual(item.tags, ["One", "Two", "Three"])
+        XCTAssertEqual(item.date, expectedDateComponents.date)
+    }
+
     func testParsingFileWithCustomMetadata() throws {
         struct Metadata: WebsiteItemMetadata {
             struct Nested: WebsiteItemMetadata {
@@ -103,6 +138,43 @@ final class MarkdownTests: PublishTestCase {
         XCTAssertEqual(item.metadata.nested.url, URL(string: "https://nested.url"))
     }
 
+    func testParsingFileWithCustomMetadataAndCapitalizedKeys() throws {
+        struct Metadata: WebsiteItemMetadata {
+            struct Nested: WebsiteItemMetadata {
+                var string: String
+                var url: URL
+            }
+
+            var string: String
+            var nested: Nested
+        }
+
+        let markdown = """
+            ---
+            String: Hello, world!
+            nested.String: I'm nested!
+            nested.Url: https://nested.url
+            ---
+            """
+
+        let site = try publishWebsite(
+            withItemMetadataType: Metadata.self,
+            using: [
+            .step(named: "Set key decoding strategy") { context in
+                context.keyDecodingStrategy = .capitalized
+            },
+            .addMarkdownFiles()
+            ], content: [
+                "one/markdown.md" : markdown
+        ])
+
+        let item = try require(site.sections[.one].items.first)
+
+        XCTAssertEqual(item.metadata.string, "Hello, world!")
+        XCTAssertEqual(item.metadata.nested.string, "I'm nested!")
+        XCTAssertEqual(item.metadata.nested.url, URL(string: "https://nested.url"))
+    }
+
     func testParsingPageInNestedFolder() throws {
         let folder = try Folder.createTemporary()
         let pageFile = try folder.createFile(at: "Content/my/custom/page.md")
@@ -138,7 +210,8 @@ extension MarkdownTests {
             ("testParsingFileWithBuiltInMetadata", testParsingFileWithBuiltInMetadata),
             ("testParsingFileWithCustomMetadata", testParsingFileWithCustomMetadata),
             ("testParsingPageInNestedFolder", testParsingPageInNestedFolder),
-            ("testNotParsingNonMarkdownFiles", testNotParsingNonMarkdownFiles)
+            ("testNotParsingNonMarkdownFiles", testNotParsingNonMarkdownFiles),
+            ("testParsingFileWithCapitalizedMetadataKeys", testParsingFileWithCapitalizedMetadataKeys)
         ]
     }
 }

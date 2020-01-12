@@ -20,7 +20,6 @@ internal struct MarkdownFileHandler<Site: Website> {
                 throw wrap(error, forPath: "\(folder.path)index.md")
             }
         }
-
         for subfolder in folder.subfolders {
             guard let sectionID = Site.SectionID(rawValue: subfolder.name.lowercased()) else {
                 try addPagesForMarkdownFiles(

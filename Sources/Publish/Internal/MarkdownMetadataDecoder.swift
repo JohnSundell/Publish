@@ -12,14 +12,17 @@ internal final class MarkdownMetadataDecoder: Decoder {
 
     private let metadata: [String : String]
     private let dateFormatter: DateFormatter
+    private let keyDecodingStrategy: MetadataKeyDecodingStrategy
     private lazy var keyedContainers = [ObjectIdentifier : Any]()
 
     init(metadata: [String : String],
          codingPath: [CodingKey] = [],
-         dateFormatter: DateFormatter) {
+         dateFormatter: DateFormatter,
+         keyDecodingStrategy: MetadataKeyDecodingStrategy = .lowercase) {
         self.metadata = metadata
         self.codingPath = codingPath
         self.dateFormatter = dateFormatter
+        self.keyDecodingStrategy = keyDecodingStrategy
     }
 
     func container<T: CodingKey>(
@@ -34,7 +37,8 @@ internal final class MarkdownMetadataDecoder: Decoder {
         let container = KeyedContainer<T>(
             metadata: metadata,
             codingPath: codingPath,
-            dateFormatter: dateFormatter
+            dateFormatter: dateFormatter,
+            keyDecodingStrategy: keyDecodingStrategy
         )
 
         keyedContainers[typeID] = container
@@ -74,15 +78,18 @@ private extension MarkdownMetadataDecoder {
         let codingPath: [CodingKey]
         let prefix: String
         let dateFormatter: DateFormatter
+        let keyDecodingStrategy: MetadataKeyDecodingStrategy
 
         init(metadata: [String : String],
              codingPath: [CodingKey],
-             dateFormatter: DateFormatter) {
+             dateFormatter: DateFormatter,
+             keyDecodingStrategy: MetadataKeyDecodingStrategy = .lowercase) {
             self.metadata = metadata
-            self.keys = KeyMap(raw: metadata.keys, codingPath: codingPath)
+            self.keys = KeyMap(raw: metadata.keys, codingPath: codingPath, keyDecodingStrategy: keyDecodingStrategy)
             self.codingPath = codingPath
             self.prefix = codingPath.asPrefix()
             self.dateFormatter = dateFormatter
+            self.keyDecodingStrategy = keyDecodingStrategy
         }
 
         func contains(_ key: Key) -> Bool {
@@ -167,10 +174,11 @@ private extension MarkdownMetadataDecoder {
             keyedBy type: T.Type,
             forKey key: Key
         ) throws -> KeyedDecodingContainer<T> {
-            KeyedDecodingContainer(KeyedContainer<T>(
+            return KeyedDecodingContainer(KeyedContainer<T>(
                 metadata: metadata,
                 codingPath: codingPath.appending(key),
-                dateFormatter: dateFormatter
+                dateFormatter: dateFormatter,
+                keyDecodingStrategy: keyDecodingStrategy
             ))
         }
 
@@ -534,11 +542,14 @@ private extension MarkdownMetadataDecoder {
         private let raw: Dictionary<String, String>.Keys
         private let codingPath: [CodingKey]
         private var evaluated: Evaluated?
+        private var keyDecodingStrategy: MetadataKeyDecodingStrategy
 
         init(raw: Dictionary<String, String>.Keys,
-             codingPath: [CodingKey]) {
+             codingPath: [CodingKey],
+             keyDecodingStrategy: MetadataKeyDecodingStrategy = .lowercase) {
             self.raw = raw
             self.codingPath = codingPath
+            self.keyDecodingStrategy = keyDecodingStrategy
         }
 
         func all() -> [Key] {
@@ -563,7 +574,15 @@ private extension MarkdownMetadataDecoder {
                     guard codingPath.count > index else {
                         let stringKey = String(component)
 
-                        if let key = Key(stringValue: stringKey) {
+                        var key: Key?
+                        switch keyDecodingStrategy {
+                        case .lowercase:
+                            key = Key(stringValue: stringKey)
+                        case .capitalized:
+                            key = Key(stringValue: stringKey.lowercased())
+                        }
+
+                        if let key = key {
                             evaluated.array.append(key)
                             evaluated.set.insert(stringKey)
                         }
@@ -577,6 +596,11 @@ private extension MarkdownMetadataDecoder {
             return evaluated
         }
     }
+}
+
+/// Determines how metadata keys are read from Markdown files.
+public enum MetadataKeyDecodingStrategy {
+    case lowercase, capitalized
 }
 
 private extension Array where Element == CodingKey {

@@ -33,6 +33,8 @@ public struct PublishingContext<Site: Website> {
     public var allTags: Set<Tag> { tagCache.tags ?? gatherAllTags() }
     /// Any date when the website was last generated.
     public private(set) var lastGenerationDate: Date?
+    /// Determines how metadata keys should be decoded from Markdown files
+    public var keyDecodingStrategy: MetadataKeyDecodingStrategy = .lowercase
 
     private let folders: Folder.Group
     private var tagCache = TagCache()
@@ -278,7 +280,8 @@ internal extension PublishingContext {
     func makeMarkdownContentFactory() -> MarkdownContentFactory<Site> {
         MarkdownContentFactory(
             parser: markdownParser,
-            dateFormatter: dateFormatter
+            dateFormatter: dateFormatter,
+            keyDecodingStrategy: keyDecodingStrategy
         )
     }
 
