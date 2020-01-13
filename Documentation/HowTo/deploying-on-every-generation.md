@@ -17,7 +17,7 @@ Well, don't fret. There is a way to deploy on every generation, as part of the g
 
 ### Create a new publishing step for the deployment
 
-To do this, you'll need to extend `PublishingStep` and add a new function that takes in a `DeploymentMethod<Site>` and returns a `step()`
+To do this, you'll need to extend `PublishingStep` and add a new function that takes in a `DeploymentMethod<Site>` and returns a `step()`.
 
 Here's an example:
 ```swift
