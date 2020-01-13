@@ -44,3 +44,5 @@ try MyWebsite().publish(using: [
 ```
 
 The `deployWhileGenerating(using: )` step will take in any defined deployment method, including the built in `.git()` method and any others you've defined customly. 
+
+*Again, anytime you use this step, it is deploying the site in whatever state it is after generation, which could be drastically different from what you want. **Use this with extreme caution***
