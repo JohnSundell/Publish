@@ -91,9 +91,7 @@ private struct FoundationHTMLFactory<Site: Website>: HTMLFactory {
             .head(for: page, on: context.site),
             .body(
                 .header(for: context, selectedSection: nil),
-                .wrapper(
-
-                ),
+                .wrapper(.contentBody(page.body)),
                 .footer(for: context.site)
             )
         )
