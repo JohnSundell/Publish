@@ -13,7 +13,7 @@ This is so that when you like what you've generated, you deploy it. You don't wa
 
 Well, don't fret. There is a way to deploy on every generation, as part of the generation process.
 
-*Be warned, this ignores the risk of a regeneration breaking something then immediately deploying that broken site. It is recommended that you don't do this unless you're sure you really want to. **Make backups frequently.***
+*Be warned, this dangerously ignores the risk of a regeneration breaking something then immediately deploying that broken site. It is recommended that you don't do this unless you're sure you really want to. **Make backups frequently.***
 
 ### Create a new publishing step for the deployment
 
