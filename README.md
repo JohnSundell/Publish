@@ -224,7 +224,7 @@ try DeliciousRecipes().publish(using: [
 ])
 ```
 
-*If your plugin is hosted on GitHub you can use the `publish-plugin` [topic](https://help.github.com/en/github/administering-a-repository/classifying-your-repository-with-topics#adding-topics-to-your-repository) so it can be found with the rest of [community plugins](https://github.com/topics/publish-plugin?l=swift).*
+*If your plugin is hosted on GitHub you can use the [`publish-plugin`](https://github.com/topics/publish-plugin) [topic](https://help.github.com/en/github/administering-a-repository/classifying-your-repository-with-topics#adding-topics-to-your-repository) so it can be found with the rest of [community plugins](https://github.com/topics/publish-plugin?l=swift).*
 
 For a real-world example of a Publish plugin, check out the [official Splash plugin](https://github.com/johnsundell/splashpublishplugin), which makes it really easy to integrate the [Splash syntax highlighter](https://github.com/johnsundell/splash) with Publish.
 
