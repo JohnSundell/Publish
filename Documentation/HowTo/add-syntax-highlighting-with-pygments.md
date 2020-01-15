@@ -1,4 +1,4 @@
-# How to add Swift syntax highlighting to Markdown code blocks
+# How to add syntax highlighting with Pygments
 [Splash](https://github.com/JohnSundell/Splash) and its [official plugin](https://github.com/JohnSundell/SplashPublishPlugin) are great tools for highlighting swift syntax in Publish. 
 
 However, some people write not only in Swift, but also in many other languages. There comes the [SwiftPygmentsPublishPlugin](https://github.com/Ze0nC/SwiftPygmentsPublishPlugin) to help. 
