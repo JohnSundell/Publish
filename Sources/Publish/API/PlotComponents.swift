@@ -28,7 +28,9 @@ public extension Node where Context == HTML.DocumentContext {
         titleSeparator: String = " | ",
         stylesheetPaths: [Path] = ["/styles.css"],
         rssFeedPath: Path? = .defaultForRSSFeed,
-        rssFeedTitle: String? = nil
+        rssFeedTitle: String? = nil,
+        additionalNodesAtBeginning: [Node<HTML.HeadContext>] = [],
+        additionalNodesAtEnd: [Node<HTML.HeadContext>] = []
     ) -> Node {
         var title = location.title
 
@@ -45,6 +47,7 @@ public extension Node where Context == HTML.DocumentContext {
         }
 
         return .head(
+            .forEach(additionalNodesAtBeginning){$0},
             .encoding(.utf8),
             .siteName(site.name),
             .url(site.url(for: location)),
@@ -61,7 +64,8 @@ public extension Node where Context == HTML.DocumentContext {
             .unwrap(location.imagePath ?? site.imagePath, { path in
                 let url = site.url(for: path)
                 return .socialImageLink(url)
-            })
+            }),
+            .forEach(additionalNodesAtEnd){$0}
         )
     }
 }
