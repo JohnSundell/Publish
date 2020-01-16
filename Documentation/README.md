@@ -11,6 +11,6 @@ Shorter articles focused on explaining how to get a given task done using Publis
 - [Adding Swift syntax highlighting to Markdown code blocks](HowTo/adding-swift-syntax-highlighting.md)
 - [Nesting items within folders](HowTo/nested-items.md)
 - [Using a custom `DateFormatter`](HowTo/using-a-custom-date-formatter.md)
-- [Add syntax highlighting with Pygments](HowTo/add-syntax-highlighting-with-pygments.md)
+- [Adding syntax highlighting with Pygments](HowTo/add-syntax-highlighting-with-pygments.md)
 
 *Contributions adding more “How to” articles, or other kinds of documentation, are more than welcome.*
