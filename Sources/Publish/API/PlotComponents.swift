@@ -28,9 +28,7 @@ public extension Node where Context == HTML.DocumentContext {
         titleSeparator: String = " | ",
         stylesheetPaths: [Path] = ["/styles.css"],
         rssFeedPath: Path? = .defaultForRSSFeed,
-        rssFeedTitle: String? = nil,
-        additionalNodesAtBeginning: [Node<HTML.HeadContext>] = [],
-        additionalNodesAtEnd: [Node<HTML.HeadContext>] = []
+        rssFeedTitle: String? = nil
     ) -> Node {
         var title = location.title
 
@@ -47,7 +45,7 @@ public extension Node where Context == HTML.DocumentContext {
         }
 
         return .head(
-            .forEach(additionalNodesAtBeginning){$0},
+            .forEach(additionalHeadNodesAtBeginning){$0},
             .encoding(.utf8),
             .siteName(site.name),
             .url(site.url(for: location)),
@@ -65,9 +63,31 @@ public extension Node where Context == HTML.DocumentContext {
                 let url = site.url(for: path)
                 return .socialImageLink(url)
             }),
-            .forEach(additionalNodesAtEnd){$0}
+            .forEach(additionalHeadNodesAtEnd){$0}
         )
     }
+}
+
+public extension Node where Context == HTML.DocumentContext {
+    
+    /// Additional nodes that added to the beginning of head
+    private(set) static var additionalHeadNodesAtBeginning: [Node<HTML.HeadContext>] = []
+    
+    /// Additional nodes that added to the end of head
+    private(set) static var additionalHeadNodesAtEnd: [Node<HTML.HeadContext>] = []
+    
+    /// Add additional nodes to beginning of head.
+    /// - Parameter nodes: Nodes to add.
+    static func addHeadNodesAtBeginning(_ nodes: Node<HTML.HeadContext> ...) {
+        additionalHeadNodesAtBeginning.append(contentsOf: nodes)
+    }
+    
+    /// Add additional nodes to end of head.
+    /// - Parameter nodes: Nodes to add.
+    static func addHeadNodesAtEnd(_ nodes: Node<HTML.HeadContext> ...) {
+        additionalHeadNodesAtEnd.append(contentsOf: nodes)
+    }
+    
 }
 
 public extension Node where Context == HTML.HeadContext {
