@@ -12,5 +12,6 @@ Shorter articles focused on explaining how to get a given task done using Publis
 - [Nesting items within folders](HowTo/nested-items.md)
 - [Using a custom `DateFormatter`](HowTo/using-a-custom-date-formatter.md)
 - [Adding syntax highlighting with Pygments](HowTo/add-syntax-highlighting-with-pygments.md)
+- [Adding colors to article tags](HowTo/adding-color-to-tags.md)
 
 *Contributions adding more “How to” articles, or other kinds of documentation, are more than welcome.*
