@@ -42,6 +42,23 @@ final class RSSFeedGenerationTests: PublishTestCase {
         """)
     }
 
+    func testItemPrefixAndSuffix() throws {
+        let folder = try Folder.createTemporary()
+
+        try generateFeed(in: folder, content: [
+            "one/item.md": """
+            ---
+            rss.titlePrefix: Prefix
+            rss.titleSuffix: Suffix
+            ---
+            # Title
+            """
+        ])
+
+        let feed = try folder.file(at: "Output/feed.rss").readAsString()
+        XCTAssertTrue(feed.contains("<title>PrefixTitleSuffix</title>"))
+    }
+
     func testReusingPreviousFeedIfNoItemsWereModified() throws {
         let folder = try Folder.createTemporary()
         let contentFile = try folder.createFile(at: "Content/one/item.md")
@@ -103,6 +120,7 @@ extension RSSFeedGenerationTests {
         [
             ("testOnlyIncludingSpecifiedSections", testOnlyIncludingSpecifiedSections),
             ("testConvertingRelativeLinksToAbsolute", testConvertingRelativeLinksToAbsolute),
+            ("testItemPrefixAndSuffix", testItemPrefixAndSuffix),
             ("testReusingPreviousFeedIfNoItemsWereModified", testReusingPreviousFeedIfNoItemsWereModified),
             ("testNotReusingPreviousFeedIfConfigChanged", testNotReusingPreviousFeedIfConfigChanged),
             ("testNotReusingPreviousFeedIfItemWasAdded", testNotReusingPreviousFeedIfItemWasAdded)
