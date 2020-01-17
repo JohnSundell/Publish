@@ -24,7 +24,7 @@ internal struct WebsiteRunner {
         print("""
         🌍 Starting web server at http://localhost:\(portNumber)
 
-        Press any key to stop the server and exit
+        Press ENTER to stop the server and exit
         """)
 
         serverQueue.async {
