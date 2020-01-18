@@ -134,6 +134,23 @@ public extension PublishingStep {
             try MarkdownFileHandler().addMarkdownFiles(in: folder, to: &context)
         }
     }
+    
+    /// Ensure that all images to which items and pages have relative links exist.
+    static func ensureAllImagesExist() -> Self {
+        step(named: "Ensure all images exist") { context in
+            let content = context.getContent()
+            let allHtmls = content.map { $0.body.html }
+            for html in allHtmls {
+                let imagePaths = html.getAllImagePaths()
+                let relativePaths = imagePaths.filter {
+                    !$0.string.hasPrefix("http://") && !$0.string.hasPrefix("https://")
+                }
+                for path in relativePaths {
+                    let _ = try context.outputFile(at: path)
+                }
+            }
+        }
+    }
 
     /// Mutate all items matching a predicate, optionally within a specific section.
     /// - parameter section: Any specific section to mutate all items within.
@@ -436,5 +453,21 @@ private extension PublishingStep {
             kind: kind,
             body: .operation(name: name, closure: body)
         )
+    }
+}
+
+private extension PublishingContext {
+    func getContent() -> [Content] {
+        [index.content] +
+        pages.map { $0.value }.map { $0.content } +
+        sections.flatMap { $0.items }.map { $0.content }
+    }
+}
+
+private extension String {
+    func getAllImagePaths() -> [Path] {
+        components(separatedBy: "<img src=\"").dropFirst().compactMap {
+            $0.components(separatedBy: "\"").first
+        }.map(Path.init)
     }
 }

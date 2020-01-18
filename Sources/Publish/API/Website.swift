@@ -81,6 +81,7 @@ public extension Website {
                 .group(plugins.map(PublishingStep.installPlugin)),
                 .optional(.copyResources()),
                 .addMarkdownFiles(),
+                .ensureAllImagesExist(),
                 .sortItems(by: \.date, order: .descending),
                 .group(additionalSteps),
                 .generateHTML(withTheme: theme, indentation: indentation),
