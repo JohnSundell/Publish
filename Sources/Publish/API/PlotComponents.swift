@@ -30,7 +30,7 @@ public extension Node where Context == HTML.DocumentContext {
         stylesheetPaths: [Path] = ["/styles.css"],
         rssFeedPath: Path? = .defaultForRSSFeed,
         rssFeedTitle: String? = nil,
-        additionalNodes: [Node<HTML.HeadContext>]
+        additionalNodes: [Node<HTML.HeadContext>] = []
     ) -> Node {
         var title = location.title
 
@@ -64,7 +64,7 @@ public extension Node where Context == HTML.DocumentContext {
                 let url = site.url(for: path)
                 return .socialImageLink(url)
             }),
-            .forEach(additionalHeadNodes + additionalNodes){$0}
+            .forEach(additionalWholeSiteHeadNodes + additionalNodes){$0}
         )
     }
 }
