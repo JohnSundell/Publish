@@ -22,13 +22,15 @@ public extension Node where Context == HTML.DocumentContext {
     /// - parameter rssFeedPath: The path to any RSS feed to associate with the
     ///   resulting HTML page. Default: `feed.rss`.
     /// - parameter rssFeedTitle: An optional title for the page's RSS feed.
+    /// - parameter additionalNodes: Optional additional nodes for the page.
     static func head<T: Website>(
         for location: Location,
         on site: T,
         titleSeparator: String = " | ",
         stylesheetPaths: [Path] = ["/styles.css"],
         rssFeedPath: Path? = .defaultForRSSFeed,
-        rssFeedTitle: String? = nil
+        rssFeedTitle: String? = nil,
+        additionalNodes: [Node<HTML.HeadContext>] = []
     ) -> Node {
         var title = location.title
 
@@ -45,7 +47,6 @@ public extension Node where Context == HTML.DocumentContext {
         }
 
         return .head(
-            .forEach(additionalHeadNodesAtBeginning){$0},
             .encoding(.utf8),
             .siteName(site.name),
             .url(site.url(for: location)),
@@ -63,31 +64,14 @@ public extension Node where Context == HTML.DocumentContext {
                 let url = site.url(for: path)
                 return .socialImageLink(url)
             }),
-            .forEach(additionalHeadNodesAtEnd){$0}
+            .forEach(additionalWholeSiteHeadNodes + additionalNodes){$0}
         )
     }
 }
 
 public extension Node where Context == HTML.DocumentContext {
-    
-    /// Additional nodes that added to the beginning of head
-    private(set) static var additionalHeadNodesAtBeginning: [Node<HTML.HeadContext>] = []
-    
-    /// Additional nodes that added to the end of head
-    private(set) static var additionalHeadNodesAtEnd: [Node<HTML.HeadContext>] = []
-    
-    /// Add additional nodes to beginning of head.
-    /// - Parameter nodes: Nodes to add.
-    static func addHeadNodesAtBeginning(_ nodes: Node<HTML.HeadContext> ...) {
-        additionalHeadNodesAtBeginning.append(contentsOf: nodes)
-    }
-    
-    /// Add additional nodes to end of head.
-    /// - Parameter nodes: Nodes to add.
-    static func addHeadNodesAtEnd(_ nodes: Node<HTML.HeadContext> ...) {
-        additionalHeadNodesAtEnd.append(contentsOf: nodes)
-    }
-    
+    /// Additional nodes of head. These nodes will be added to head of whole site.
+    static var additionalWholeSiteHeadNodes: [Node<HTML.HeadContext>] = []
 }
 
 public extension Node where Context == HTML.HeadContext {
