@@ -28,9 +28,19 @@ internal struct WebsiteRunner {
         """)
 
         serverQueue.async {
+
+            // If the system's Python version is Python 3, use the new `http.server` command.
+            // Otherwise, default to the `SimpleHTTPServer` command that Python 2 uses.
+            var pythonHTTPServerCommand: String
+            if self.systemPythonMajorVersionNumber == 3 {
+                pythonHTTPServerCommand = "http.server"
+            } else {
+                pythonHTTPServerCommand = "SimpleHTTPServer"
+            }
+
             do {
                 _ = try shellOut(
-                    to: "python -m SimpleHTTPServer \(self.portNumber)",
+                    to: "python -m \(pythonHTTPServerCommand) \(self.portNumber)",
                     at: outputFolder.path,
                     process: serverProcess
                 )
@@ -55,6 +65,13 @@ private extension WebsiteRunner {
         catch { throw CLIError.outputFolderNotFound }
     }
 
+    /// The major version number of the current system's Python install (whatever Python responds to the `python` command)
+    var systemPythonMajorVersionNumber: Int? {
+        let pythonVersionString = try? shellOut(to: "python --version")
+        let majorVersionNumberCharacter = pythonVersionString?.dropFirst(7).first
+        return majorVersionNumberCharacter?.wholeNumberValue
+    }
+
     func outputServerErrorMessage(_ message: String) {
         var message = message
 
@@ -63,7 +80,7 @@ private extension WebsiteRunner {
             message = """
             A localhost server is already running on port number \(portNumber).
             - Perhaps another 'publish run' session is running?
-            - Publish uses Python's SimpleHTTPServer, so to find any
+            - Publish uses Python's simple HTTP server, so to find any
               running processes, you can use either Activity Monitor
               or the 'ps' command and search for 'python'. You can then
               terminate any previous process in order to start a new one.
