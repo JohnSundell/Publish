@@ -20,7 +20,7 @@ struct MyWebsite: Website {
 
 ### Adding content to your section-page
 
-To add content to these sections, you have a few options: markdown or manual Swift-code. To create your section using markdown, you must create a folder inside the Content-folder with the same name as your enum case. In the case above, you should create the folders: `/Content/articles` and `/Content/about-me`.
+To add content to these sections, you have a few options: markdown or manual Swift-code. To create your section using markdown, you must create a folder inside the Content-folder with the same name as your enum case. In the case above, you should create the folders: `/Content/blog` and `/Content/about`.
 
 To use a different folder name, you can assign a raw string value to the enum case like this: 
 ```
@@ -32,7 +32,7 @@ struct MyWebsite: Website {
 }
 ```
 
-To create a page for the URL http://website.com/articles/ you must create the folder `/Content/articles`.
+To create a page for the URL http://website.com/articles/ you must now create the folder `/Content/articles`.
 In this folder you should add an index.md file with the content you wish. This file will then serve as your sections "front-page".
 
 The file `/Content/articles/index.md` could look like so: 
