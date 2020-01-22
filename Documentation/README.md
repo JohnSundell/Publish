@@ -6,6 +6,7 @@ Welcome to Publish’s documentation portal. While you can find a ton of API-spe
 
 Shorter articles focused on explaining how to get a given task done using Publish:
 
+- [Adding Sections and Pages](HowTo/adding-sections-and-pages.md)
 - [Conditionally running a publishing step](HowTo/conditionally-run-a-step.md)
 - [Expressing custom metadata values using Markdown](HowTo/custom-markdown-metadata-values.md)
 - [Adding Swift syntax highlighting to Markdown code blocks](HowTo/adding-swift-syntax-highlighting.md)
