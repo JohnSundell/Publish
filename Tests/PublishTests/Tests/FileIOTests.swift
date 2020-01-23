@@ -122,6 +122,19 @@ final class FileIOTests: PublishTestCase {
 
         XCTAssertEqual(itemFile?.name, "index.html")
     }
+
+    func testCleanHiddenFilesInOutputFolder() throws {
+        let folder = try Folder.createTemporary()
+        try folder.createFile(at: "Output/.hidden")
+        try folder.createFile(at: ".hidden").write("Hello, world!")
+
+        try publishWebsite(in: folder, using: [
+            .copyFile(at: ".hidden")
+        ])
+
+        let file = try folder.file(at: "Output/.hidden")
+        XCTAssertEqual(try file.readAsString(), "Hello, world!")
+    }
 }
 
 extension FileIOTests {
@@ -134,7 +147,8 @@ extension FileIOTests {
             ("testCopyingResourcesWithoutFolder", testCopyingResourcesWithoutFolder),
             ("testCreatingRootLevelFolder", testCreatingRootLevelFolder),
             ("testRetrievingOutputFolder", testRetrievingOutputFolder),
-            ("testRetrievingOutputFile", testRetrievingOutputFile)
+            ("testRetrievingOutputFile", testRetrievingOutputFile),
+            ("testCleanHiddenFilesInOutputFolder", testCleanHiddenFilesInOutputFolder)
         ]
     }
 }
