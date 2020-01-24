@@ -126,14 +126,12 @@ final class FileIOTests: PublishTestCase {
     func testCleanHiddenFilesInOutputFolder() throws {
         let folder = try Folder.createTemporary()
         try folder.createFile(at: "Output/.hidden")
-        try folder.createFile(at: ".hidden").write("Hello, world!")
 
         try publishWebsite(in: folder, using: [
-            .copyFile(at: ".hidden")
+            .step(named: "Do nothing") { _ in }
         ])
 
-        let file = try folder.file(at: "Output/.hidden")
-        XCTAssertEqual(try file.readAsString(), "Hello, world!")
+        XCTAssertFalse(folder.containsFile(named: "Output/.hidden"))
     }
 }
 
