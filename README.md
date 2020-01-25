@@ -17,6 +17,30 @@ Welcome to **Publish**, a static site generator built specifically for Swift dev
 
 Publish is used to build all of [swiftbysundell.com](https://swiftbysundell.com).
 
+## Quick start
+
+To quickly get started with Publish, install the command line tool by first cloning this repository, and then run `make` within the cloned folder:
+
+```
+$ git clone https://github.com/JohnSundell/Publish.git
+$ cd Publish
+$ make
+```
+
+_**Note**: If you encounter an error while running `make`, ensure that you have your Command Line Tools location set from Xcode's preferences. It's in Preferences > Locations > Locations > Command Line Tools. The dropdown will be blank if it hasn't been set yet._
+
+Then, create a new folder for your new website project and simply run `publish new` within it to get started:
+
+```
+$ mkdir MyWebsite
+$ cd MyWebsite
+$ publish new
+```
+
+Finally, run `open Package.swift` to open up the project in Xcode to start building your new website.
+
+Learn more below.
+
 ## Websites as Swift packages
 
 When using Publish, each website is defined as a Swift package, which acts as the configuration as to how the website should be generated and deployed — all using native, type-safe Swift code. For example, here’s what the configuration for a food recipe website might look like:
@@ -276,28 +300,6 @@ try DeliciousRecipes().publish(using: [
 Even when added to a pipeline, deployment steps are disabled by default, and are only executed when the `--deploy` command line flag was passed (which can be added through Xcode’s `Product > Scheme > Edit Scheme...` menu), or by running the command line tool using `publish deploy`.
 
 Publish can also start a `localhost` web server for local testing and development, by using the `publish run` command. To regenerate site content with the server running, use Product > Run on your site's package in Xcode.
-
-## Quick start
-
-To quickly get started with Publish, install the command line tool by first cloning this repository, and then run `make` within the cloned folder:
-
-```
-$ git clone https://github.com/JohnSundell/Publish.git
-$ cd Publish
-$ make
-```
-
-_**Note**: If you encounter an error while running `make`, ensure that you have your Command Line Tools location set from Xcode's preferences. It's in Preferences > Locations > Locations > Command Line Tools. The dropdown will be blank if it hasn't been set yet._
-
-Then, create a new folder for your new website project and simply run `publish new` within it to get started:
-
-```
-$ mkdir MyWebsite
-$ cd MyWebsite
-$ publish new
-```
-
-Finally, run `open Package.swift` to open up the project in Xcode to start building your new website.
 
 ## Additional documentation
 
