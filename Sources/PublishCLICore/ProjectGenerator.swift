@@ -19,7 +19,7 @@ internal struct ProjectGenerator {
         self.folder = folder
         self.publishRepositoryURL = publishRepositoryURL
         self.publishVersion = publishVersion
-        self.siteName = folder.name.asSiteName
+        self.siteName = folder.name.asSiteName()
     }
 
     func generate() throws {
@@ -154,7 +154,7 @@ private extension Folder {
 }
 
 private extension String {
-    var asSiteName: Self {
+    func asSiteName() -> Self {
         let validCharacters = CharacterSet.alphanumerics
         let validEdgeCharacters = CharacterSet.letters
         let validSegments = trimmingCharacters(in: validEdgeCharacters.inverted)
