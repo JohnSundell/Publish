@@ -155,11 +155,20 @@ private extension Folder {
 
 private extension String {
     func asSiteName() -> Self {
-        let letters = filter { $0.isLetter }
-        guard !letters.isEmpty else {
+        let validCharacters = CharacterSet.alphanumerics
+        let validEdgeCharacters = CharacterSet.letters
+        let validSegments = trimmingCharacters(in: validEdgeCharacters.inverted)
+            .components(separatedBy: validCharacters.inverted)
+
+        guard
+            let firstSegment = validSegments.first,
+            !firstSegment.isEmpty else {
             return "SiteName"
         }
-        return String(letters).capitalizingFirstLetter()
+
+        return validSegments
+            .map { $0.capitalizingFirstLetter() }
+            .joined()
     }
     
     private func capitalizingFirstLetter() -> String {
