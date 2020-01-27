@@ -28,19 +28,9 @@ internal struct WebsiteRunner {
         """)
 
         serverQueue.async {
-
-            // If the system's Python version is Python 3, use the new `http.server` command.
-            // Otherwise, default to the `SimpleHTTPServer` command that Python 2 uses.
-            var pythonHTTPServerCommand: String
-            if self.systemPythonMajorVersionNumber == 3 {
-                pythonHTTPServerCommand = "http.server"
-            } else {
-                pythonHTTPServerCommand = "SimpleHTTPServer"
-            }
-
             do {
                 _ = try shellOut(
-                    to: "python -m \(pythonHTTPServerCommand) \(self.portNumber)",
+                    to: "python -m \(self.getPythonHTTPServerCommand()) \(self.portNumber)",
                     at: outputFolder.path,
                     process: serverProcess
                 )
@@ -65,11 +55,19 @@ private extension WebsiteRunner {
         catch { throw CLIError.outputFolderNotFound }
     }
 
-    /// The major version number of the current system's Python install (whatever Python responds to the `python` command)
-    var systemPythonMajorVersionNumber: Int? {
-        let pythonVersionString = try? shellOut(to: "python --version")
-        let majorVersionNumberCharacter = pythonVersionString?.dropFirst(7).first
-        return majorVersionNumberCharacter?.wholeNumberValue
+    func getPythonHTTPServerCommand() -> String {
+        if getSystemPythonMajorVersionNumber() == 3 {
+            return "http.server"
+        } else {
+            return "SimpleHTTPServer"
+        }
+    }
+
+    func getSystemPythonMajorVersionNumber() -> Int? {
+        let pythonVersionString = try? shellOut(to: "python --version") // expected output: `Python X.X.X`
+        let fullVersionNumber = pythonVersionString?.split(separator: " ").last
+        let majorVersionNumber = fullVersionNumber?.first
+        return majorVersionNumber?.wholeNumberValue
     }
 
     func outputServerErrorMessage(_ message: String) {
