@@ -123,7 +123,7 @@ final class FileIOTests: PublishTestCase {
         XCTAssertEqual(itemFile?.name, "index.html")
     }
 
-    func testCleanHiddenFilesInOutputFolder() throws {
+    func testCleaningHiddenFilesInOutputFolder() throws {
         let folder = try Folder.createTemporary()
         try folder.createFile(at: "Output/.hidden")
 
@@ -146,7 +146,7 @@ extension FileIOTests {
             ("testCreatingRootLevelFolder", testCreatingRootLevelFolder),
             ("testRetrievingOutputFolder", testRetrievingOutputFolder),
             ("testRetrievingOutputFile", testRetrievingOutputFile),
-            ("testCleanHiddenFilesInOutputFolder", testCleanHiddenFilesInOutputFolder)
+            ("testCleaningHiddenFilesInOutputFolder", testCleaningHiddenFilesInOutputFolder)
         ]
     }
 }
