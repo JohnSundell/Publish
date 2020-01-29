@@ -20,7 +20,7 @@ let package = Package(
         .package(url: "https://github.com/johnsundell/files.git", from: "4.0.0"),
         .package(url: "https://github.com/johnsundell/codextended.git", from: "0.1.0"),
         .package(url: "https://github.com/johnsundell/shellout.git", from: "2.3.0"),
-        .package(url: "https://github.com/johnsundell/sweep.git", from: "0.3.0")
+        .package(url: "https://github.com/johnsundell/sweep.git", from: "0.4.0")
     ],
     targets: [
         .target(
