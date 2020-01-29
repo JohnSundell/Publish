@@ -23,7 +23,7 @@ Do not forget to replace `REPLACE-WITH-SHORTNAME` with your shortname.
 
 ## Swift
 
-In you `Theme.Swift` add this to the `makeItemHTML` function, this ensures that the comment thread is only shown on posts and not on Index pages
+In your theme file add this to the `makeItemHTML` function, this ensures that the comments thread is only shown on posts and not on Index pages:
 
 ```swift
 func makeItemHTML(for item: Item<Site>,
