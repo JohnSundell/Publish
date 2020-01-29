@@ -7,7 +7,7 @@ Before installing, make sure you've [registered](https://disqus.com/register/) a
 
 Once you've got got your shortname, you can proceed to the next step.
 
-## JS
+## JavaScript
 
 Create a new file called `disqus.js` in your assets folder and paste this code
 
