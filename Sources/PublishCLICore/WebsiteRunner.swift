@@ -63,12 +63,12 @@ private extension WebsiteRunner {
         }
     }
 
-    func resolveSystemPythonMajorVersionNumber() -> Int? {
+    func resolveSystemPythonMajorVersionNumber() -> Int {
         // Expected output: `Python X.X.X`
         let pythonVersionString = try? shellOut(to: "python --version")
         let fullVersionNumber = pythonVersionString?.split(separator: " ").last
         let majorVersionNumber = fullVersionNumber?.first
-        return majorVersionNumber?.wholeNumberValue
+        return majorVersionNumber?.wholeNumberValue ?? 2
     }
 
     func outputServerErrorMessage(_ message: String) {
