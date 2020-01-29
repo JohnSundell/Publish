@@ -30,7 +30,7 @@ internal struct WebsiteRunner {
         serverQueue.async {
             do {
                 _ = try shellOut(
-                    to: "python -m \(self.getPythonHTTPServerCommand()) \(self.portNumber)",
+                    to: "python -m \(self.resolvePythonHTTPServerCommand()) \(self.portNumber)",
                     at: outputFolder.path,
                     process: serverProcess
                 )
@@ -55,16 +55,17 @@ private extension WebsiteRunner {
         catch { throw CLIError.outputFolderNotFound }
     }
 
-    func getPythonHTTPServerCommand() -> String {
-        if getSystemPythonMajorVersionNumber() == 3 {
+    func resolvePythonHTTPServerCommand() -> String {
+        if resolveSystemPythonMajorVersionNumber() >= 3 {
             return "http.server"
         } else {
             return "SimpleHTTPServer"
         }
     }
 
-    func getSystemPythonMajorVersionNumber() -> Int? {
-        let pythonVersionString = try? shellOut(to: "python --version") // expected output: `Python X.X.X`
+    func resolveSystemPythonMajorVersionNumber() -> Int? {
+        // Expected output: `Python X.X.X`
+        let pythonVersionString = try? shellOut(to: "python --version")
         let fullVersionNumber = pythonVersionString?.split(separator: " ").last
         let majorVersionNumber = fullVersionNumber?.first
         return majorVersionNumber?.wholeNumberValue
