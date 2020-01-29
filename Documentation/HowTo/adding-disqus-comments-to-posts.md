@@ -29,13 +29,9 @@ In your theme file add this to the `makeItemHTML` function, this ensures that th
 func makeItemHTML(for item: Item<Site>,
                       context: PublishingContext<Site>) throws -> HTML {
                       ...
-                        .span("Tagged with: "),
-                        .tagList(for: item, on: context.site),
-                        
                         .div(.id("disqus_thread")),
-                        .script(.src("/assets/disqus.js")),
+                        .script(.src("/disqus.js")),
                         .element(named: "noscript", text: "Please enable JavaScript to view the comments")
-                        
                       ...
 }                     
 ```
