@@ -6,7 +6,7 @@ Welcome to Publish’s documentation portal. While you can find a ton of API-spe
 
 Shorter articles focused on explaining how to get a given task done using Publish:
 
-- [Adding Disqus comments to posts](HowTo/adding-disqus-comments-to-posts.md)
+- [Adding Disqus comments to posts](HowTo/adding-disqus-comments-to-item-pages.md)
 - Adding syntax highlighting to markdown code blocks:
     - [Using Splash, a native Swift syntax highlighter for Swift code](HowTo/SyntaxHighlighting/using-splash.md)
     - [Using Pygments, a Python tool with support for over 500 languages](HowTo/SyntaxHighlighting/using-pygments.md)
