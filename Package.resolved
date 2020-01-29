@@ -24,8 +24,8 @@
         "repositoryURL": "https://github.com/johnsundell/ink.git",
         "state": {
           "branch": null,
-          "revision": "a9a1a0190aaacc9058a2bfbdcd831785eac26f43",
-          "version": "0.3.0"
+          "revision": "878fd897945500be1885f2c88f81f8f909224796",
+          "version": "0.4.0"
         }
       },
       {
@@ -33,8 +33,8 @@
         "repositoryURL": "https://github.com/johnsundell/plot.git",
         "state": {
           "branch": null,
-          "revision": "ccabb2674ca0d9ccfabd5e7c0c44c6cca6c827fb",
-          "version": "0.5.0"
+          "revision": "6dcfc1f246eabf6ea470202244115f73b75c72c4",
+          "version": "0.6.0"
         }
       },
       {
@@ -51,8 +51,8 @@
         "repositoryURL": "https://github.com/johnsundell/sweep.git",
         "state": {
           "branch": null,
-          "revision": "d357d12c9558e51f037bf2f956d5cf6c73dc0d44",
-          "version": "0.3.0"
+          "revision": "801c2878e4c6c5baf32fe132e1f3f3af6f9fd1b0",
+          "version": "0.4.0"
         }
       }
     ]
