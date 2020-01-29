@@ -123,12 +123,6 @@ private extension WebsiteRunner {
     }
 }
 
-#if os(Linux)
-    import Glibc
-    // O_EVTONLY is a BSD only flag
-    let O_EVTONLY = Glibc.O_RDONLY
-#endif
-
 
 class FolderObserver {
     internal init(rootFolders: [Folder], block: @escaping () -> Void) {
@@ -151,6 +145,9 @@ class FolderObserver {
     }
     
     private func subscribe(_ folder: Folder) {
+        // Linux does not support O_EVTONLY and does not have makeFileSystemObjectSource yet
+        #if !os(Linux)
+
         let fileDescriptor = open(folder.url.path, O_EVTONLY)
 
         let source = DispatchSource.makeFileSystemObjectSource(fileDescriptor: fileDescriptor, eventMask: .all, queue: autoUpdateQueue)
@@ -166,6 +163,7 @@ class FolderObserver {
         for subfolder in folder.subfolders {
             self.subscribe(subfolder)
         }
+        #endif
     }
     
     private func unsubscribe() {
@@ -189,6 +187,7 @@ class FolderObserver {
         self.unsubscribe()
     }
 }
+
 
 
 extension Array {
