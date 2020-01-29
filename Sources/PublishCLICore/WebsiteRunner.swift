@@ -11,7 +11,14 @@ import ShellOut
 internal struct WebsiteRunner {
     let folder: Folder
     var portNumber: Int
-
+    
+    func handleUpdate() {
+        print("\n\nChange Detected\n\n")
+        let generator = WebsiteGenerator(folder: folder)
+        try? generator.generate()
+    }
+    
+    
     func run() throws {
         let generator = WebsiteGenerator(folder: folder)
         try generator.generate()
@@ -24,9 +31,31 @@ internal struct WebsiteRunner {
         print("""
         🌍 Starting web server at http://localhost:\(portNumber)
 
-        Press ENTER to stop the server and exit
+        Press ENTER or CONTROL+C to stop the server and exit
         """)
+        
+        // Start observing for changes to the `Resources` or `Content` folders.
+        let observer = FolderObserver(rootFolders: [try? folder.subfolder(named: "Resources"), try? folder.subfolder(named: "Content")].compactMap()) {
+            self.handleUpdate()
+        }
+        
+        observer.start()
 
+        // Handle Ctrl+C shutdown
+        let signalsQueue = DispatchQueue(label: "Publish.signals")
+
+        let sigintSrc = DispatchSource.makeSignalSource(signal: SIGINT, queue: signalsQueue)
+        sigintSrc.setEventHandler {
+            print("Shutting down.")
+            serverProcess.terminate()
+            observer.stop()
+            exit(0)
+        }
+        
+        sigintSrc.resume()
+                
+        signal(SIGINT, SIG_IGN) // Make sure the signal does not terminate the application.
+        
         serverQueue.async {
             do {
                 _ = try shellOut(
@@ -44,8 +73,11 @@ internal struct WebsiteRunner {
             exit(1)
         }
 
+
+        
         _ = readLine()
         serverProcess.terminate()
+        observer.stop()
     }
 }
 
@@ -87,5 +119,76 @@ private extension WebsiteRunner {
         }
 
         fputs("\n❌ Failed to start local web server:\n\(message)\n", stderr)
+    }
+}
+
+
+class FolderObserver {
+    internal init(rootFolders: [Folder], block: @escaping () -> Void) {
+        self.rootFolders = rootFolders
+        self.block = block
+    }
+    
+    let rootFolders: [Folder]
+    
+    var block: () -> Void
+    
+    
+    private var eventSources: [(DispatchSourceFileSystemObject, Int32)] = []
+    private let autoUpdateQueue = DispatchQueue(label: "Publish.updater")
+
+    func start() {
+        for folder in rootFolders {
+            self.subscribe(folder)
+        }
+    }
+    
+    private func subscribe(_ folder: Folder) {
+        let fileDescriptor = open(folder.url.path, O_EVTONLY)
+        
+
+        let source = DispatchSource.makeFileSystemObjectSource(fileDescriptor: fileDescriptor, eventMask: .all, queue: autoUpdateQueue)
+        
+        source.setEventHandler {
+            self.handleUpdate()
+        }
+        
+        source.resume()
+        
+        self.eventSources.append((source, fileDescriptor))
+        
+        for subfolder in folder.subfolders {
+            self.subscribe(subfolder)
+        }
+    }
+    
+    private func unsubscribe() {
+        for (source, file) in self.eventSources {
+            source.cancel()
+            close(file)
+        }
+        self.eventSources = []
+    }
+    
+    private func handleUpdate() {
+        // stop all subscribtions
+        self.unsubscribe()
+        
+        self.block()
+                
+        self.start()
+    }
+    
+    func stop() {
+        self.unsubscribe()
+    }
+}
+
+
+extension Array {
+    func compactMap<T>() -> [T] where Element == Optional<T> {
+        return self.compactMap { element in
+            return element
+        }
     }
 }
