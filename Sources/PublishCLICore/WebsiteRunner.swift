@@ -33,13 +33,15 @@ internal struct WebsiteRunner {
 
         Press ENTER or CONTROL+C to stop the server and exit
         """)
-        
+        #if !os(Linux)
         // Start observing for changes to the `Resources` or `Content` folders.
         let observer = FolderObserver(rootFolders: [try? folder.subfolder(named: "Resources"), try? folder.subfolder(named: "Content")].compactMap()) {
             self.handleUpdate()
         }
         
         observer.start()
+        #endif
+
 
         // Handle Ctrl+C shutdown
         let signalsQueue = DispatchQueue(label: "Publish.signals")
@@ -48,7 +50,9 @@ internal struct WebsiteRunner {
         sigintSrc.setEventHandler {
             print("Shutting down.")
             serverProcess.terminate()
+            #if !os(Linux)
             observer.stop()
+            #endif
             exit(0)
         }
         
@@ -78,7 +82,9 @@ internal struct WebsiteRunner {
         _ = readLine()
         sigintSrc.cancel()
         serverProcess.terminate()
+        #if !os(Linux)
         observer.stop()
+        #endif
     }
 }
 
@@ -123,6 +129,7 @@ private extension WebsiteRunner {
     }
 }
 
+#if !os(Linux)
 
 class FolderObserver {
     internal init(rootFolders: [Folder], block: @escaping () -> Void) {
@@ -146,7 +153,6 @@ class FolderObserver {
     
     private func subscribe(_ folder: Folder) {
         // Linux does not support O_EVTONLY and does not have makeFileSystemObjectSource yet
-        #if !os(Linux)
 
         let fileDescriptor = open(folder.url.path, O_EVTONLY)
 
@@ -163,7 +169,6 @@ class FolderObserver {
         for subfolder in folder.subfolders {
             self.subscribe(subfolder)
         }
-        #endif
     }
     
     private func unsubscribe() {
@@ -187,7 +192,7 @@ class FolderObserver {
         self.unsubscribe()
     }
 }
-
+#endif
 
 
 extension Array {
