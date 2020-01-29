@@ -6,7 +6,7 @@ Welcome to Publish’s documentation portal. While you can find a ton of API-spe
 
 Shorter articles focused on explaining how to get a given task done using Publish:
 
-- [Adding disqus comments to posts](HowTo/adding-disqus-comments-to-posts.md)
+- [Adding Disqus comments to posts](HowTo/adding-disqus-comments-to-posts.md)
 - [Adding Swift syntax highlighting to Markdown code blocks](HowTo/adding-swift-syntax-highlighting.md)
 - [Adding syntax highlighting with Pygments](HowTo/add-syntax-highlighting-with-pygments.md)
 - [Conditionally running a publishing step](HowTo/conditionally-run-a-step.md)
