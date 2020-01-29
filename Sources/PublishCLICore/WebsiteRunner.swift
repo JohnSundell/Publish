@@ -76,6 +76,7 @@ internal struct WebsiteRunner {
 
         
         _ = readLine()
+        sigintSrc.cancel()
         serverProcess.terminate()
         observer.stop()
     }
@@ -122,6 +123,12 @@ private extension WebsiteRunner {
     }
 }
 
+#if os(Linux)
+    import Glibc
+    // O_EVTONLY is a BSD only flag
+    let O_EVTONLY = Glibc.O_RDONLY
+#endif
+
 
 class FolderObserver {
     internal init(rootFolders: [Folder], block: @escaping () -> Void) {
@@ -145,7 +152,6 @@ class FolderObserver {
     
     private func subscribe(_ folder: Folder) {
         let fileDescriptor = open(folder.url.path, O_EVTONLY)
-        
 
         let source = DispatchSource.makeFileSystemObjectSource(fileDescriptor: fileDescriptor, eventMask: .all, queue: autoUpdateQueue)
         
