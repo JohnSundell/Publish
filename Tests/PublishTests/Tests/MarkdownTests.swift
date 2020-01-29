@@ -26,7 +26,7 @@ final class MarkdownTests: PublishTestCase {
         XCTAssertEqual(item.title, "Overridden title")
     }
 
-	func testParsingFileWithNoTitle() throws {
+    func testParsingFileWithNoTitle() throws {
         let item = try generateItem(fromMarkdown: """
         ---
         description: A description
