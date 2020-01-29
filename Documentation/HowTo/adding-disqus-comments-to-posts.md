@@ -1,6 +1,6 @@
 # How to add Disqus comments to posts
 
-## Getting Short Name from Disqus
+## Getting a shortname from Disqus
 
 Before installing, make sure you've [registered](https://disqus.com/register/) a Disqus [shortname](https://help.disqus.com/customer/portal/articles/286833), and this will be used to reference all of your comments and settings.
 
