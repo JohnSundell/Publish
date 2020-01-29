@@ -9,20 +9,17 @@ Once you've got got your shortname, you can proceed to the next step.
 
 ## JavaScript
 
-Create a new file called `disqus.js` in your assets folder and paste this code
+Create a new file called `disqus.js` in the Resources folder and paste this code:
 
 ```javascript
-(function() {  // DON'T EDIT BELOW THIS LINE
-        var d = document, s = d.createElement('script');
-        
-        s.src = 'https://REPLACE-WITH-SHORTNAME.disqus.com/embed.js';
-        
-        s.setAttribute('data-timestamp', +new Date());
-        (d.head || d.body).appendChild(s);
-    })();
+(function() {
+    var t = document,
+        e = t.createElement("script");
+    e.src = "https://REPLACE-WITH-SHORTNAME.disqus.com/embed.js", e.setAttribute("data-timestamp", +new Date), (t.head || t.body).appendChild(e)
+})();
 ```    
 
-Do not forget to replace `REPLACE-WITH-SHORTNAME` with your shortname
+Do not forget to replace `REPLACE-WITH-SHORTNAME` with your shortname.
 
 ## Swift
 
