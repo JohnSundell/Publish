@@ -14,12 +14,16 @@ public struct ItemRSSProperties: Codable, Hashable {
     public var guid: String?
     /// Any prefix that should be added to the item's title within an RSS feed.
     public var titlePrefix: String?
+    /// Any suffix that should be added to the item's title within an RSS feed.
+    public var titleSuffix: String?
 
     /// Initialize an instance of this type
-    /// - Parameter guid: Any specific GUID that should be added for the item.
-    /// - Parameter titlePrefix: Any prefix that should be added to the item's title.
+    /// - parameter guid: Any specific GUID that should be added for the item.
+    /// - parameter titlePrefix: Any prefix that should be added to the item's title.
+    /// - parameter titleSuffix: Any suffix that should be added to the item's title.
     public init(guid: String? = nil,
-                titlePrefix: String? = nil) {
+                titlePrefix: String? = nil,
+                titleSuffix: String? = nil) {
         self.guid = guid
         self.titlePrefix = titlePrefix
     }
