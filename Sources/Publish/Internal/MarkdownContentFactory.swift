@@ -26,6 +26,7 @@ internal struct MarkdownContentFactory<Site: Website> {
         let decoder = makeMetadataDecoder(for: markdown)
 
         let metadata = try Site.ItemMetadata(from: decoder)
+        let path = try decoder.decodeIfPresent("path", as: Path.self) ?? path
         let tags = try decoder.decodeIfPresent("tags", as: [Tag].self)
         let content = try makeContent(fromMarkdown: markdown, file: file, decoder: decoder)
         let rssProperties = try decoder.decodeIfPresent("rss", as: ItemRSSProperties.self)
@@ -68,7 +69,7 @@ private extension MarkdownContentFactory {
         let video = try decoder.decodeIfPresent("video", as: Video.self)
 
         return Content(
-            title: title ?? markdown.title ?? "",
+            title: title ?? markdown.title ?? file.nameExcludingExtension,
             description: description ?? "",
             body: Content.Body(html: markdown.html),
             date: date,

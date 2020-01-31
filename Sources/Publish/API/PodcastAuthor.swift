@@ -7,7 +7,7 @@
 import Foundation
 
 /// Type used to describe the author of a podcast.
-public struct PodcastAuthor {
+public struct PodcastAuthor: Codable, Equatable {
     /// The author's full name.
     public var name: String
     /// The author's email address.

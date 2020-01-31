@@ -19,7 +19,7 @@ internal struct ProjectGenerator {
         self.folder = folder
         self.publishRepositoryURL = publishRepositoryURL
         self.publishVersion = publishVersion
-        self.siteName = String(folder.name.capitalized.filter { $0.isLetter })
+        self.siteName = folder.name.asSiteName()
     }
 
     func generate() throws {
@@ -150,5 +150,28 @@ private extension ProjectGenerator {
 private extension Folder {
     func createIndexFile(withMarkdown markdown: String) throws {
         try createFile(named: "index.md").write(markdown)
+    }
+}
+
+private extension String {
+    func asSiteName() -> Self {
+        let validCharacters = CharacterSet.alphanumerics
+        let validEdgeCharacters = CharacterSet.letters
+        let validSegments = trimmingCharacters(in: validEdgeCharacters.inverted)
+            .components(separatedBy: validCharacters.inverted)
+
+        guard
+            let firstSegment = validSegments.first,
+            !firstSegment.isEmpty else {
+            return "SiteName"
+        }
+
+        return validSegments
+            .map { $0.capitalizingFirstLetter() }
+            .joined()
+    }
+    
+    private func capitalizingFirstLetter() -> String {
+        return prefix(1).capitalized + dropFirst()
     }
 }

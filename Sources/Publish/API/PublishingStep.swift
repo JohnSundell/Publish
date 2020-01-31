@@ -331,9 +331,12 @@ public extension PublishingStep {
     /// - parameter includedSectionIDs: The IDs of the sections which items
     ///   to include when generating the feed.
     /// - parameter config: The configuration to use when generating the feed.
+    /// - parameter date: The date that should act as the build and publishing
+    ///   date for the generated feed (default: the current date).
     static func generateRSSFeed(
         including includedSectionIDs: Set<Site.SectionID>,
-        config: RSSFeedConfiguration = .default
+        config: RSSFeedConfiguration = .default,
+        date: Date = Date()
     ) -> Self {
         guard !includedSectionIDs.isEmpty else { return .empty }
 
@@ -341,7 +344,8 @@ public extension PublishingStep {
             let generator = RSSFeedGenerator(
                 includedSectionIDs: includedSectionIDs,
                 config: config,
-                context: context
+                context: context,
+                date: date
             )
 
             try generator.generate()
@@ -351,6 +355,7 @@ public extension PublishingStep {
     /// Generate a site map for the website, which is an XML file used
     /// for search engine indexing.
     /// - parameter excludedPaths: Any paths to exclude from the site map.
+    ///   Adding a section's path to the list removes the entire section, including all its items.
     /// - parameter indentation: How the site map should be indented.
     static func generateSiteMap(excluding excludedPaths: Set<Path> = [],
                                 indentedBy indentation: Indentation.Kind? = nil) -> Self {
@@ -372,15 +377,19 @@ public extension PublishingStep where Site.ItemMetadata: PodcastCompatibleWebsit
     /// and `audio` metadata, or an error will be thrown.
     /// - parameter section: The section to generate a podcast feed for.
     /// - parameter config: The configuration to use when generating the feed.
+    /// - parameter date: The date that should act as the build and publishing
+    ///   date for the generated feed (default: the current date).
     static func generatePodcastFeed(
         for section: Site.SectionID,
-        config: PodcastFeedConfiguration<Site>
+        config: PodcastFeedConfiguration<Site>,
+        date: Date = Date()
     ) -> Self {
         step(named: "Generate podcast feed") { context in
             let generator = PodcastFeedGenerator(
                 sectionID: section,
                 config: config,
-                context: context
+                context: context,
+                date: date
             )
 
             try generator.generate()
@@ -406,7 +415,7 @@ public extension PublishingStep {
 // MARK: - Implementation details
 
 internal extension PublishingStep {
-    enum Kind {
+    enum Kind: String {
         case system
         case generation
         case deployment

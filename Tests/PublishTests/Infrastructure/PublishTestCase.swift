@@ -30,6 +30,7 @@ class PublishTestCase: XCTestCase {
         using theme: Theme<WebsiteStub.WithoutItemMetadata>,
         content: [Path : String] = [:],
         additionalSteps: [PublishingStep<WebsiteStub.WithoutItemMetadata>] = [],
+        plugins: [Plugin<WebsiteStub.WithoutItemMetadata>] = [],
         expectedHTML: [Path : String],
         allowWhitelistedOutputFiles: Bool = true,
         file: StaticString = #file,
@@ -47,7 +48,8 @@ class PublishTestCase: XCTestCase {
             withTheme: theme,
             at: Path(folder.path),
             rssFeedSections: [],
-            additionalSteps: additionalSteps
+            additionalSteps: additionalSteps,
+            plugins: plugins
         )
 
         try verifyOutput(
@@ -86,6 +88,7 @@ class PublishTestCase: XCTestCase {
             "one/index.html",
             "two/index.html",
             "three/index.html",
+            "custom-raw-value/index.html",
             "tags/index.html"
         ]
 

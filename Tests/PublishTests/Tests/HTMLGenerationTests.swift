@@ -79,6 +79,28 @@ final class HTMLGenerationTests: PublishTestCase {
         )
     }
 
+    func testGeneratingNestedItemHTML() throws {
+        htmlFactory.makeItemHTML = { item, _ in
+            HTML(.body(.text(item.title)))
+        }
+
+        try publishWebsite(
+            using: Theme(htmlFactory: htmlFactory),
+            content: [
+                "one/2019/12/a.md": """
+                    # A
+                    """,
+                "two/2020/01/b.md": """
+                    # B
+                    """
+            ],
+            expectedHTML: [
+                "one/2019/12/a/index.html": "A",
+                "two/2020/01/b/index.html": "B"
+            ]
+        )
+    }
+
     func testGeneratingPageHTML() throws {
         htmlFactory.makePageHTML = { page, _ in
             HTML(.body(.text(page.title)))
@@ -184,10 +206,12 @@ final class HTMLGenerationTests: PublishTestCase {
             expectedHTML: [
                 "one/index.html": "one",
                 "two/index.html": "two",
-                "three/index.html": "three"
+                "three/index.html": "three",
+                "custom-raw-value/index.html": "custom-raw-value"
             ]
         )
     }
+    
 
     func testNotGeneratingTagHTMLForIncompatibleTheme() throws {
         htmlFactory.makeTagListHTML = nil
@@ -203,6 +227,7 @@ final class HTMLGenerationTests: PublishTestCase {
                 "one/index.html": "",
                 "two/index.html": "",
                 "three/index.html": "",
+                "custom-raw-value/index.html": "",
                 "one/item/index.html": ""
             ],
             allowWhitelistedOutputFiles: false
@@ -223,6 +248,7 @@ final class HTMLGenerationTests: PublishTestCase {
                 "one/index.html": "",
                 "two/index.html": "",
                 "three/index.html": "",
+                "custom-raw-value/index.html": "",
                 "one/item/index.html": ""
             ],
             allowWhitelistedOutputFiles: false
@@ -235,6 +261,7 @@ final class HTMLGenerationTests: PublishTestCase {
 
         try publishWebsite(in: folder, using: [
             .addItem(Item.stub(withPath: "item").setting(\.tags, to: ["tag"])),
+            .addItem(Item.stub(withPath: "rawValueItem", sectionID: .customRawValue).setting(\.tags, to: ["tag"])),
             .generateHTML(withTheme: theme, fileMode: .standAloneFiles)
         ])
 
@@ -245,7 +272,9 @@ final class HTMLGenerationTests: PublishTestCase {
                 "one/index.html": "",
                 "two/index.html": "",
                 "three/index.html": "",
+                "custom-raw-value/index.html": "",
                 "one/item.html": "",
+                "custom-raw-value/rawValueItem.html": "",
                 "tags/index.html": "",
                 "tags/tag.html": ""
             ],
@@ -302,6 +331,7 @@ extension HTMLGenerationTests {
             ("testGeneratingIndexHTML", testGeneratingIndexHTML),
             ("testGeneratingSectionHTML", testGeneratingSectionHTML),
             ("testGeneratingItemHTML", testGeneratingItemHTML),
+            ("testGeneratingNestedItemHTML", testGeneratingNestedItemHTML),
             ("testGeneratingPageHTML", testGeneratingPageHTML),
             ("testGeneratingTagHTML", testGeneratingTagHTML),
             ("testCleaningUpOldHTMLFiles", testCleaningUpOldHTMLFiles),
