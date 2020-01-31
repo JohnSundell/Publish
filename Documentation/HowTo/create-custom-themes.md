@@ -24,6 +24,25 @@ In `Package.swift`, be sure to include Publish and Plot as dependencies:
     ]
 ````
 
+### Local development
+
+Once your package is created, you can add it as a local dependency by specifying its path in an existing Publish website package:
+
+````
+    dependencies: [
+        .package(url: "https://github.com/johnsundell/publish.git", from: "0.1.0"),
+        .package(path: "~/Documents/MyTheme")
+    ],
+    targets: [
+        .target(
+            name: "MySite",
+            dependencies: ["Publish", "MyTheme"]
+        )
+    ]
+````
+
+Once added, Xcode will require you to edit the theme package from the same editor window as your website package.
+
 ## Extending `Website` with protocols
 
 ???
