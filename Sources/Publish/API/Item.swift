@@ -50,12 +50,14 @@ public struct Item<Site: Website>: AnyItem, Hashable {
 
 internal extension Item {
     var rssTitle: String {
-        (rssProperties.titlePrefix ?? "") + title
+        let prefix = rssProperties.titlePrefix ?? ""
+        let suffix = rssProperties.titleSuffix ?? ""
+        return prefix + title + suffix
     }
 }
 
 private extension Item {
     func makeAbsolutePath() -> Path {
-        "\(sectionID)/\(relativePath)"
+        "\(sectionID.rawValue)/\(relativePath)"
     }
 }

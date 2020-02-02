@@ -86,7 +86,7 @@ private extension PublishingPipeline {
         let outputFolderName = "Output"
 
         if shouldEmptyOutputFolder {
-            try? root.subfolder(named: outputFolderName).empty()
+            try? root.subfolder(named: outputFolderName).empty(includingHidden: true)
         }
 
         do {

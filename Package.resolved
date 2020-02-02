@@ -15,8 +15,8 @@
         "repositoryURL": "https://github.com/johnsundell/files.git",
         "state": {
           "branch": null,
-          "revision": "941052daf1c0aa6999343ee899dd3d743c86f211",
-          "version": "4.1.0"
+          "revision": "22fe84797d499ffca911ccd896b34efaf06a50b9",
+          "version": "4.1.1"
         }
       },
       {
@@ -24,8 +24,8 @@
         "repositoryURL": "https://github.com/johnsundell/ink.git",
         "state": {
           "branch": null,
-          "revision": "c88bbce588a1ebfde2cf4d61eb9865a3edaa27d4",
-          "version": "0.2.0"
+          "revision": "878fd897945500be1885f2c88f81f8f909224796",
+          "version": "0.4.0"
         }
       },
       {
@@ -33,8 +33,8 @@
         "repositoryURL": "https://github.com/johnsundell/plot.git",
         "state": {
           "branch": null,
-          "revision": "00bd4d695b20dba3ec7a09997c5817e55feb8893",
-          "version": "0.4.0"
+          "revision": "6dcfc1f246eabf6ea470202244115f73b75c72c4",
+          "version": "0.6.0"
         }
       },
       {
@@ -42,8 +42,8 @@
         "repositoryURL": "https://github.com/johnsundell/shellout.git",
         "state": {
           "branch": null,
-          "revision": "4ebf25863deb9c3c02696704fc3d39736183f258",
-          "version": "2.2.1"
+          "revision": "e1577acf2b6e90086d01a6d5e2b8efdaae033568",
+          "version": "2.3.0"
         }
       },
       {
@@ -51,8 +51,8 @@
         "repositoryURL": "https://github.com/johnsundell/sweep.git",
         "state": {
           "branch": null,
-          "revision": "d357d12c9558e51f037bf2f956d5cf6c73dc0d44",
-          "version": "0.3.0"
+          "revision": "801c2878e4c6c5baf32fe132e1f3f3af6f9fd1b0",
+          "version": "0.4.0"
         }
       }
     ]
