@@ -10,6 +10,9 @@ import Files
 import ShellOut
 
 final class CLITests: PublishTestCase {
+    
+    // MARK: - Name from Folder
+    
     func testProjectGeneration() throws {
         #if INCLUDE_CLI
         let folder = try Folder.createTemporary()
@@ -74,6 +77,16 @@ final class CLITests: PublishTestCase {
         XCTAssertFalse(name.isEmpty)
         #endif
     }
+    
+    // MARK: - Name from CLI
+    
+    func testSiteNameFromArgument() throws {
+        #if INCLUDE_CLI
+        let folder = try Folder.createTemporary(named: "Name")
+        try makeCLI(in: folder, command: "new MyWebsite").run(in: folder)
+        XCTAssertEqual(try folder.getPackageName(), "MyWebsite")
+        #endif
+    }
 }
 
 extension CLITests {
@@ -86,7 +99,8 @@ extension CLITests {
             ("testSiteNameFromCamelCaseFolderName", testSiteNameFromCamelCaseFolderName),
             ("testSiteNameWithNonLetterValidCharactersFolderName", testSiteNameWithNonLetterValidCharactersFolderName),
             ("testSiteNameFromFolderNameWithNonLetters", testSiteNameFromFolderNameWithNonLetters),
-            ("testSiteNameFromDigitsOnlyFolderName", testSiteNameFromDigitsOnlyFolderName)
+            ("testSiteNameFromDigitsOnlyFolderName", testSiteNameFromDigitsOnlyFolderName),
+            ("testSiteNameFromArgument", testSiteNameFromArgument)
         ]
     }
 }

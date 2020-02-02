@@ -22,16 +22,12 @@ public struct CLI {
     }
 
     public func run(in folder: Folder = .current) throws {
-        guard arguments.count > 1 else {
+        guard let operation = CLIOperation(from: arguments) else {
             return outputHelpText()
-        }
-        
-        guard let operation = Operation(rawValue: arguments[1]) else {
-            outputHelpText()
         }
 
         switch operation {
-        case .new:
+        case .new(let arguments):
             let generator = ProjectGenerator(
                 folder: folder,
                 publishRepositoryURL: publishRepositoryURL,
@@ -39,18 +35,15 @@ public struct CLI {
             )
 
             try generator.generate()
-        case "generate":
+        case .generate:
             let generator = WebsiteGenerator(folder: folder)
             try generator.generate()
-        case "deploy":
+        case .deploy:
             let deployer = WebsiteDeployer(folder: folder)
             try deployer.deploy()
-        case "run":
-            let portNumber = extractPortNumber(from: arguments)
-            let runner = WebsiteRunner(folder: folder, portNumber: portNumber)
+        case .run(let port, let arguments):
+            let runner = WebsiteRunner(folder: folder, portNumber: port)
             try runner.run()
-        default:
-            outputHelpText()
         }
     }
 }
@@ -76,18 +69,5 @@ private extension CLI {
         """)
     }
 
-    private func extractPortNumber(from arguments: [String]) -> Int {
-        if arguments.count > 3 {
-            switch arguments[2] {
-            case "-p", "--port":
-                guard let portNumber = Int(arguments[3]) else {
-                    break
-                }
-                return portNumber
-            default:
-                return 8000 // default portNumber
-            }
-        }
-        return 8000 // default portNumber
-    }
+    
 }
