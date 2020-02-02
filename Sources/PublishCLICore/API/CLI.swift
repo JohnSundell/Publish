@@ -25,9 +25,13 @@ public struct CLI {
         guard arguments.count > 1 else {
             return outputHelpText()
         }
+        
+        guard let operation = Operation(rawValue: arguments[1]) else {
+            outputHelpText()
+        }
 
-        switch arguments[1] {
-        case "new":
+        switch operation {
+        case .new:
             let generator = ProjectGenerator(
                 folder: folder,
                 publishRepositoryURL: publishRepositoryURL,
