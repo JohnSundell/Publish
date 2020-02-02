@@ -29,7 +29,8 @@ class PublishTestCase: XCTestCase {
         in folder: Folder? = nil,
         using theme: Theme<WebsiteStub.WithoutItemMetadata>,
         content: [Path : String] = [:],
-        additionalSteps: [PublishingStep<WebsiteStub.WithoutItemMetadata>] = [],
+        preGenerationSteps: [PublishingStep<WebsiteStub.WithoutItemMetadata>] = [],
+        postGenerationSteps: [PublishingStep<WebsiteStub.WithoutItemMetadata>] = [],
         plugins: [Plugin<WebsiteStub.WithoutItemMetadata>] = [],
         expectedHTML: [Path : String],
         allowWhitelistedOutputFiles: Bool = true,
@@ -48,7 +49,8 @@ class PublishTestCase: XCTestCase {
             withTheme: theme,
             at: Path(folder.path),
             rssFeedSections: [],
-            additionalSteps: additionalSteps,
+            preGenerationSteps: preGenerationSteps,
+            postGenerationSteps: postGenerationSteps,
             plugins: plugins
         )
 
