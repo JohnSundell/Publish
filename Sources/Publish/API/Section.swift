@@ -27,6 +27,7 @@ public struct Section<Site: Website>: Location {
 
     internal init(id: Site.SectionID) {
         self.id = id
+        self.title = id.rawValue.capitalized
     }
 }
 

@@ -9,6 +9,32 @@ import Publish
 import Plot
 
 final class PlotComponentTests: PublishTestCase {
+    func testStylesheetPaths() {
+        let html = Node.head(
+            for: Page(path: "path", content: Content()),
+            on: WebsiteStub.WithoutItemMetadata(),
+            stylesheetPaths: [
+                "local-1.css",
+                "/local-2.css",
+                "http://external-1.css",
+                "https://external-2.css"
+            ]
+        ).render()
+
+        let expectedURLs = [
+            "/local-1.css",
+            "/local-2.css",
+            "http://external-1.css",
+            "https://external-2.css"
+        ]
+
+        for url in expectedURLs {
+            XCTAssertTrue(html.contains("""
+            <link rel="stylesheet" href="\(url)" type="text/css"/>
+            """))
+        }
+    }
+
     func testRenderingAudioPlayer() throws {
         let url = try require(URL(string: "https://audio.mp3"))
         let audio = Audio(url: url, format: .mp3)
@@ -59,6 +85,7 @@ final class PlotComponentTests: PublishTestCase {
 extension PlotComponentTests {
     static var allTests: Linux.TestList<PlotComponentTests> {
         [
+            ("testStylesheetPaths", testStylesheetPaths),
             ("testRenderingAudioPlayer", testRenderingAudioPlayer),
             ("testRenderingHostedVideoPlayer", testRenderingHostedVideoPlayer),
             ("testRenderingYouTubeVideoPlayer", testRenderingYouTubeVideoPlayer),

@@ -88,6 +88,7 @@ class PublishTestCase: XCTestCase {
             "one/index.html",
             "two/index.html",
             "three/index.html",
+            "custom-raw-value/index.html",
             "tags/index.html"
         ]
 
