@@ -43,6 +43,22 @@ Once your package is created, you can add it as a local dependency by specifying
 
 Once added, Xcode will require you to edit the theme package from the same editor window as your website package.
 
+### Including stylesheets and other resources
+
+Use the `resourcePaths` argument when initializing your theme to ensure any necessary resources in your theme's package are included and copied to the `Output` folder:
+
+````
+public extension Theme {
+        
+    static var myTheme: Self {
+        Theme(
+            htmlFactory: MyThemeHTMLFactory(),
+            resourcePaths: ["myThemeStyles.css"]
+        )
+    }
+}
+````
+
 ## Extending `Website` with protocols
 
 ???
