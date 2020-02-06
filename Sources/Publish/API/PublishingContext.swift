@@ -159,7 +159,7 @@ public extension PublishingContext {
 
         do {
             try folders.output.subfolders.forEach { try $0.copy(to: folder) }
-            try folders.output.files.forEach { try $0.copy(to: folder) }
+            try folders.output.files.includingHidden.forEach { try $0.copy(to: folder) }
             return folder
         } catch {
             throw FileIOError(path: path, reason: .folderCreationFailed)
