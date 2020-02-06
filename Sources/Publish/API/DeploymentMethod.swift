@@ -89,7 +89,75 @@ public extension DeploymentMethod {
     /// - parameter repository: The full name of the repository (including its username).
     /// - parameter useSSH: Whether an SSH connection should be used (preferred).
     static func gitHub(_ repository: String, branch: String = "master", useSSH: Bool = true) -> Self {
+        git(gitHubRemote(repository: repository, useSSH: useSSH),
+            branch: branch)
+    }
+    
+    static func gitHubPages(_ repository: String,
+                            on branch: GitHubPagesDeploymentMode = .master,
+                            useSSH: Bool = true)
+        -> Self
+    {
+        let remote = gitHubRemote(repository: repository, useSSH: useSSH)
+        
+        return DeploymentMethod(name: "GitHub Pages (\(remote)") { context in
+            let jekyllDisablingFile = try context.createOutputFile(at: Path(".nojekyll"))
+            
+            let branchName : String
+            var docsModeFolders : (Folder, Folder)?
+            
+            switch branch {
+            case .ghPages :
+                branchName = "gh-master"
+            case .masterDocs :
+                let docs = try context.createOutputFolder(at: Path("docs"))
+                
+                guard let docsParent = docs.parent else {
+                    try jekyllDisablingFile.delete()
+                    try docs.delete()
+                    return
+                }
+                
+                try docsParent.moveContents(to: docs)
+                
+                docsModeFolders = (docs, docsParent)
+                fallthrough
+            case .master :
+                branchName = "master"
+            }
+            
+            try gitHub(repository,
+                       branch: branchName,
+                       useSSH: useSSH)
+                .body(context)
+            
+            if let (docs, docsParent) = docsModeFolders {
+                try docs.moveContents(to: docsParent)
+                try docs.delete()
+            }
+            
+            try jekyllDisablingFile.delete()
+            
+            let ghPagesModeName : String
+            switch branch {
+            case .master : ghPagesModeName = "master branch"
+            case .masterDocs : ghPagesModeName = "master branch /docs folder"
+            case .ghPages : ghPagesModeName = "gh-pages branch"
+            }
+            
+            let settingsURL = "\(gitHubRemote(repository: repository, useSSH: false))/settings"
+            
+            CommandLine.output("Remember to set your GitHub Pages source to \"\(ghPagesModeName)\" at \(settingsURL)",
+                as: .info)
+        }
+    }
+    
+    private static func gitHubRemote(repository:String, useSSH: Bool) -> String {
         let prefix = useSSH ? "git@github.com:" : "https://github.com/"
-        return git("\(prefix)\(repository).git", branch: branch)
+        return "\(prefix)\(repository).git"
+    }
+    
+    enum GitHubPagesDeploymentMode {
+        case master, ghPages, masterDocs
     }
 }
