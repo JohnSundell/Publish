@@ -64,14 +64,9 @@ public extension Node where Context == HTML.DocumentContext {
                 let url = site.url(for: path)
                 return .socialImageLink(url)
             }),
-            .forEach(additionalWholeSiteHeadNodes + additionalNodes){$0}
+            .forEach(additionalNodes, {$0})
         )
     }
-}
-
-public extension Node where Context == HTML.DocumentContext {
-    /// Additional nodes of head. These nodes will be added to head of whole site.
-    static var additionalWholeSiteHeadNodes: [Node<HTML.HeadContext>] = []
 }
 
 public extension Node where Context == HTML.HeadContext {
