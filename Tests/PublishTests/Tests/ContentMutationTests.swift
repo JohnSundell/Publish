@@ -105,6 +105,20 @@ final class ContentMutationTests: PublishTestCase {
 
         XCTAssertEqual(Array(site.sections[.one].items), items)
     }
+    
+    func testRemovingItemsMatchingPredicate() throws {
+        let items = [
+            Item.stub(withPath: "a").setting(\.tags, to: ["one"]),
+            Item.stub(withPath: "b").setting(\.tags, to: ["one", "two"])
+        ]
+
+        let site = try publishWebsite(using: [
+            .addItems(in: items),
+            .removeAllItems(matching: \.tags ~= "two")
+        ])
+
+        XCTAssertNotEqual(Array(site.sections[.one].items), items)
+    }
 
     func testMutatingItemsByChangingTags() throws {
         var items = [

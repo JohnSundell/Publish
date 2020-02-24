@@ -94,6 +94,14 @@ public extension Section {
             return item
         }
     }
+    
+    /// Remove all items within this section matching a given predicate.
+    /// - Parameter predicate: Any predicate to filter the items based on.
+    mutating func removeItems(matching predicate: Predicate<Item<Site>> = .any) {
+        items = items.filter { item -> Bool in
+            return !predicate.matches(item)
+        }
+    }
 
     /// Sort all items within this section using a closure.
     /// - Parameter sorter: The closure to use to sort the items.
