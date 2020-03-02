@@ -64,7 +64,7 @@ public extension Node where Context == HTML.DocumentContext {
                 let url = site.url(for: path)
                 return .socialImageLink(url)
             }),
-            .forEach(additionalNodes, {$0})
+            .forEach(site.headNodes(for: location) + additionalNodes, {$0})
         )
     }
 }
