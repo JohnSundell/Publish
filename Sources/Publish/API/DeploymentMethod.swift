@@ -145,16 +145,17 @@ public extension DeploymentMethod {
             case .ghPages : ghPagesModeName = "gh-pages branch"
             }
             
-            let settingsURL = "\(gitHubRemote(repository: repository, useSSH: false))/settings"
+            let settingsURL = "\(gitHubRemote(repository: repository, useSSH: false, useStandardRepoURL: false))/settings"
             
             CommandLine.output("Remember to set your GitHub Pages source to \"\(ghPagesModeName)\" at \(settingsURL)",
                 as: .info)
         }
     }
     
-    private static func gitHubRemote(repository:String, useSSH: Bool) -> String {
+    private static func gitHubRemote(repository: String, useSSH: Bool, useStandardRepoURL: Bool = true) -> String {
         let prefix = useSSH ? "git@github.com:" : "https://github.com/"
-        return "\(prefix)\(repository).git"
+        let suffix = useStandardRepoURL ? ".git" : ""
+        return "\(prefix)\(repository)\(suffix)"
     }
     
     enum GitHubPagesDeploymentMode {
