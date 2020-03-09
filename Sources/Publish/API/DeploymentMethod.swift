@@ -100,7 +100,7 @@ public extension DeploymentMethod {
     {
         let remote = gitHubRemote(repository: repository, useSSH: useSSH)
         
-        return DeploymentMethod(name: "GitHub Pages (\(remote)") { context in
+        return DeploymentMethod(name: "GitHub Pages (\(remote))") { context in
             let jekyllDisablingFile = try context.createOutputFile(at: Path(".nojekyll"))
             
             let branchName : String
