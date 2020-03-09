@@ -57,8 +57,16 @@ public extension DeploymentMethod {
                     to: .gitPull(remote: "origin", branch: branch),
                     at: folder.path
                 )
-
-                try folder.empty()
+                
+                folder.includingHidden = true
+                
+                let gitFolder = try folder.subfolder(named: ".git")
+                var subfolders = try folder.subfolders.filter { (folder) -> Bool in
+                    folder != gitFolder
+                }
+                
+                try subfolders.delete()
+                try folder.files.delete()
             }
 
             let dateFormatter = DateFormatter()
