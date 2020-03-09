@@ -58,15 +58,15 @@ public extension DeploymentMethod {
                     at: folder.path
                 )
                 
-                folder.includingHidden = true
-                
                 let gitFolder = try folder.subfolder(named: ".git")
-                var subfolders = try folder.subfolders.filter { (folder) -> Bool in
-                    folder != gitFolder
-                }
                 
-                try subfolders.delete()
-                try folder.files.delete()
+                let subfolders = folder.subfolders.includingHidden
+                try subfolders.forEach { folder in
+                    if folder != gitFolder {
+                        try folder.delete()
+                    }
+                }
+                try folder.files.includingHidden.delete()
             }
 
             let dateFormatter = DateFormatter()
