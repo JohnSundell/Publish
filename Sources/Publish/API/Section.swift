@@ -58,8 +58,8 @@ public extension Section {
         configure: (inout Item<Site>) throws -> Void
     ) rethrows {
         var item = Item<Site>(path: path, sectionID: id, metadata: metadata)
-        try configure(&item)
         item.sectionID = id
+        try configure(&item)
         addItem(item)
     }
 
