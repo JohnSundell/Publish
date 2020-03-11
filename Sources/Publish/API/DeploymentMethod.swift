@@ -39,34 +39,15 @@ public extension DeploymentMethod {
     static func git(_ remote: String, branch: String = "master") -> Self {
         DeploymentMethod(name: "Git (\(remote))") { context in
             let folder = try context.createDeploymentFolder(withPrefix: "Git") { folder in
-                if !folder.containsSubfolder(named: ".git") {
-                    try shellOut(to: .gitInit(), at: folder.path)
+                try folder.empty(includingHidden: true)
 
-                    try shellOut(
-                        to: "git remote add origin \(remote)",
-                        at: folder.path
-                    )
-                }
+                try shellOut(to: .gitInit(), at: folder.path)
 
-                try shellOut(
-                    to: "git remote set-url origin \(remote)",
-                    at: folder.path
-                )
+                try shellOut(to: "git remote add origin \(remote)", at: folder.path)
 
-                _ = try? shellOut(
-                    to: .gitPull(remote: "origin", branch: branch),
-                    at: folder.path
-                )
-                
-                let gitFolder = try folder.subfolder(named: ".git")
-                
-                let subfolders = folder.subfolders.includingHidden
-                try subfolders.forEach { folder in
-                    if folder != gitFolder {
-                        try folder.delete()
-                    }
-                }
-                try folder.files.includingHidden.delete()
+                try shellOut(to: "git fetch", at: folder.path)
+
+                try shellOut(to: "git symbolic-ref HEAD refs/remotes/origin/\(branch)", at: folder.path)
             }
 
             let dateFormatter = DateFormatter()
@@ -82,7 +63,12 @@ public extension DeploymentMethod {
                 )
 
                 try shellOut(
-                    to: .gitPush(remote: "origin", branch: branch),
+                    to: "git checkout -b \(branch)",
+                    at: folder.path
+                )
+
+                try shellOut(
+                    to: "git push origin \(branch)",
                     at: folder.path
                 )
             } catch let error as ShellOutError {
@@ -116,10 +102,10 @@ public extension DeploymentMethod {
             
             switch branch {
             case .ghPages :
-                branchName = "gh-master"
+                branchName = "gh-pages"
             case .masterDocs :
                 let docs = try context.createOutputFolder(at: Path("docs"))
-                
+
                 guard let docsParent = docs.parent else {
                     try jekyllDisablingFile.delete()
                     try docs.delete()
