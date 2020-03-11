@@ -81,6 +81,33 @@ final class DeploymentTests: PublishTestCase {
         XCTAssertFalse(try indexFile.readAsString().isEmpty)
     }
 
+    func testGitDeploymentMethodWithAnotherBranch() throws {
+        let container = try Folder.createTemporary()
+        let remote = try container.createSubfolder(named: "Remote.git")
+        let repo = try container.createSubfolder(named: "Repo")
+
+        try shellOut(to: [
+            "git init",
+            "git config --local receive.denyCurrentBranch updateInstead"
+        ], at: remote.path)
+
+        // First generate
+        try publishWebsite(in: repo, using: [
+            .generateHTML(withTheme: .foundation)
+        ])
+
+        // Then deploy
+        CommandLine.arguments.append("--deploy")
+
+        try publishWebsite(in: repo, using: [
+            .deploy(using: .git(remote.path, branch: "develop"))
+        ])
+
+        try shellOut(to: .gitCheckout(branch: "develop"), at: remote.path)
+        let indexFile = try remote.file(named: "index.html")
+        XCTAssertFalse(try indexFile.readAsString().isEmpty)
+    }
+
 	func testGitDeploymentMethodWithError() throws {
         let container = try Folder.createTemporary()
         let remote = try container.createSubfolder(named: "Remote.git")
@@ -122,6 +149,7 @@ extension DeploymentTests {
             ("testDeploymentSkippedByDefault", testDeploymentSkippedByDefault),
             ("testGenerationStepsAndPluginsSkippedWhenDeploying", testGenerationStepsAndPluginsSkippedWhenDeploying),
             ("testGitDeploymentMethod", testGitDeploymentMethod),
+            ("testGitDeploymentMethodWithAnotherBranch", testGitDeploymentMethodWithAnotherBranch),
             ("testGitDeploymentMethodWithError",testGitDeploymentMethodWithError)
         ]
     }
