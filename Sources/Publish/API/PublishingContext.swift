@@ -45,9 +45,15 @@ public struct PublishingContext<Site: Website> {
         self.folders = folders
         self.stepName = firstStepName
 
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm"
-        dateFormatter.timeZone = .current
+
+        let dateFormatter: AnyDateFormatter
+        if #available(OSX 10.12, *) {
+            dateFormatter = ISO8601DateFormatter()
+        } else {
+            dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd HH:mm"
+            dateFormatter.timeZone = .current
+        }
         self.dateFormatter = dateFormatter
     }
 }
