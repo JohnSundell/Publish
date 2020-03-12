@@ -45,6 +45,25 @@ final class PodcastFeedGenerationTests: PublishTestCase {
         """)
     }
 
+    func testItemPrefixAndSuffix() throws {
+        let folder = try Folder.createTemporary()
+
+        let prefixSuffix = """
+        rss.titlePrefix: Prefix
+        rss.titleSuffix: Suffix
+        """
+
+        try generateFeed(in: folder, content: [
+            "one/item.md": """
+            \(makeStubbedAudioMetadata(including: prefixSuffix))
+            # Title
+            """
+        ])
+
+        let feed = try folder.file(at: "Output/feed.rss").readAsString()
+        XCTAssertTrue(feed.contains("<title>PrefixTitleSuffix</title>"))
+    }
+
     func testReusingPreviousFeedIfNoItemsWereModified() throws {
         let folder = try Folder.createTemporary()
         let contentFile = try folder.createFile(at: "Content/one/item.md")
@@ -130,6 +149,7 @@ extension PodcastFeedGenerationTests {
         [
             ("testOnlyIncludingSpecifiedSection", testOnlyIncludingSpecifiedSection),
             ("testConvertingRelativeLinksToAbsolute", testConvertingRelativeLinksToAbsolute),
+            ("testItemPrefixAndSuffix", testItemPrefixAndSuffix),
             ("testReusingPreviousFeedIfNoItemsWereModified", testReusingPreviousFeedIfNoItemsWereModified),
             ("testNotReusingPreviousFeedIfConfigChanged", testNotReusingPreviousFeedIfConfigChanged),
             ("testNotReusingPreviousFeedIfItemWasAdded", testNotReusingPreviousFeedIfItemWasAdded)
@@ -156,12 +176,13 @@ private extension PodcastFeedGenerationTests {
         )
     }
 
-    func makeStubbedAudioMetadata() -> String {
+    func makeStubbedAudioMetadata(including additionalString: String = "") -> String {
         """
         ---
         audio.url: https://audio.mp3
         audio.duration: 05:02
         audio.size: 12345
+        \(additionalString)
         ---
         """
     }

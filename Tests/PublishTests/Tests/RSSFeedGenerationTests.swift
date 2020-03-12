@@ -33,13 +33,30 @@ final class RSSFeedGenerationTests: PublishTestCase {
         ])
 
         let feed = try folder.file(at: "Output/feed.rss").readAsString()
-        let substring = feed.substrings(between: "BEGIN ", and: " END").first
+        let substring = feed.firstSubstring(between: "BEGIN ", and: " END")
 
         XCTAssertEqual(substring, """
         <a href="https://swiftbysundell.com/page">Link</a> \
         <img src=\"https://swiftbysundell.com/image.png\" alt=\"Image\"/> \
         <a href="https://apple.com">Link</a>
         """)
+    }
+
+    func testItemPrefixAndSuffix() throws {
+        let folder = try Folder.createTemporary()
+
+        try generateFeed(in: folder, content: [
+            "one/item.md": """
+            ---
+            rss.titlePrefix: Prefix
+            rss.titleSuffix: Suffix
+            ---
+            # Title
+            """
+        ])
+
+        let feed = try folder.file(at: "Output/feed.rss").readAsString()
+        XCTAssertTrue(feed.contains("<title>PrefixTitleSuffix</title>"))
     }
 
     func testReusingPreviousFeedIfNoItemsWereModified() throws {
@@ -103,6 +120,7 @@ extension RSSFeedGenerationTests {
         [
             ("testOnlyIncludingSpecifiedSections", testOnlyIncludingSpecifiedSections),
             ("testConvertingRelativeLinksToAbsolute", testConvertingRelativeLinksToAbsolute),
+            ("testItemPrefixAndSuffix", testItemPrefixAndSuffix),
             ("testReusingPreviousFeedIfNoItemsWereModified", testReusingPreviousFeedIfNoItemsWereModified),
             ("testNotReusingPreviousFeedIfConfigChanged", testNotReusingPreviousFeedIfConfigChanged),
             ("testNotReusingPreviousFeedIfItemWasAdded", testNotReusingPreviousFeedIfItemWasAdded)

@@ -51,6 +51,12 @@ nav {
 
 nav li {
     display: inline-block;
+    margin: 0 7px;
+    line-height: 1.5em;
+}
+
+nav li a.selected {
+    text-decoration: underline;
 }
 
 h1 {

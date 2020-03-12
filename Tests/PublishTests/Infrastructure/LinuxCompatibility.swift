@@ -31,6 +31,8 @@ internal extension Linux {
 #if canImport(ObjectiveC)
 internal final class LinuxVerificationTests: XCTestCase {
     func testAllTestsRunOnLinux() {
+        var totalLinuxTestCount = 0
+
         for testCase in allTests() {
             let type = testCase.testCaseClass
 
@@ -49,7 +51,19 @@ internal final class LinuxVerificationTests: XCTestCase {
                     """)
                 }
             }
+
+            totalLinuxTestCount += linuxTestNames.count
         }
+
+        XCTAssertEqual(
+            XCTestSuite.default.testCaseCount - 1,
+            totalLinuxTestCount,
+            """
+            Linux and Apple Platforms test counts are not equal.
+            Perhaps you added a new test case class?
+            If so, you need to add it in XCTestManifests.swift.
+            """
+        )
     }
 }
 #endif

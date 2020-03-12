@@ -28,6 +28,11 @@ public struct SectionMap<Site: Website> {
 
 extension SectionMap: Sequence {
     public func makeIterator() -> AnyIterator<Section<Site>> {
-        AnyIterator(sections.values.makeIterator())
+        var ids = self.ids.makeIterator()
+
+        return AnyIterator {
+            guard let nextID = ids.next() else { return nil }
+            return self[nextID]
+        }
     }
 }
