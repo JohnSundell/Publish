@@ -330,11 +330,14 @@ public extension PublishingStep {
     /// Generate an RSS feed for the website.
     /// - parameter includedSectionIDs: The IDs of the sections which items
     ///   to include when generating the feed.
+    /// - parameter itemPredicate: A predicate used to determine whether to
+    ///   include a given item within the generated feed (default: include all).
     /// - parameter config: The configuration to use when generating the feed.
     /// - parameter date: The date that should act as the build and publishing
     ///   date for the generated feed (default: the current date).
     static func generateRSSFeed(
         including includedSectionIDs: Set<Site.SectionID>,
+        itemPredicate: Predicate<Item<Site>>? = nil,
         config: RSSFeedConfiguration = .default,
         date: Date = Date()
     ) -> Self {
@@ -343,6 +346,7 @@ public extension PublishingStep {
         return step(named: "Generate RSS feed") { context in
             let generator = RSSFeedGenerator(
                 includedSectionIDs: includedSectionIDs,
+                itemPredicate: itemPredicate,
                 config: config,
                 context: context,
                 date: date

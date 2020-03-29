@@ -23,6 +23,23 @@ final class RSSFeedGenerationTests: PublishTestCase {
         XCTAssertFalse(feed.contains("Not included"))
     }
 
+    func testOnlyIncludingItemsMatchingPredicate() throws {
+        let folder = try Folder.createTemporary()
+
+        try generateFeed(
+            in: folder,
+            itemPredicate: \.path == "one/a",
+            content: [
+                "one/a.md": "Included",
+                "one/b.md": "Not included"
+            ]
+        )
+
+        let feed = try folder.file(at: "Output/feed.rss").readAsString()
+        XCTAssertTrue(feed.contains("Included"))
+        XCTAssertFalse(feed.contains("Not included"))
+    }
+
     func testConvertingRelativeLinksToAbsolute() throws {
         let folder = try Folder.createTemporary()
 
@@ -119,6 +136,7 @@ extension RSSFeedGenerationTests {
     static var allTests: Linux.TestList<RSSFeedGenerationTests> {
         [
             ("testOnlyIncludingSpecifiedSections", testOnlyIncludingSpecifiedSections),
+            ("testOnlyIncludingItemsMatchingPredicate", testOnlyIncludingItemsMatchingPredicate),
             ("testConvertingRelativeLinksToAbsolute", testConvertingRelativeLinksToAbsolute),
             ("testItemPrefixAndSuffix", testItemPrefixAndSuffix),
             ("testReusingPreviousFeedIfNoItemsWereModified", testReusingPreviousFeedIfNoItemsWereModified),
@@ -134,6 +152,7 @@ private extension RSSFeedGenerationTests {
     func generateFeed(
         in folder: Folder,
         config: RSSFeedConfiguration = .default,
+        itemPredicate: Predicate<Item<Site>>? = nil,
         generationSteps: [PublishingStep<Site>] = [
             .addMarkdownFiles()
         ],
@@ -144,6 +163,7 @@ private extension RSSFeedGenerationTests {
             .group(generationSteps),
             .generateRSSFeed(
                 including: [.one],
+                itemPredicate: itemPredicate,
                 config: config,
                 date: date
             )
