@@ -22,6 +22,12 @@ public struct Predicate<Target> {
 public extension Predicate {
     /// Create a predicate that matches any candidate.
     static var any: Self { Predicate { _ in true } }
+
+    /// Create an inverse of this predicate - that is one that matches
+    /// all candidates that this predicate does not, and vice versa.
+    func inverse() -> Self {
+        Predicate { !self.matches($0) }
+    }
 }
 
 /// Create a predicate for comparing a key path against a value.
