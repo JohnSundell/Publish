@@ -163,7 +163,6 @@ private extension PodcastFeedGenerationTests {
 
     func makeConfigStub() throws -> Configuration {
         try Configuration(
-            title:"Appleseed's Podcast",
             targetPath: .defaultForRSSFeed,
             imageURL: require(URL(string: "image.png")),
             copyrightText: "John Appleseed 2019",
