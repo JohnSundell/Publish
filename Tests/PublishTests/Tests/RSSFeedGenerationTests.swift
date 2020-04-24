@@ -59,7 +59,7 @@ final class RSSFeedGenerationTests: PublishTestCase {
         """)
     }
 
-    func testItemPrefixAndSuffix() throws {
+    func testItemTitlePrefixAndSuffix() throws {
         let folder = try Folder.createTemporary()
 
         try generateFeed(in: folder, content: [
@@ -74,6 +74,26 @@ final class RSSFeedGenerationTests: PublishTestCase {
 
         let feed = try folder.file(at: "Output/feed.rss").readAsString()
         XCTAssertTrue(feed.contains("<title>PrefixTitleSuffix</title>"))
+    }
+
+    func testItemBodyPrefixAndSuffix() throws {
+        let folder = try Folder.createTemporary()
+
+        try generateFeed(in: folder, content: [
+            "one/item.md": """
+            ---
+            rss.bodyPrefix: Prefix
+            rss.bodySuffix: Suffix
+            ---
+            Body
+            """
+        ])
+
+        let feed = try folder.file(at: "Output/feed.rss").readAsString()
+
+        XCTAssertTrue(feed.contains("""
+        <content:encoded><![CDATA[Prefix<p>Body</p>Suffix]]></content:encoded>
+        """))
     }
 
     func testReusingPreviousFeedIfNoItemsWereModified() throws {
@@ -138,7 +158,8 @@ extension RSSFeedGenerationTests {
             ("testOnlyIncludingSpecifiedSections", testOnlyIncludingSpecifiedSections),
             ("testOnlyIncludingItemsMatchingPredicate", testOnlyIncludingItemsMatchingPredicate),
             ("testConvertingRelativeLinksToAbsolute", testConvertingRelativeLinksToAbsolute),
-            ("testItemPrefixAndSuffix", testItemPrefixAndSuffix),
+            ("testItemTitlePrefixAndSuffix", testItemTitlePrefixAndSuffix),
+            ("testItemBodyPrefixAndSuffix", testItemBodyPrefixAndSuffix),
             ("testReusingPreviousFeedIfNoItemsWereModified", testReusingPreviousFeedIfNoItemsWereModified),
             ("testNotReusingPreviousFeedIfConfigChanged", testNotReusingPreviousFeedIfConfigChanged),
             ("testNotReusingPreviousFeedIfItemWasAdded", testNotReusingPreviousFeedIfItemWasAdded)

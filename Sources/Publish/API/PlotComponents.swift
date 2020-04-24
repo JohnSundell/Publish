@@ -157,7 +157,10 @@ internal extension Node where Context: RSSItemContext {
         let baseURL = site.url
         let prefixes = (href: "href=\"", src: "src=\"")
 
-        var html = item.body.html
+        var html = item.rssProperties.bodyPrefix ?? ""
+        html.append(item.body.html)
+        html.append(item.rssProperties.bodySuffix ?? "")
+
         var links = [(url: URL, range: ClosedRange<String.Index>, isHref: Bool)]()
 
         html.scan(using: [
