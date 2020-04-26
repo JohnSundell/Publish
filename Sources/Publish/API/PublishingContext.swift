@@ -281,24 +281,26 @@ internal extension PublishingContext {
             dateFormatter: dateFormatter
         )
     }
+}
 
-    func copyFileToOutput(_ file: File,
+public extension PublishingContext {
+  func copyFileToOutput(_ file: File,
+                        targetFolderPath: Path?) throws {
+    try copyLocationToOutput(
+      file,
+      targetFolderPath: targetFolderPath,
+      errorReason: .fileCopyingFailed
+    )
+  }
+  
+  func copyFolderToOutput(_ folder: Folder,
                           targetFolderPath: Path?) throws {
-        try copyLocationToOutput(
-            file,
-            targetFolderPath: targetFolderPath,
-            errorReason: .fileCopyingFailed
-        )
-    }
-
-    func copyFolderToOutput(_ folder: Folder,
-                            targetFolderPath: Path?) throws {
-        try copyLocationToOutput(
-            folder,
-            targetFolderPath: targetFolderPath,
-            errorReason: .folderCopyingFailed
-        )
-    }
+    try copyLocationToOutput(
+      folder,
+      targetFolderPath: targetFolderPath,
+      errorReason: .folderCopyingFailed
+    )
+  }
 }
 
 private extension PublishingContext {
