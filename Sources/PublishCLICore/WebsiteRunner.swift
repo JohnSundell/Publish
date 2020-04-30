@@ -24,8 +24,22 @@ internal struct WebsiteRunner {
         print("""
         🌍 Starting web server at http://localhost:\(portNumber)
 
-        Press ENTER to stop the server and exit
+        Press ENTER or CONTROL+C to stop the server and exit
         """)
+        
+        // Handle Ctrl+C shutdown
+        let signalsQueue = DispatchQueue(label: "Publish.signals")
+
+        let sigintSrc = DispatchSource.makeSignalSource(signal: SIGINT, queue: signalsQueue)
+        sigintSrc.setEventHandler {
+            print("Shutting down.")
+            serverProcess.terminate()
+            exit(0)
+        }
+        
+        sigintSrc.resume()
+                
+        signal(SIGINT, SIG_IGN) // Make sure the signal does not terminate the application.
 
         serverQueue.async {
             do {
