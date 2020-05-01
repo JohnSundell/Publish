@@ -36,37 +36,31 @@ public struct DeploymentMethod<Site: Website> {
 public extension DeploymentMethod {
     /// Deploy a website to a given remote using Git.
     /// - parameter remote: The full address of the remote to deploy to.
-    static func git(_ remote: String, branch: String = "master") -> Self {
+    /// - parameter branch: The branch to deploy to.
+    /// - parameter targetFolderPath: Any specific subfolder path to deploy the output to.
+    ///   If `nil`, then the output will replace all content in the branch.
+    static func git(_ remote: String, branch: String = "master", targetFolderPath: Path? = nil) -> Self {
         DeploymentMethod(name: "Git (\(remote))") { context in
-            let folder = try context.createDeploymentFolder(withPrefix: "Git") { folder in
-                if !folder.containsSubfolder(named: ".git") {
-                    try shellOut(to: .gitInit(), at: folder.path)
+            let folder = try context.createDeploymentFolder(withPrefix: "Git", targetFolderPath: targetFolderPath) { folder in
+                try folder.empty(includingHidden: true)
 
+                try shellOut(to: .gitInit(), at: folder.path)
+
+                try shellOut(to: "git remote add origin \(remote)", at: folder.path)
+
+                try shellOut(to: "git fetch", at: folder.path)
+
+                if targetFolderPath != nil {
                     try shellOut(
-                        to: "git remote add origin \(remote)",
+                        to: "git checkout \(branch) || git checkout -b \(branch)",
+                        at: folder.path
+                    )
+                } else {
+                    try shellOut(
+                        to: "git symbolic-ref HEAD refs/remotes/origin/\(branch)",
                         at: folder.path
                     )
                 }
-
-                try shellOut(
-                    to: "git remote set-url origin \(remote)",
-                    at: folder.path
-                )
-
-                _ = try? shellOut(
-                    to: .gitPull(remote: "origin", branch: branch),
-                    at: folder.path
-                )
-                
-                let gitFolder = try folder.subfolder(named: ".git")
-                
-                let subfolders = folder.subfolders.includingHidden
-                try subfolders.forEach { folder in
-                    if folder != gitFolder {
-                        try folder.delete()
-                    }
-                }
-                try folder.files.includingHidden.delete()
             }
 
             let dateFormatter = DateFormatter()
@@ -81,10 +75,11 @@ public extension DeploymentMethod {
                     at: folder.path
                 )
 
-                try shellOut(
-                    to: .gitPush(remote: "origin", branch: branch),
-                    at: folder.path
-                )
+                if targetFolderPath == nil {
+                    try shellOut(to: "git checkout -b \(branch)", at: folder.path)
+                }
+
+                try shellOut(to: "git push origin \(branch)", at: folder.path)
             } catch let error as ShellOutError {
                 throw PublishingError(infoMessage: error.message)
             } catch {
@@ -95,14 +90,22 @@ public extension DeploymentMethod {
 
     /// Deploy a website to a given GitHub repository.
     /// - parameter repository: The full name of the repository (including its username).
+    /// - parameter branch: The branch to deploy to.
+    /// - parameter targetFolderPath: Any specific subfolder path to deploy the output to.
+    ///   If `nil`, then the output will replace all content in the branch.
     /// - parameter useSSH: Whether an SSH connection should be used (preferred).
-    static func gitHub(_ repository: String, branch: String = "master", useSSH: Bool = true) -> Self {
+    static func gitHub(_ repository: String, branch: String = "master", targetFolderPath: Path? = nil, useSSH: Bool = true) -> Self {
         git(gitHubRemote(repository: repository, useSSH: useSSH),
-            branch: branch)
+            branch: branch, targetFolderPath: targetFolderPath)
     }
-    
+
+    /// Deploy a website using GitHub Pages.
+    /// - parameter repository: The full name of the repository (including its username).
+    /// - parameter source: The publishing source for your GitHub Pages site.
+    ///   This should be set in your repository settings.
+    /// - parameter useSSH: Whether an SSH connection should be used (preferred).
     static func gitHubPages(_ repository: String,
-                            on branch: GitHubPagesDeploymentMode = .master,
+                            source: GitHubPagesDeploymentMode = .master,
                             useSSH: Bool = true)
         -> Self
     {
@@ -112,23 +115,13 @@ public extension DeploymentMethod {
             let jekyllDisablingFile = try context.createOutputFile(at: Path(".nojekyll"))
             
             let branchName : String
-            var docsModeFolders : (Folder, Folder)?
+            var targetFolderPath: Path? = nil
             
-            switch branch {
+            switch source {
             case .ghPages :
-                branchName = "gh-master"
+                branchName = "gh-pages"
             case .masterDocs :
-                let docs = try context.createOutputFolder(at: Path("docs"))
-                
-                guard let docsParent = docs.parent else {
-                    try jekyllDisablingFile.delete()
-                    try docs.delete()
-                    return
-                }
-                
-                try docsParent.moveContents(to: docs)
-                
-                docsModeFolders = (docs, docsParent)
+                targetFolderPath = Path("docs")
                 fallthrough
             case .master :
                 branchName = "master"
@@ -136,18 +129,14 @@ public extension DeploymentMethod {
             
             try gitHub(repository,
                        branch: branchName,
+                       targetFolderPath: targetFolderPath,
                        useSSH: useSSH)
                 .body(context)
-            
-            if let (docs, docsParent) = docsModeFolders {
-                try docs.moveContents(to: docsParent)
-                try docs.delete()
-            }
             
             try jekyllDisablingFile.delete()
             
             let ghPagesModeName : String
-            switch branch {
+            switch source {
             case .master : ghPagesModeName = "master branch"
             case .masterDocs : ghPagesModeName = "master branch /docs folder"
             case .ghPages : ghPagesModeName = "gh-pages branch"
