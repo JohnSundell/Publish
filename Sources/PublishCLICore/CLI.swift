@@ -55,20 +55,17 @@ private extension CLI {
     func outputHelpText() {
         print("""
         Publish Command Line Interface
-        ------------------------------
-        Interact with the Publish static site generator from
-        the command line, to create new websites, or to generate
-        and deploy existing ones.
 
-        Available commands:
+        Usage: publish <command> [options]
 
-        - new: Set up a new website in the current folder.
-        - generate: Generate the website in the current folder.
-        - run: Generate and run a localhost server on default port 8000
-               for the website in the current folder. Use the "-p"
-               or "--port" option for customizing the default port.
-        - deploy: Generate and deploy the website in the current
-               folder, according to its deployment method.
+        Commands
+          new           Set up a new website in the current directory.
+          generate      Generate the website in the current directory.
+          run           Generate and run a localhost server on port 8000 for the website in the current directory.
+          deploy        Generate and deploy the website in the current directory, according to its deployment method.
+
+        Options
+          -p --port <port>   The port on which to run the localhost server.
         """)
     }
 

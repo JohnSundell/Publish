@@ -34,8 +34,8 @@ internal struct ProjectGenerator {
         try generateMainFile()
 
         print("""
-        ✅ Generated website project for '\(siteName)'
-        Run 'open Package.swift' to open it and start building
+        ✅ Generated website project for '\(siteName)'.
+        Run 'open Package.swift' to open it and start building.
         """)
     }
 }
