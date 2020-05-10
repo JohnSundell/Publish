@@ -44,6 +44,8 @@ final class ContentMutationTests: PublishTestCase {
         ])
 
         XCTAssertNotEqual(Array(site.sections[.one].items), items)
+        // Make sure item indexes are updated
+        XCTAssertNil(site.sections[.one].item(at: "b"))
     }
 
     func testMutatingAllSections() throws {
