@@ -71,7 +71,7 @@ private extension RSSFeedGenerator {
                     .guid(for: item, site: context.site),
                     .title(item.rssTitle),
                     .description(item.description),
-                    .link(context.site.url(for: item)),
+                    .link(item.rssProperties.link ?? context.site.url(for: item)),
                     .pubDate(item.date, timeZone: context.dateFormatter.timeZone),
                     .content(for: item, site: context.site)
                 )

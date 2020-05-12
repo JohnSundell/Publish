@@ -96,6 +96,27 @@ final class RSSFeedGenerationTests: PublishTestCase {
         """))
     }
 
+    func testCustomItemLink() throws {
+        let folder = try Folder.createTemporary()
+
+        try generateFeed(in: folder, content: [
+            "one/item.md": """
+            ---
+            rss.link: custom.link
+            ---
+            Body
+            """
+        ])
+
+        let feed = try folder.file(at: "Output/feed.rss").readAsString()
+
+        XCTAssertTrue(feed.contains("<link>custom.link</link>"))
+
+        XCTAssertTrue(feed.contains("""
+        <guid isPermaLink="false">https://swiftbysundell.com/one/item</guid>
+        """))
+    }
+
     func testReusingPreviousFeedIfNoItemsWereModified() throws {
         let folder = try Folder.createTemporary()
         let contentFile = try folder.createFile(at: "Content/one/item.md")
@@ -160,6 +181,7 @@ extension RSSFeedGenerationTests {
             ("testConvertingRelativeLinksToAbsolute", testConvertingRelativeLinksToAbsolute),
             ("testItemTitlePrefixAndSuffix", testItemTitlePrefixAndSuffix),
             ("testItemBodyPrefixAndSuffix", testItemBodyPrefixAndSuffix),
+            ("testCustomItemLink", testCustomItemLink),
             ("testReusingPreviousFeedIfNoItemsWereModified", testReusingPreviousFeedIfNoItemsWereModified),
             ("testNotReusingPreviousFeedIfConfigChanged", testNotReusingPreviousFeedIfConfigChanged),
             ("testNotReusingPreviousFeedIfItemWasAdded", testNotReusingPreviousFeedIfItemWasAdded)
