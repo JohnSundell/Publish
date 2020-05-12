@@ -134,6 +134,26 @@ public extension PublishingStep {
             try MarkdownFileHandler().addMarkdownFiles(in: folder, to: &context)
         }
     }
+    
+    /// Remove all items matching a predicate, optionally within a specific section.
+    /// - parameter section: Any specific section to remove all items within.
+    /// - parameter predicate: Any predicate to filter the items using.
+    static func removeAllItems(
+        in section: Site.SectionID? = nil,
+        matching predicate: Predicate<Item<Site>> = .any
+    ) -> Self {
+        let nameSuffix = section.map { " in '\($0)'" } ?? ""
+
+        return step(named: "Remove items" + nameSuffix) { context in
+            if let section = section {
+                context.sections[section].removeItems(matching: predicate)
+            } else {
+                for section in context.sections.ids {
+                    context.sections[section].removeItems(matching: predicate)
+                }
+            }
+        }
+    }
 
     /// Mutate all items matching a predicate, optionally within a specific section.
     /// - parameter section: Any specific section to mutate all items within.
