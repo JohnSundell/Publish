@@ -43,9 +43,8 @@ final class ContentMutationTests: PublishTestCase {
             .removeAllItems(matching: \.tags ~= "two")
         ])
 
-        XCTAssertNotEqual(Array(site.sections[.one].items), items)
-        // Make sure item indexes are updated
-        XCTAssertNil(site.sections[.one].item(at: "b"))
+        XCTAssertEqual(site.sections[.one].items, [items[0]])
+        XCTAssertNil(site.sections[.one].item(at: "b"), "Item indexes not updated")
     }
 
     func testMutatingAllSections() throws {
