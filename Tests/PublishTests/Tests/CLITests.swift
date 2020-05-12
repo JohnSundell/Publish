@@ -49,12 +49,20 @@ final class CLITests: PublishTestCase {
         XCTAssertEqual(try folder.getPackageName(), "CamelCaseName")
         #endif
     }
+
+    func testSiteNameWithNonLetterValidCharactersFolderName() throws {
+        #if INCLUDE_CLI
+        let folder = try Folder.createTemporary(named: "Blog.CamelCaseName2.com")
+        try makeCLI(in: folder, command: "new").run(in: folder)
+        XCTAssertEqual(try folder.getPackageName(), "BlogCamelCaseName2Com")
+        #endif
+    }
     
     func testSiteNameFromFolderNameWithNonLetters() throws {
         #if INCLUDE_CLI
         let folder = try Folder.createTemporary(named: "My website 1")
         try makeCLI(in: folder, command: "new").run(in: folder)
-        XCTAssertEqual(try folder.getPackageName(), "Mywebsite")
+        XCTAssertEqual(try folder.getPackageName(), "MyWebsite")
         #endif
     }
     
@@ -76,6 +84,7 @@ extension CLITests {
             ("testSiteNameFromLowercasedFolderName", testSiteNameFromLowercasedFolderName),
             ("testSiteNameFromFolderNameStartingWithDigit", testSiteNameFromFolderNameStartingWithDigit),
             ("testSiteNameFromCamelCaseFolderName", testSiteNameFromCamelCaseFolderName),
+            ("testSiteNameWithNonLetterValidCharactersFolderName", testSiteNameWithNonLetterValidCharactersFolderName),
             ("testSiteNameFromFolderNameWithNonLetters", testSiteNameFromFolderNameWithNonLetters),
             ("testSiteNameFromDigitsOnlyFolderName", testSiteNameFromDigitsOnlyFolderName)
         ]

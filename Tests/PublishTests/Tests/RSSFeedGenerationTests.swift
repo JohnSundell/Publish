@@ -23,6 +23,23 @@ final class RSSFeedGenerationTests: PublishTestCase {
         XCTAssertFalse(feed.contains("Not included"))
     }
 
+    func testOnlyIncludingItemsMatchingPredicate() throws {
+        let folder = try Folder.createTemporary()
+
+        try generateFeed(
+            in: folder,
+            itemPredicate: \.path == "one/a",
+            content: [
+                "one/a.md": "Included",
+                "one/b.md": "Not included"
+            ]
+        )
+
+        let feed = try folder.file(at: "Output/feed.rss").readAsString()
+        XCTAssertTrue(feed.contains("Included"))
+        XCTAssertFalse(feed.contains("Not included"))
+    }
+
     func testConvertingRelativeLinksToAbsolute() throws {
         let folder = try Folder.createTemporary()
 
@@ -33,7 +50,7 @@ final class RSSFeedGenerationTests: PublishTestCase {
         ])
 
         let feed = try folder.file(at: "Output/feed.rss").readAsString()
-        let substring = feed.substrings(between: "BEGIN ", and: " END").first
+        let substring = feed.firstSubstring(between: "BEGIN ", and: " END")
 
         XCTAssertEqual(substring, """
         <a href="https://swiftbysundell.com/page">Link</a> \
@@ -42,7 +59,7 @@ final class RSSFeedGenerationTests: PublishTestCase {
         """)
     }
 
-    func testItemPrefixAndSuffix() throws {
+    func testItemTitlePrefixAndSuffix() throws {
         let folder = try Folder.createTemporary()
 
         try generateFeed(in: folder, content: [
@@ -57,6 +74,47 @@ final class RSSFeedGenerationTests: PublishTestCase {
 
         let feed = try folder.file(at: "Output/feed.rss").readAsString()
         XCTAssertTrue(feed.contains("<title>PrefixTitleSuffix</title>"))
+    }
+
+    func testItemBodyPrefixAndSuffix() throws {
+        let folder = try Folder.createTemporary()
+
+        try generateFeed(in: folder, content: [
+            "one/item.md": """
+            ---
+            rss.bodyPrefix: Prefix
+            rss.bodySuffix: Suffix
+            ---
+            Body
+            """
+        ])
+
+        let feed = try folder.file(at: "Output/feed.rss").readAsString()
+
+        XCTAssertTrue(feed.contains("""
+        <content:encoded><![CDATA[Prefix<p>Body</p>Suffix]]></content:encoded>
+        """))
+    }
+
+    func testCustomItemLink() throws {
+        let folder = try Folder.createTemporary()
+
+        try generateFeed(in: folder, content: [
+            "one/item.md": """
+            ---
+            rss.link: custom.link
+            ---
+            Body
+            """
+        ])
+
+        let feed = try folder.file(at: "Output/feed.rss").readAsString()
+
+        XCTAssertTrue(feed.contains("<link>custom.link</link>"))
+
+        XCTAssertTrue(feed.contains("""
+        <guid isPermaLink="false">https://swiftbysundell.com/one/item</guid>
+        """))
     }
 
     func testReusingPreviousFeedIfNoItemsWereModified() throws {
@@ -119,8 +177,11 @@ extension RSSFeedGenerationTests {
     static var allTests: Linux.TestList<RSSFeedGenerationTests> {
         [
             ("testOnlyIncludingSpecifiedSections", testOnlyIncludingSpecifiedSections),
+            ("testOnlyIncludingItemsMatchingPredicate", testOnlyIncludingItemsMatchingPredicate),
             ("testConvertingRelativeLinksToAbsolute", testConvertingRelativeLinksToAbsolute),
-            ("testItemPrefixAndSuffix", testItemPrefixAndSuffix),
+            ("testItemTitlePrefixAndSuffix", testItemTitlePrefixAndSuffix),
+            ("testItemBodyPrefixAndSuffix", testItemBodyPrefixAndSuffix),
+            ("testCustomItemLink", testCustomItemLink),
             ("testReusingPreviousFeedIfNoItemsWereModified", testReusingPreviousFeedIfNoItemsWereModified),
             ("testNotReusingPreviousFeedIfConfigChanged", testNotReusingPreviousFeedIfConfigChanged),
             ("testNotReusingPreviousFeedIfItemWasAdded", testNotReusingPreviousFeedIfItemWasAdded)
@@ -134,6 +195,7 @@ private extension RSSFeedGenerationTests {
     func generateFeed(
         in folder: Folder,
         config: RSSFeedConfiguration = .default,
+        itemPredicate: Predicate<Item<Site>>? = nil,
         generationSteps: [PublishingStep<Site>] = [
             .addMarkdownFiles()
         ],
@@ -144,6 +206,7 @@ private extension RSSFeedGenerationTests {
             .group(generationSteps),
             .generateRSSFeed(
                 including: [.one],
+                itemPredicate: itemPredicate,
                 config: config,
                 date: date
             )

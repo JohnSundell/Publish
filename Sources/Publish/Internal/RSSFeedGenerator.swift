@@ -10,6 +10,7 @@ import Files
 
 internal struct RSSFeedGenerator<Site: Website> {
     let includedSectionIDs: Set<Site.SectionID>
+    let itemPredicate: Predicate<Item<Site>>?
     let config: RSSFeedConfiguration
     let context: PublishingContext<Site>
     let date: Date
@@ -25,6 +26,10 @@ internal struct RSSFeedGenerator<Site: Website> {
         }
 
         items.sort { $0.date > $1.date }
+
+        if let predicate = itemPredicate?.inverse() {
+            items.removeAll(where: predicate.matches)
+        }
 
         if let date = context.lastGenerationDate, let cache = oldCache {
             if cache.config == config, cache.itemCount == items.count {
@@ -66,7 +71,7 @@ private extension RSSFeedGenerator {
                     .guid(for: item, site: context.site),
                     .title(item.rssTitle),
                     .description(item.description),
-                    .link(context.site.url(for: item)),
+                    .link(item.rssProperties.link ?? context.site.url(for: item)),
                     .pubDate(item.date, timeZone: context.dateFormatter.timeZone),
                     .content(for: item, site: context.site)
                 )
