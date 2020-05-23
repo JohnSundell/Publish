@@ -36,31 +36,29 @@ public struct DeploymentMethod<Site: Website> {
 public extension DeploymentMethod {
     /// Deploy a website to a given remote using Git.
     /// - parameter remote: The full address of the remote to deploy to.
-    /// - parameter branch: The branch to deploy to.
-    /// - parameter targetFolderPath: Any specific subfolder path to deploy the output to.
-    ///   If `nil`, then the output will replace all content in the branch.
-    static func git(_ remote: String, branch: String = "master", targetFolderPath: Path? = nil) -> Self {
+    static func git(_ remote: String) -> Self {
         DeploymentMethod(name: "Git (\(remote))") { context in
-            let folder = try context.createDeploymentFolder(withPrefix: "Git", targetFolderPath: targetFolderPath) { folder in
-                try folder.empty(includingHidden: true)
+            let folder = try context.createDeploymentFolder(withPrefix: "Git") { folder in
+                if !folder.containsSubfolder(named: ".git") {
+                    try shellOut(to: .gitInit(), at: folder.path)
 
-                try shellOut(to: .gitInit(), at: folder.path)
-
-                try shellOut(to: "git remote add origin \(remote)", at: folder.path)
-
-                try shellOut(to: "git fetch", at: folder.path)
-
-                if targetFolderPath != nil {
                     try shellOut(
-                        to: "git checkout \(branch) || git checkout -b \(branch)",
-                        at: folder.path
-                    )
-                } else {
-                    try shellOut(
-                        to: "git symbolic-ref HEAD refs/remotes/origin/\(branch)",
+                        to: "git remote add origin \(remote)",
                         at: folder.path
                     )
                 }
+
+                try shellOut(
+                    to: "git remote set-url origin \(remote)",
+                    at: folder.path
+                )
+
+                _ = try? shellOut(
+                    to: .gitPull(remote: "origin", branch: "master"),
+                    at: folder.path
+                )
+
+                try folder.empty()
             }
 
             let dateFormatter = DateFormatter()
@@ -75,11 +73,10 @@ public extension DeploymentMethod {
                     at: folder.path
                 )
 
-                if targetFolderPath == nil {
-                    try shellOut(to: "git checkout -b \(branch)", at: folder.path)
-                }
-
-                try shellOut(to: "git push origin \(branch)", at: folder.path)
+                try shellOut(
+                    to: .gitPush(remote: "origin", branch: "master"),
+                    at: folder.path
+                )
             } catch let error as ShellOutError {
                 throw PublishingError(infoMessage: error.message)
             } catch {
@@ -90,16 +87,9 @@ public extension DeploymentMethod {
 
     /// Deploy a website to a given GitHub repository.
     /// - parameter repository: The full name of the repository (including its username).
-    /// - parameter branch: The branch to deploy to.
-    /// - parameter targetFolderPath: Any specific subfolder path to deploy the output to.
-    ///   If `nil`, then the output will replace all content in the branch.
     /// - parameter useSSH: Whether an SSH connection should be used (preferred).
-    static func gitHub(_ repository: String, branch: String = "master", targetFolderPath: Path? = nil, useSSH: Bool = true) -> Self {
+    static func gitHub(_ repository: String, useSSH: Bool = true) -> Self {
         let prefix = useSSH ? "git@github.com:" : "https://github.com/"
-        return git(
-            "\(prefix)\(repository).git",
-            branch: branch,
-            targetFolderPath: targetFolderPath
-        )
+        return git("\(prefix)\(repository).git")
     }
 }
