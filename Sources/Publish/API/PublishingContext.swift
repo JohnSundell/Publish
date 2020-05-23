@@ -138,12 +138,12 @@ public extension PublishingContext {
     /// After that, all output files and folders will be copied into the new folder.
     /// - Parameter prefix: What prefix to apply to the folder, typically
     ///   the name of the current deployment method.
-    /// - parameter targetFolderPath: Any specific subfolder path to copy the output to.
+    /// - parameter outputFolderPath: Any specific subfolder path to copy the output to.
     ///   If `nil`, then the output will be copied to the deployment folder itself.
     /// - Parameter configure: A closure used to configure the folder.
     func createDeploymentFolder(
         withPrefix prefix: String,
-        targetFolderPath: Path? = nil,
+        outputFolderPath: Path? = nil,
         configure: (Folder) throws -> Void
     ) throws -> Folder {
         let path = Path(prefix + "Deploy")
@@ -160,8 +160,8 @@ public extension PublishingContext {
             )
         }
 
-        try targetFolderPath.flatMap { try? folder.subfolder(at: $0.string) }?.delete()
-        let targetFolder = targetFolderPath.flatMap { try? folder.createSubfolder(at: $0.string) } ?? folder
+        try outputFolderPath.flatMap { try? folder.subfolder(at: $0.string) }?.delete()
+        let targetFolder = outputFolderPath.flatMap { try? folder.createSubfolder(at: $0.string) } ?? folder
 
         do {
             try folders.output.subfolders.forEach { try $0.copy(to: targetFolder) }
