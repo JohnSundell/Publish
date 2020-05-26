@@ -160,12 +160,15 @@ public extension PublishingContext {
             )
         }
 
-        try outputFolderPath.flatMap { try? folder.subfolder(at: $0.string) }?.delete()
-        let targetFolder = outputFolderPath.flatMap { try? folder.createSubfolder(at: $0.string) } ?? folder
+        var outputFolder = folder
+
+        if let outputFolderPath = outputFolderPath {
+            outputFolder = try folder.createSubfolder(at: outputFolderPath.string)
+        }
 
         do {
-            try folders.output.subfolders.forEach { try $0.copy(to: targetFolder) }
-            try folders.output.files.includingHidden.forEach { try $0.copy(to: targetFolder) }
+            try folders.output.subfolders.forEach { try $0.copy(to: outputFolder) }
+            try folders.output.files.includingHidden.forEach { try $0.copy(to: outputFolder) }
             return folder
         } catch {
             throw FileIOError(path: path, reason: .folderCreationFailed)
