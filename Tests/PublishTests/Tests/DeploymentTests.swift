@@ -143,7 +143,6 @@ final class DeploymentTests: PublishTestCase {
 
         let folder = try require(outputFolder)
         let subfolder = try folder.subfolder(named: "CustomOutput")
-        print(subfolder.subfolders.recursive)
         XCTAssertTrue(subfolder.containsSubfolder(at: "one/a"))
     }
 }
