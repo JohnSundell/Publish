@@ -94,7 +94,7 @@ private extension ProjectGenerator {
 
         if repositoryURL.hasPrefix("http") || repositoryURL.hasPrefix("git@") {
             dependencyString = """
-            name: "Publish", url: "\(repositoryURL)", from: "\(publishVersion)"
+            url: "\(repositoryURL)", from: "\(publishVersion)"
             """
         } else {
             dependencyString = "path: \"\(publishRepositoryURL.path)\""
@@ -114,7 +114,7 @@ private extension ProjectGenerator {
                 )
             ],
             dependencies: [
-                .package(\(dependencyString))
+                .package(name: "Publish", \(dependencyString))
             ],
             targets: [
                 .target(
