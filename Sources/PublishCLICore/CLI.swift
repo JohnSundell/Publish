@@ -31,7 +31,8 @@ public struct CLI {
             let generator = ProjectGenerator(
                 folder: folder,
                 publishRepositoryURL: publishRepositoryURL,
-                publishVersion: publishVersion
+                publishVersion: publishVersion,
+                kind: resolveProjectKind(from: arguments)
             )
 
             try generator.generate()
@@ -85,5 +86,13 @@ private extension CLI {
             }
         }
         return 8000 // default portNumber
+    }
+
+    private func resolveProjectKind(from arguments: [String]) -> ProjectKind {
+        guard arguments.count > 2 else {
+            return .website
+        }
+
+        return ProjectKind(rawValue: arguments[2]) ?? .website
     }
 }

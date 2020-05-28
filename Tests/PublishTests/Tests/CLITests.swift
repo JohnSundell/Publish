@@ -10,11 +10,24 @@ import Files
 import ShellOut
 
 final class CLITests: PublishTestCase {
-    func testProjectGeneration() throws {
+    func testWebsiteProjectGeneration() throws {
         #if INCLUDE_CLI
         let folder = try Folder.createTemporary()
         try makeCLI(in: folder, command: "new").run(in: folder)
         try makeCLI(in: folder, command: "generate").run(in: folder)
+        #endif
+    }
+
+    func testPluginProjectGeneration() throws {
+        #if INCLUDE_CLI
+        let folder = try Folder.createTemporary(named: "Name")
+        try makeCLI(in: folder, command: "new", "plugin").run(in: folder)
+
+        XCTAssertTrue(folder.containsFile(at: "Sources/Name/Name.swift"))
+        XCTAssertEqual(try folder.getPackageName(), "Name")
+
+        // Make sure that the project can build
+        try shellOut(to: "swift build", at: folder.path)
         #endif
     }
 
@@ -79,7 +92,8 @@ final class CLITests: PublishTestCase {
 extension CLITests {
     static var allTests: Linux.TestList<CLITests> {
         [
-            ("testProjectGeneration", testProjectGeneration),
+            ("testWebsiteProjectGeneration", testWebsiteProjectGeneration),
+            ("testPluginProjectGeneration", testPluginProjectGeneration),
             ("testSiteName", testSiteName),
             ("testSiteNameFromLowercasedFolderName", testSiteNameFromLowercasedFolderName),
             ("testSiteNameFromFolderNameStartingWithDigit", testSiteNameFromFolderNameStartingWithDigit),
@@ -92,7 +106,7 @@ extension CLITests {
 }
 
 private extension CLITests {
-    func makeCLI(in folder: Folder, command: String) throws -> CLI {
+    func makeCLI(in folder: Folder, command: String...) throws -> CLI {
         let thisFile = try File(path: "\(#file)")
         let pathSuffix = "/Tests/PublishTests/Tests/CLITests.swift"
 
@@ -101,7 +115,7 @@ private extension CLITests {
         )
 
         return CLI(
-            arguments: [folder.path, command],
+            arguments: [folder.path] + command,
             publishRepositoryURL: URL(
                 fileURLWithPath: repositoryFolder.path
             ),
