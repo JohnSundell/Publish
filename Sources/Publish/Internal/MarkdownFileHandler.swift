@@ -59,7 +59,10 @@ internal struct MarkdownFileHandler<Site: Website> {
                         sectionID: sectionID
                     )
 
-                    context.addItem(item)
+                    if item.content.draft == false {
+                        context.addItem(item)
+                    }
+                    
                 } catch {
                     let path = Path(file.path(relativeTo: folder))
                     throw wrap(error, forPath: path)
