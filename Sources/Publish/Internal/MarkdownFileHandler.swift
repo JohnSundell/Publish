@@ -59,7 +59,7 @@ internal struct MarkdownFileHandler<Site: Website> {
                         sectionID: sectionID
                     )
 
-                    if item.content.draft == false {
+                    if item.content.isDraft == false {
                         context.addItem(item)
                     }
                     

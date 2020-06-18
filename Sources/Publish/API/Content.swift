@@ -17,7 +17,7 @@ public struct Content: Hashable, ContentProtocol {
     public var imagePath: Path?
     public var audio: Audio?
     public var video: Video?
-    public var draft: Bool
+    public var isDraft: Bool
 
     /// Initialize a new instance of this type
     /// - parameter title: The location's title.
@@ -28,7 +28,7 @@ public struct Content: Hashable, ContentProtocol {
     /// - parameter imagePath: A path to any image for the location.
     /// - parameter audio: Any audio data associated with this content.
     /// - parameter video: Any video data associated with this content.
-    /// - parameter draft: Is Content a draft.
+    /// - parameter isDraft: Is Content a draft.
     public init(title: String = "",
                 description: String = "",
                 body: Body = Body(html: ""),
@@ -37,7 +37,7 @@ public struct Content: Hashable, ContentProtocol {
                 imagePath: Path? = nil,
                 audio: Audio? = nil,
                 video: Video? = nil,
-                draft: Bool = false) {
+                isDraft: Bool = false) {
         self.title = title
         self.description = description
         self.body = body
@@ -46,7 +46,7 @@ public struct Content: Hashable, ContentProtocol {
         self.imagePath = imagePath
         self.audio = audio
         self.video = video
-        self.draft = draft
+        self.isDraft = isDraft
     }
 }
 
