@@ -92,6 +92,6 @@ public extension DeploymentMethod {
     /// - parameter useSSH: Whether an SSH connection should be used (preferred).
     static func gitHub(_ repository: String, branch: String = "master", useSSH: Bool = true) -> Self {
         let prefix = useSSH ? "git@github.com:" : "https://github.com/"
-        return git("\(prefix)\(repository).git")
+        return git("\(prefix)\(repository).git", branch: branch)
     }
 }
