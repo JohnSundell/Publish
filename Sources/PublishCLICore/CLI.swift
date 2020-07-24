@@ -46,6 +46,9 @@ public struct CLI {
             let portNumber = extractPortNumber(from: arguments)
             let runner = WebsiteRunner(folder: folder, portNumber: portNumber)
             try runner.run()
+        case "clean":
+            let cleaner = ProjectCleaner(folder: folder)
+            try cleaner.clean()
         default:
             outputHelpText()
         }
@@ -70,6 +73,8 @@ private extension CLI {
                or "--port" option for customizing the default port.
         - deploy: Generate and deploy the website in the current
                folder, according to its deployment method.
+        - clean: Remove the .build folder from the project and all files
+                 and folders inside of it.
         """)
     }
 
