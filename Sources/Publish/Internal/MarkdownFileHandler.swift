@@ -39,7 +39,9 @@ internal struct MarkdownFileHandler<Site: Website> {
 
                 if file.nameExcludingExtension == "index", file.parent == subfolder {
                     let content = try factory.makeContent(fromFile: file)
-                    context.sections[sectionID].content = content
+                    if !content.isDraft {
+                        context.sections[sectionID].content = content
+                    }
                     continue
                 }
 
