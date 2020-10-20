@@ -400,17 +400,21 @@ public extension PublishingStep where Site.ItemMetadata: PodcastCompatibleWebsit
     /// Note that all of the items within the given section must define `podcast`
     /// and `audio` metadata, or an error will be thrown.
     /// - parameter section: The section to generate a podcast feed for.
+    /// - parameter itemPredicate: A predicate used to determine whether to
+    ///   include a given item within the generated feed (default: include all).
     /// - parameter config: The configuration to use when generating the feed.
     /// - parameter date: The date that should act as the build and publishing
     ///   date for the generated feed (default: the current date).
     static func generatePodcastFeed(
         for section: Site.SectionID,
+        itemPredicate: Predicate<Item<Site>>? = nil,
         config: PodcastFeedConfiguration<Site>,
         date: Date = Date()
     ) -> Self {
         step(named: "Generate podcast feed") { context in
             let generator = PodcastFeedGenerator(
                 sectionID: section,
+                itemPredicate: itemPredicate,
                 config: config,
                 context: context,
                 date: date

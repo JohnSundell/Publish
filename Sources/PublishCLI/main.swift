@@ -15,7 +15,7 @@ let cli = CLI(
     publishRepositoryURL: URL(
         string: "https://github.com/johnsundell/publish.git"
     )!,
-    publishVersion: "0.3.0"
+    publishVersion: "0.6.0"
 )
 
 do {

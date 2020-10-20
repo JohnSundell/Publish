@@ -11,15 +11,18 @@ internal struct ProjectGenerator {
     private let folder: Folder
     private let publishRepositoryURL: URL
     private let publishVersion: String
-    private let siteName: String
+    private let kind: ProjectKind
+    private let name: String
 
     init(folder: Folder,
          publishRepositoryURL: URL,
-         publishVersion: String) {
+         publishVersion: String,
+         kind: ProjectKind) {
         self.folder = folder
         self.publishRepositoryURL = publishRepositoryURL
         self.publishVersion = publishVersion
-        self.siteName = folder.name.asSiteName()
+        self.kind = kind
+        self.name = folder.name.asProjectName()
     }
 
     func generate() throws {
@@ -28,13 +31,19 @@ internal struct ProjectGenerator {
         }
 
         try generateGitIgnore()
-        try generateResourcesFolder()
-        try generateContentFolder()
         try generatePackageFile()
-        try generateMainFile()
+
+        switch kind {
+        case .website:
+            try generateResourcesFolder()
+            try generateContentFolder()
+            try generateMainFile()
+        case .plugin:
+            try generatePluginBoilerplate()
+        }
 
         print("""
-        ✅ Generated website project for '\(siteName)'
+        ✅ Generated \(kind.rawValue) project for '\(name)'
         Run 'open Package.swift' to open it and start building
         """)
     }
@@ -58,7 +67,7 @@ private extension ProjectGenerator {
 
     func generateContentFolder() throws {
         let folder = try self.folder.createSubfolder(named: "Content")
-        try folder.createIndexFile(withMarkdown: "# Welcome to \(siteName)!")
+        try folder.createIndexFile(withMarkdown: "# Welcome to \(name)!")
 
         let postsFolder = try folder.createSubfolder(named: "posts")
         try postsFolder.createIndexFile(withMarkdown: "# My posts")
@@ -92,21 +101,24 @@ private extension ProjectGenerator {
         }
 
         try folder.createFile(named: "Package.swift").write("""
-        // swift-tools-version:5.1
+        // swift-tools-version:5.2
 
         import PackageDescription
 
         let package = Package(
-            name: "\(siteName)",
+            name: "\(name)",
             products: [
-                .executable(name: "\(siteName)", targets: ["\(siteName)"])
+                .\(kind.buildProduct)(
+                    name: "\(name)",
+                    targets: ["\(name)"]
+                )
             ],
             dependencies: [
-                .package(\(dependencyString))
+                .package(name: "Publish", \(dependencyString))
             ],
             targets: [
                 .target(
-                    name: "\(siteName)",
+                    name: "\(name)",
                     dependencies: ["Publish"]
                 )
             ]
@@ -115,7 +127,7 @@ private extension ProjectGenerator {
     }
 
     func generateMainFile() throws {
-        let path = "Sources/\(siteName)/main.swift"
+        let path = "Sources/\(name)/main.swift"
 
         try folder.createFileIfNeeded(at: path).write("""
         import Foundation
@@ -123,7 +135,7 @@ private extension ProjectGenerator {
         import Plot
 
         // This type acts as the configuration for your website.
-        struct \(siteName): Website {
+        struct \(name): Website {
             enum SectionID: String, WebsiteSectionID {
                 // Add the sections that you want your website to contain here:
                 case posts
@@ -135,15 +147,44 @@ private extension ProjectGenerator {
 
             // Update these properties to configure your website:
             var url = URL(string: "https://your-website-url.com")!
-            var name = "\(siteName)"
-            var description = "A description of \(siteName)"
+            var name = "\(name)"
+            var description = "A description of \(name)"
             var language: Language { .english }
             var imagePath: Path? { nil }
         }
 
         // This will generate your website using the built-in Foundation theme:
-        try \(siteName)().publish(withTheme: .foundation)
+        try \(name)().publish(withTheme: .foundation)
         """)
+    }
+
+    func generatePluginBoilerplate() throws {
+        let path = "Sources/\(name)/\(name).swift"
+        let methodName = name[name.startIndex].lowercased() + name.dropFirst()
+
+        try folder.createFileIfNeeded(at: path).write("""
+        import Publish
+
+        public extension Plugin {
+            /// Documentation for your plugin
+            static func \(methodName)() -> Self {
+                Plugin(name: "\(name)") { context in
+                    // Perform your plugin's work
+                }
+            }
+        }
+        """)
+    }
+}
+
+private extension ProjectKind {
+    var buildProduct: String {
+        switch self {
+        case .website:
+            return "executable"
+        case .plugin:
+            return "library"
+        }
     }
 }
 
@@ -154,7 +195,7 @@ private extension Folder {
 }
 
 private extension String {
-    func asSiteName() -> Self {
+    func asProjectName() -> Self {
         let validCharacters = CharacterSet.alphanumerics
         let validEdgeCharacters = CharacterSet.letters
         let validSegments = trimmingCharacters(in: validEdgeCharacters.inverted)
