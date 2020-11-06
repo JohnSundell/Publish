@@ -16,11 +16,12 @@ internal struct PublishingPipeline<Site: Website> {
 }
 
 extension PublishingPipeline {
-    func execute(for site: Site, at path: Path?) throws -> PublishedWebsite<Site> {
+    func execute(for site: Site, at path: Path?, outputPath: Path?) throws -> PublishedWebsite<Site> {
         let stepKind = resolveStepKind()
 
         let folders = try setUpFolders(
             withExplicitRootPath: path,
+            explicitOutputPath: outputPath,
             shouldEmptyOutputFolder: stepKind == .generation
         )
 
@@ -81,9 +82,10 @@ private extension PublishingPipeline {
     }
 
     func setUpFolders(withExplicitRootPath path: Path?,
+                      explicitOutputPath outputPath: Path?,
                       shouldEmptyOutputFolder: Bool) throws -> Folder.Group {
         let root = try resolveRootFolder(withExplicitPath: path)
-        let outputFolderName = "Output"
+        let outputFolderName = outputPath?.string ?? "Output"
 
         if shouldEmptyOutputFolder {
             try? root.subfolder(named: outputFolderName).empty(includingHidden: true)

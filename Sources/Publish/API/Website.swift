@@ -57,6 +57,7 @@ public extension Website {
     /// - parameter theme: The HTML theme to generate the website using.
     /// - parameter indentation: How to indent the generated files.
     /// - parameter path: Any specific path to generate the website at.
+    /// - parameter outputPath: Any path inside `path` where to put the generated website in.
     /// - parameter rssFeedSections: What sections to include in the site's RSS feed.
     /// - parameter rssFeedConfig: The configuration to use for the site's RSS feed.
     /// - parameter deploymentMethod: How to deploy the website.
@@ -69,6 +70,7 @@ public extension Website {
     func publish(withTheme theme: Theme<Self>,
                  indentation: Indentation.Kind? = nil,
                  at path: Path? = nil,
+                 outputPath: Path? = nil,
                  rssFeedSections: Set<SectionID> = Set(SectionID.allCases),
                  rssFeedConfig: RSSFeedConfiguration? = .default,
                  deployedUsing deploymentMethod: DeploymentMethod<Self>? = nil,
@@ -77,6 +79,7 @@ public extension Website {
                  file: StaticString = #file) throws -> PublishedWebsite<Self> {
         try publish(
             at: path,
+            outputPath: outputPath,
             using: [
                 .group(plugins.map(PublishingStep.installPlugin)),
                 .optional(.copyResources()),
@@ -99,11 +102,12 @@ public extension Website {
 
     /// Publish this website using a custom pipeline.
     /// - parameter path: Any specific path to generate the website at.
+    /// - parameter outputPath: Any path inside `path` where to put the generated website in.
     /// - parameter steps: The steps to use to form the website's publishing pipeline.
     /// - parameter file: The file that this method is called from (auto-inserted).
-    /// - parameter line: The line that this method is called from (auto-inserted).
     @discardableResult
     func publish(at path: Path? = nil,
+                 outputPath: Path? = nil,
                  using steps: [PublishingStep<Self>],
                  file: StaticString = #file) throws -> PublishedWebsite<Self> {
         let pipeline = PublishingPipeline(
@@ -111,7 +115,7 @@ public extension Website {
             originFilePath: Path("\(file)")
         )
 
-        return try pipeline.execute(for: self, at: path)
+        return try pipeline.execute(for: self, at: path, outputPath: outputPath)
     }
 }
 
