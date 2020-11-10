@@ -54,6 +54,7 @@ final class MarkdownTests: PublishTestCase {
         tags: One, Two, Three
         image: myImage.png
         date: 2019-12-14 10:30
+        language: en
         audio.url: https://myFile.mp3
         audio.duration: 01:03:05
         video.youTube: 12345
@@ -72,6 +73,7 @@ final class MarkdownTests: PublishTestCase {
         XCTAssertEqual(item.tags, ["One", "Two", "Three"])
         XCTAssertEqual(item.imagePath, "myImage.png")
         XCTAssertEqual(item.date, expectedDateComponents.date)
+        XCTAssertEqual(item.language!.rawValue, "en")
         XCTAssertEqual(item.audio?.url, URL(string: "https://myFile.mp3"))
         XCTAssertEqual(item.audio?.duration, Audio.Duration(hours: 1, minutes: 3, seconds: 5))
         XCTAssertEqual(item.video, .youTube(id: "12345"))
