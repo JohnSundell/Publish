@@ -466,3 +466,94 @@ private extension PublishingStep {
         )
     }
 }
+
+public extension PublishingStep where Site: MultiLanguageWebsite {
+    /// Parse a folder of Markdown files and use them to add content to
+    /// the website. The root folders will be parsed as sections, and the
+    /// files within them as items, while root files will be parsed as pages.
+    /// - parameter path: The path of the Markdown folder to add (default: `Content`).
+    static func addMarkdownFiles(at path: Path = "Content") -> Self {
+        step(named: "Add Markdown files from '\(path)' folder") { context in
+            let folder = try context.folder(at: path)
+            try MarkdownFileHandler().addMarkdownFiles(in: folder, to: &context)
+        }
+    }
+    
+    /// Parse the folders of Markdown files in different languages and use them to add content to
+    /// the website. The root folders will be parsed as sections, and the
+    /// files within them as items, while root files will be parsed as pages.
+    static func addMarkdownFiles() -> Self {
+        step(named: "Add Markdown files from folder of each language") { context in
+            try context.site.languages.forEach { language in
+                let folder = try context.folder(at: Path(context.site.contentFolder(for: language)))
+                try MarkdownFileHandler().addMarkdownFiles(in: folder, to: &context, in: language)
+            }
+        }
+    }
+    
+    /// Generate the website's HTML using a given theme.
+    /// - parameter theme: The theme to use to generate the website's HTML.
+    /// - parameter indentation: How each HTML file should be indented.
+    /// - parameter fileMode: The mode to use when generating each HTML file.
+    static func generateHTML(
+        withTheme theme: Theme<Site>,
+        indentation: Indentation.Kind? = nil,
+        fileMode: HTMLFileMode = .foldersAndIndexFiles
+    ) -> Self {
+        step(named: "Generate HTML") { context in
+            let generator = HTMLGenerator(
+                theme: theme,
+                indentation: indentation,
+                fileMode: fileMode,
+                context: context
+            )
+            try generator.generate()
+        }
+    }
+    
+    /// Generate an RSS feed for the website.
+    /// - parameter includedSectionIDs: The IDs of the sections which items
+    ///   to include when generating the feed.
+    /// - parameter itemPredicate: A predicate used to determine whether to
+    ///   include a given item within the generated feed (default: include all).
+    /// - parameter config: The configuration to use when generating the feed.
+    /// - parameter date: The date that should act as the build and publishing
+    ///   date for the generated feed (default: the current date).
+    static func generateRSSFeed(
+        including includedSectionIDs: Set<Site.SectionID>,
+        itemPredicate: Predicate<Item<Site>>? = nil,
+        config: RSSFeedConfiguration = .default,
+        date: Date = Date()
+    ) -> Self {
+        guard !includedSectionIDs.isEmpty else { return .empty }
+
+        return step(named: "Generate RSS feed") { context in
+            let generator = RSSFeedGenerator(
+                includedSectionIDs: includedSectionIDs,
+                itemPredicate: itemPredicate,
+                config: config,
+                context: context,
+                date: date
+            )
+            try generator.generate()
+        }
+    }
+
+    /// Generate a site map for the website, which is an XML file used
+    /// for search engine indexing.
+    /// - parameter excludedPaths: Any paths to exclude from the site map.
+    ///   Adding a section's path to the list removes the entire section, including all its items.
+    /// - parameter indentation: How the site map should be indented.
+    static func generateSiteMap(excluding excludedPaths: Set<Path> = [],
+                                indentedBy indentation: Indentation.Kind? = nil) -> Self {
+        step(named: "Generate site map") { context in
+            let generator = SiteMapGenerator(
+                excludedPaths: excludedPaths,
+                indentation: indentation,
+                context: context
+            )
+
+            try generator.generate()
+        }
+    }
+}

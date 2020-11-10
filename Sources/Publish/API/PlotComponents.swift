@@ -211,3 +211,78 @@ private extension Node where Context: HTML.BodyContext {
         )
     }
 }
+
+internal extension Node where Context: RSSItemContext {
+    static func guid<T: MultiLanguageWebsite>(for item: Item<T>, site: T) -> Node {
+        return .guid(
+            .text(item.rssProperties.guid ?? site.url(for: item).absoluteString),
+            .isPermaLink(item.rssProperties.guid == nil && item.rssProperties.link == nil)
+        )
+    }
+}
+
+public extension Node where Context == HTML.DocumentContext {
+    /// Add an HTML `<head>` tag within the current context, based
+    /// on inferred information from the current location and `Website`
+    /// implementation.
+    /// - parameter location: The location to generate a `<head>` tag for.
+    /// - parameter site: The website on which the location is located.
+    /// - parameter titleSeparator: Any string to use to separate the location's
+    ///   title from the name of the website. Default: `" | "`.
+    /// - parameter stylesheetPaths: The paths to any stylesheets to add to
+    ///   the resulting HTML page. Default: `styles.css`.
+    /// - parameter rssFeedPath: The path to any RSS feed to associate with the
+    ///   resulting HTML page. Default: `feed.rss`.
+    /// - parameter rssFeedTitle: An optional title for the page's RSS feed.
+    static func head<T: MultiLanguageWebsite>(
+        for location: Location,
+        on site: T,
+        //in language: Language,
+        titleSeparator: String = " | ",
+        stylesheetPaths: [Path] = ["/styles.css"],
+        rssFeedPath: Path? = .defaultForRSSFeed,
+        rssFeedTitle: String? = nil
+    ) -> Node {
+        var title = location.title
+        
+        if let tagDetail = location as? TagDetailsPage {
+            title = tagDetail.title
+        }
+
+        if title.isEmpty {
+            title = site.name
+        } else {
+            title.append(titleSeparator + site.name)
+        }
+
+        var description = location.description
+
+        if description.isEmpty {
+            description = site.description
+        }
+        
+        let localizedRssFeedPath = rssFeedPath == nil ? nil : Path(site.pathPrefix(for: location.language!)).appendingComponent(rssFeedPath!.string)
+        return .head(
+            .encoding(.utf8),
+            .siteName(site.name),
+            .url(site.url(for: location)),
+            .title(title),
+            .description(description),
+            .twitterCardType(location.imagePath == nil ? .summary : .summaryLargeImage),
+            .forEach(stylesheetPaths, { .stylesheet($0) }),
+            .viewport(.accordingToDevice),
+            .unwrap(site.favicon, { .favicon($0) }),
+            .unwrap(localizedRssFeedPath, { path in
+                let title = rssFeedTitle ?? "Subscribe to \(site.name)"
+                return .rssFeedLink(path.absoluteString, title: title)
+            }),
+            .unwrap(location.imagePath ?? site.imagePath, { path in
+                let url = site.url(for: path)
+                return .socialImageLink(url)
+            })
+        )
+    }
+}
+
+
+

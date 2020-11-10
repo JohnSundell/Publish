@@ -79,3 +79,52 @@ private extension RSSFeedGenerator {
         )
     }
 }
+
+internal extension RSSFeedGenerator where Site: MultiLanguageWebsite {
+    func generate() throws {
+        try context.site.languages.forEach{ language in
+            let outputFile = try context.createOutputFile(at: "\(context.site.pathPrefix(for: language))/\(config.targetPath)")
+            var items = [Item<Site>]()
+
+            for sectionID in includedSectionIDs {
+                items += context.sections[sectionID].items(in: language)
+            }
+
+            items.sort { $0.date > $1.date }
+
+            if let predicate = itemPredicate?.inverse() {
+                items.removeAll(where: predicate.matches)
+            }
+
+            let feed = makeFeed(containing: items, in: language).render(indentedBy: config.indentation)
+
+            try outputFile.write(feed)
+        }
+    }
+}
+
+private extension RSSFeedGenerator where Site: MultiLanguageWebsite {
+    func makeFeed(containing items: [Item<Site>], in language: Language) -> RSS {
+        RSS(
+            .title(context.site.name),
+            .description(context.site.description),
+            .link(context.site.url),
+            .language(language),
+            .lastBuildDate(date, timeZone: context.dateFormatter.timeZone),
+            .pubDate(date, timeZone: context.dateFormatter.timeZone),
+            .ttl(Int(config.ttlInterval)),
+            .atomLink(context.site.url(for: config.targetPath)),
+            .forEach(items.prefix(config.maximumItemCount)) { item in
+                .item(
+                    .guid(for: item, site: context.site),
+                    .title(item.rssTitle),
+                    .description(item.description),
+                    .link(item.rssProperties.link ?? context.site.url(for: item)),
+                    //.link(item.rssProperties.link ?? context.site.url(for: item, in: language)),
+                    .pubDate(item.date, timeZone: context.dateFormatter.timeZone),
+                    .content(for: item, site: context.site)
+                )
+            }
+        )
+    }
+}
