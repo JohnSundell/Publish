@@ -386,7 +386,6 @@ public extension PublishingContext where Site: MultiLanguageWebsite {
             return section
         }
         var dummySection = Section<Site>(id: id)
-        dummySection.content = self.sections[id].content
         dummySection.language = language
         self.add(dummySection)
         return dummySection
@@ -450,7 +449,6 @@ public extension PublishingContext where Site: MultiLanguageWebsite {
         }
         // make dummy index
         var dummyIndex = Index()
-        dummyIndex.content = self.index.content
         dummyIndex.language = language
         self.add(dummyIndex)
         return dummyIndex
