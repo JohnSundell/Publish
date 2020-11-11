@@ -44,6 +44,52 @@ public extension MultiLanguageWebsite {
         language.rawValue
     }
     
+    /// Publish this website using a default pipeline. To build a completely
+    /// custom pipeline, use the `publish(using:)` method.
+    /// - parameter theme: The HTML theme to generate the website using.
+    /// - parameter indentation: How to indent the generated files.
+    /// - parameter path: Any specific path to generate the website at.
+    /// - parameter rssFeedSections: What sections to include in the site's RSS feed.
+    /// - parameter rssFeedConfig: The configuration to use for the site's RSS feed.
+    /// - parameter deploymentMethod: How to deploy the website.
+    /// - parameter additionalSteps: Any additional steps to add to the publishing
+    ///   pipeline. Will be executed right before the HTML generation process begins.
+    /// - parameter plugins: Plugins to be installed at the start of the publishing process.
+    /// - parameter file: The file that this method is called from (auto-inserted).
+    /// - parameter line: The line that this method is called from (auto-inserted).
+    @discardableResult
+    func publish(withTheme theme: Theme<Self>,
+                 indentation: Indentation.Kind? = nil,
+                 at path: Path? = nil,
+                 rssFeedSections: Set<SectionID> = Set(SectionID.allCases),
+                 rssFeedConfig: RSSFeedConfiguration? = .default,
+                 deployedUsing deploymentMethod: DeploymentMethod<Self>? = nil,
+                 additionalSteps: [PublishingStep<Self>] = [],
+                 plugins: [Plugin<Self>] = [],
+                 file: StaticString = #file) throws -> PublishedWebsite<Self> {
+        try publish(
+            at: path,
+            using: [
+                .group(plugins.map(PublishingStep.installPlugin)),
+                .optional(.copyResources()),
+                .addMarkdownFiles(),
+                .sortItems(by: \.date, order: .descending),
+                .group(additionalSteps),
+                .generateHTML(withTheme: theme, indentation: indentation),
+                .copyDefaultIndexHtml(),
+                .unwrap(rssFeedConfig) { config in
+                    .generateRSSFeed(
+                        including: rssFeedSections,
+                        config: config
+                    )
+                },
+                .generateSiteMap(indentedBy: indentation),
+                .unwrap(deploymentMethod, PublishingStep.deploy)
+            ],
+            file: file
+        )
+    }
+    
     /// Publish this website using a custom pipeline.
     /// - parameter path: Any specific path to generate the website at.
     /// - parameter steps: The steps to use to form the website's publishing pipeline.

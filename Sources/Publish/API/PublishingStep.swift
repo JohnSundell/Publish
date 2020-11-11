@@ -556,4 +556,11 @@ public extension PublishingStep where Site: MultiLanguageWebsite {
             try generator.generate()
         }
     }
+    
+    /// Copy the index.html of default language to root path of output folder.
+    static func copyDefaultIndexHtml() -> Self {
+        step(named: "Copy index.html of default language", body: { context in
+            try context.outputFile(at: "\(context.site.pathPrefix(for: context.site.language))/index.html").copy(to: context.outputFolder(at: ""))
+        })
+    }
 }
