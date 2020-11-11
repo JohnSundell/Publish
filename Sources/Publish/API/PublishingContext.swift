@@ -385,18 +385,11 @@ public extension PublishingContext where Site: MultiLanguageWebsite {
         if let section = MultiLanguageContentManager.location(at: Path(id.rawValue), in: language, for: self.site) as? Section<Site> {
             return section
         }
-        // make dummy sections
-            self.site.languages.forEach { language in
-                var dummySection = Section<Site>(id: id)
-                dummySection.content = self.sections[id].content
-                dummySection.language = language
-                self.add(dummySection)
-            }
-        
-        if let section = MultiLanguageContentManager.location(at: Path(id.rawValue), in: language, for: self.site) as? Section<Site> {
-            return section
-        }
-        return self.sections[id]
+        var dummySection = Section<Site>(id: id)
+        dummySection.content = self.sections[id].content
+        dummySection.language = language
+        self.add(dummySection)
+        return dummySection
     }
     
     /// Return all items within this website, sorted by a given key path.
@@ -452,7 +445,15 @@ public extension PublishingContext where Site: MultiLanguageWebsite {
     /// Index page localized in language.
     /// - parameter language: The language to return index for.
     func index(in language: Language) -> Index {
-        MultiLanguageContentManager.location(at: "", in: language, for: self.site) as! Index
+        if let index = MultiLanguageContentManager.location(at: "", in: language, for: self.site) as? Index {
+            return index
+        }
+        // make dummy index
+        var dummyIndex = Index()
+        dummyIndex.content = self.index.content
+        dummyIndex.language = language
+        self.add(dummyIndex)
+        return dummyIndex
     }
     
     func alternateLinks(for location: Location) -> [Language: Path] {
