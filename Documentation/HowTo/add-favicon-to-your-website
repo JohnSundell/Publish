@@ -2,12 +2,12 @@
 
 Favicon is an important icon for your website tab. With a favicon, your website is easy to recognize.
 
-To add a favicon, you should add your favicon image, to your Resources folder.
+To add a favicon, you should add your favicon image to your `Resources` folder.
 
 > I highly recommended your favicon dimensions is 16x16 pixel.
 
 Step:
-1. For more organized project folders, add new folder inside the `Resources` folder.
+1. For more organized project folders, add new folder which is `Images` folder inside the `Resources` folder.
 
 ```
 Resources
@@ -21,7 +21,7 @@ Resources
         Images
                 favicon.png
 ```
-3. The final step, add the following code in your `main.swift` file.
+3. The final step, add the following code in the `main.swift` file.
 
 ```
 struct SampleWebsite: Website {
