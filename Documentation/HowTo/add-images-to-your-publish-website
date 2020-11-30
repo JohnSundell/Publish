@@ -1,0 +1,27 @@
+# Add Images To Your Publish Website
+
+Sometimes we want adding images to our website for make our article clear.
+
+Here are the steps to adding images.
+
+Step:
+
+1. Adding images in `Resources` folder.
+2. To more organized, add new folder with the name `Images` and also add new folder with the title of the articel that we want to upload image there. For example, we have new article with title "Example-Article". Our folder hierarchy should like this:
+```
+Resources
+		Images
+			Example-Article
+					image.png						
+```
+3. In our `Content` | `post`, add a new file for writing the article. So, create `example-article.md` file as we mention before that we have a new article with that title. Our folder hierarchy should like this:
+```
+Content
+		post
+			example-article.md			
+```
+
+4. Finally, in `example-article.md`	file, add a markdown syntax like this:
+```
+![ImageAlt](/Images/Example-Article/image.png)
+```
