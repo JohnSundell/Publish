@@ -29,8 +29,10 @@ internal struct WebsiteRunner {
             """)
 
             try server.start()
-        } catch {
+        } catch let error as ServerError {
             outputServerError(error)
+        } catch {
+            outputError(error)
         }
     }
 }
@@ -68,7 +70,7 @@ private extension WebsiteRunner {
         fputs("\n❌ Failed to start local web server:\n\(message)\n", stderr)
     }
 
-    func outputServerError(_ error: Error) {
+    func outputError(_ error: Error) {
         fputs("\n❌ Failed to start local web server:\n\(error.localizedDescription)\n", stderr)
     }
 }
