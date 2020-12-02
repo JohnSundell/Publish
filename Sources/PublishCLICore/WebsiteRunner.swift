@@ -1,12 +1,13 @@
 /**
-*  Publish
-*  Copyright (c) John Sundell 2019
-*  MIT license, see LICENSE file for details
-*/
+ *  Publish
+ *  Copyright (c) John Sundell 2019
+ *  MIT license, see LICENSE file for details
+ */
 
-import Foundation
 import Files
+import Foundation
 import ShellOut
+import StaticServer
 
 internal struct WebsiteRunner {
     let folder: Folder
@@ -18,34 +19,19 @@ internal struct WebsiteRunner {
 
         let outputFolder = try resolveOutputFolder()
 
-        let serverQueue = DispatchQueue(label: "Publish.WebServer")
-        let serverProcess = Process()
+        do {
+            let server = try StaticServer(host: "localhost", port: portNumber, root: outputFolder.path, silent: true)
 
-        print("""
-        🌍 Starting web server at http://localhost:\(portNumber)
+            print("""
+            🌍 Starting web server at http://localhost:\(portNumber)
 
-        Press ENTER to stop the server and exit
-        """)
+            Press Ctrl+C to stop the server and exit
+            """)
 
-        serverQueue.async {
-            do {
-                _ = try shellOut(
-                    to: "python -m \(self.resolvePythonHTTPServerCommand()) \(self.portNumber)",
-                    at: outputFolder.path,
-                    process: serverProcess
-                )
-            } catch let error as ShellOutError {
-                self.outputServerErrorMessage(error.message)
-            } catch {
-                self.outputServerErrorMessage(error.localizedDescription)
-            }
-
-            serverProcess.terminate()
-            exit(1)
+            try server.start()
+        } catch {
+            outputServerError(error)
         }
-
-        _ = readLine()
-        serverProcess.terminate()
     }
 }
 
@@ -55,37 +41,34 @@ private extension WebsiteRunner {
         catch { throw CLIError.outputFolderNotFound }
     }
 
-    func resolvePythonHTTPServerCommand() -> String {
-        if resolveSystemPythonMajorVersionNumber() >= 3 {
-            return "http.server"
-        } else {
-            return "SimpleHTTPServer"
-        }
-    }
+    func outputServerError(_ error: ServerError) {
+        var message = error.localizedDescription
 
-    func resolveSystemPythonMajorVersionNumber() -> Int {
-        // Expected output: `Python X.X.X`
-        let pythonVersionString = try? shellOut(to: "python --version")
-        let fullVersionNumber = pythonVersionString?.split(separator: " ").last
-        let majorVersionNumber = fullVersionNumber?.first
-        return majorVersionNumber?.wholeNumberValue ?? 2
-    }
-
-    func outputServerErrorMessage(_ message: String) {
-        var message = message
-
-        if message.hasPrefix("Traceback"),
-           message.contains("Address already in use") {
+        if error == .AddressAlreadyInUse {
             message = """
             A localhost server is already running on port number \(portNumber).
             - Perhaps another 'publish run' session is running?
-            - Publish uses Python's simple HTTP server, so to find any
-              running processes, you can use either Activity Monitor
-              or the 'ps' command and search for 'python'. You can then
-              terminate any previous process in order to start a new one.
+            - Publish uses simple SwiftNIO server to serve files.
+              You can use following command to find the process using the port
+              we wanted to use:
+
+              lsof -i tcp:\(portNumber)
+
+              You can also use either Activity Monitor or the 'ps' command
+              to search for 'publish'. You can then terminate any previous
+              process in order to start a new one.
+            """
+        } else if error == .ServerRootDoesNotExist {
+            message = """
+            Can't create StaticServer instance, because Output folder
+            can't be found.
             """
         }
 
         fputs("\n❌ Failed to start local web server:\n\(message)\n", stderr)
+    }
+
+    func outputServerError(_ error: Error) {
+        fputs("\n❌ Failed to start local web server:\n\(error.localizedDescription)\n", stderr)
     }
 }
