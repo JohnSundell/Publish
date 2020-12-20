@@ -46,6 +46,10 @@ public struct CLI {
             let portNumber = extractPortNumber(from: arguments)
             let runner = WebsiteRunner(folder: folder, portNumber: portNumber)
             try runner.run()
+        case "serve":
+            let portNumber = extractPortNumber(from: arguments)
+            let server = WebsiteServer(folder: folder, portNumber: portNumber)
+            try server.serve()
         default:
             outputHelpText()
         }
