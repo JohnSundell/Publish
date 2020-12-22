@@ -22,9 +22,9 @@ final class SiteMapGenerationTests: PublishTestCase {
         let siteMap = try file.readAsString()
 
         let expectedLocations = [
-            "https://swiftbysundell.com/one",
-            "https://swiftbysundell.com/one/item",
-            "https://swiftbysundell.com/page"
+            "https://swiftbysundell.com/one/",
+            "https://swiftbysundell.com/one/item/",
+            "https://swiftbysundell.com/page/"
         ]
 
         for location in expectedLocations {
@@ -53,17 +53,17 @@ final class SiteMapGenerationTests: PublishTestCase {
         let siteMap = try file.readAsString()
 
         let expectedLocations = [
-            "https://swiftbysundell.com/one",
-            "https://swiftbysundell.com/one/itemA",
-            "https://swiftbysundell.com/pageA"
+            "https://swiftbysundell.com/one/",
+            "https://swiftbysundell.com/one/itemA/",
+            "https://swiftbysundell.com/pageA/"
         ]
 
         let unexpectedLocations = [
-            "https://swiftbysundell.com/one/itemB",
-            "https://swiftbysundell.com/two",
-            "https://swiftbysundell.com/two/itemC",
-            "https://swiftbysundell.com/two/itemD",
-            "https://swiftbysundell.com/pageB"
+            "https://swiftbysundell.com/one/itemB/",
+            "https://swiftbysundell.com/two/",
+            "https://swiftbysundell.com/two/itemC/",
+            "https://swiftbysundell.com/two/itemD/",
+            "https://swiftbysundell.com/pageB/"
         ]
 
         for location in expectedLocations {
