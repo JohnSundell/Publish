@@ -37,7 +37,6 @@ private extension SiteMapGenerator {
     func makeSiteMap(for sections: [Section<Site>], pages: [Page], site: Site) -> SiteMap {
         SiteMap(
             .forEach(sections) { section in
-                print("Excluded paths: \(excludedPaths)")
                 guard shouldIncludePath(section.path) else {
                     return .empty
                 }
