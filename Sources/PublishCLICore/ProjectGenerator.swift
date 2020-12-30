@@ -129,7 +129,7 @@ private extension ProjectGenerator {
     func generateMainFile() throws {
         let path = "Sources/\(name)/main.swift"
 
-        let websiteProtocol = name == "Website" ? "Publish.Website" : "Website"
+        let websiteProtocol = (name == "Website") ? "Publish.Website" : "Website"
         try folder.createFileIfNeeded(at: path).write("""
         import Foundation
         import Publish
