@@ -161,8 +161,10 @@ extension Theme where Site == DeliciousRecipes {
 
     private struct DeliciousHTMLFactory: HTMLFactory {
         ...
-        func makeItemHTML(for item: Item<DeliciousRecipes>,
-                          context: PublishingContext<DeliciousRecipes>) throws -> HTML {
+        func makeItemHTML(
+            for item: Item<DeliciousRecipes>,
+            context: PublishingContext<DeliciousRecipes>
+        ) throws -> HTML {
             HTML(
                 .head(for: item, on: context.site),
                 .body(
