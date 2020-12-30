@@ -268,6 +268,12 @@ $ make
 
 Then run `publish help` for instructions on how to use it.
 
+The Publish command line tool is also available via [Homebrew](https://brew.sh) and can be installed using the following command if you have Homebrew installed:
+
+```
+brew install publish
+```
+
 ## Running and deploying
 
 Since all Publish websites are implemented as Swift packages, they can be generated simply by opening up a website’s package in Xcode (by opening its `Package.swift` file), and then running it using the `Product > Run` command (or `⌘+R`).
