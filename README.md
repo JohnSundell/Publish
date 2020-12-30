@@ -266,9 +266,7 @@ $ make
 
 Then run `publish help` for instructions on how to use it.
 
-### Homebrew
-
-Publish is also available via [Homebrew](https://brew.sh/). Run this command to install Publish if you have Homebrew installed:
+The Publish command line tool is also available via [Homebrew](https://brew.sh) and can be installed using the following command if you have Homebrew installed:
 
 ```
 brew install publish
