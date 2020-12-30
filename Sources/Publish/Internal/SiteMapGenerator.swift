@@ -27,18 +27,18 @@ struct SiteMapGenerator<Site: Website> {
     }
 }
 
-internal extension Collection where Element: StringWrapper {
-    func containsPath(_ path: Path) -> Bool {
-        contains(where: { path.string.hasPrefix($0.string) })
-    }
-}
-
 private extension SiteMapGenerator {
+    func shouldIncludePath(_ path: Path) -> Bool {
+        !excludedPaths.contains(where: {
+            path.string.hasPrefix($0.string)
+        })
+    }
+
     func makeSiteMap(for sections: [Section<Site>], pages: [Page], site: Site) -> SiteMap {
         SiteMap(
             .forEach(sections) { section in
                 print("Excluded paths: \(excludedPaths)")
-                guard !excludedPaths.containsPath(section.path) else {
+                guard shouldIncludePath(section.path) else {
                     return .empty
                 }
 
@@ -53,7 +53,7 @@ private extension SiteMapGenerator {
                         ))
                     ),
                     .forEach(section.items) { item in
-                        guard !excludedPaths.containsPath(item.path) else {
+                        guard shouldIncludePath(item.path) else {
                             return .empty
                         }
 
@@ -67,7 +67,7 @@ private extension SiteMapGenerator {
                 )
             },
             .forEach(pages) { page in
-                guard !excludedPaths.containsPath(page.path) else {
+                guard shouldIncludePath(page.path) else {
                     return .empty
                 }
 
