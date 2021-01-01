@@ -154,6 +154,32 @@ private struct FoundationHTMLFactory<Site: Website>: HTMLFactory {
             )
         )
     }
+    
+    // MARK: - AMP versions
+    
+    func makeAMPIndexHTML(for index: Index,
+                          context: PublishingContext<Site>) throws -> HTML {
+        // TODO adapt to AMP
+        return try makeIndexHTML(for: index, context: context)
+    }
+    
+    func makeAMPSectionHTML(for section: Section<Site>,
+                            context: PublishingContext<Site>) throws -> HTML {
+        // TODO adapt to AMP
+        return try makeSectionHTML(for: section, context: context)
+    }
+    
+    func makeAMPItemHTML(for item: Item<Site>,
+                         context: PublishingContext<Site>) throws -> HTML {
+        // TODO adapt to AMP
+        return try makeItemHTML(for: item, context: context)
+    }
+    
+    func makeAMPPageHTML(for page: Page,
+                      context: PublishingContext<Site>) throws -> HTML {
+        // TODO adapt to AMP
+        return try makePageHTML(for: page, context: context)
+    }
 }
 
 private extension Node where Context == HTML.BodyContext {

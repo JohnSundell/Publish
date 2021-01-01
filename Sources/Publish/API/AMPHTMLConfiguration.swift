@@ -4,19 +4,24 @@
 *  MIT license, see LICENSE file for details
 */
 
-/// Configuration type used to customize how a website's
-/// AMP pages gets rendered. To use a default implementation,
+/// Configuration type used to customize which and where
+/// AMP pages are generated. To use a default implementation,
 /// use `AMPHTMLConfiguration.default`.
 public struct AMPHTMLConfiguration {
-    /// The path that will be appended to a resources to obtain the path of the AMP version.
-    public var suffixPath: Path
-
+    /// A closure that given a location, provides the path to the AMP version of that location.
+    ///
+    /// You can filter over the type of location (or a specific location) to return `nil`, which means that no AMP
+    /// version of that location is generated.
+    public var pathForLocation: (Location) -> Path?
+    
     /// Initialize a new configuration instance.
-    /// - Parameter suffixPath: The path that will be appended to a resources to obtain the path of the AMP version.
+    /// - Parameter pathForLocation: A closure that given a location, provides the path to the AMP version of that location.
     public init(
-        suffixPath: Path = .defaultForAMPHTML
+        pathForLocation: @escaping (Location) -> Path? = { location in
+            return Path("\(location.path)/\(Path.defaultForAMPHTML).html")
+        }
     ) {
-        self.suffixPath = suffixPath
+        self.pathForLocation = pathForLocation
     }
 }
 

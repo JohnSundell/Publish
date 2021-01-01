@@ -28,7 +28,9 @@ public extension Node where Context == HTML.DocumentContext {
         titleSeparator: String = " | ",
         stylesheetPaths: [Path] = ["/styles.css"],
         rssFeedPath: Path? = .defaultForRSSFeed,
-        rssFeedTitle: String? = nil
+        rssFeedTitle: String? = nil,
+        canonical: Path? = nil,
+        amphtml: Path? = nil
     ) -> Node {
         var title = location.title
 
@@ -43,11 +45,21 @@ public extension Node where Context == HTML.DocumentContext {
         if description.isEmpty {
             description = site.description
         }
+        
+        let url = site.url(for: location)
 
         return .head(
             .encoding(.utf8),
             .siteName(site.name),
-            .url(site.url(for: location)),
+            // If no canonical path was passed, use this location path as canonical.
+            .if(canonical == nil,
+                .url(url),
+                else:
+                    .group(
+                        .meta(.name("twitter:url"), .content(url.absoluteString)),
+                        .meta(.name("og:url"), .content(url.absoluteString))
+                    )
+            ),
             .title(title),
             .description(description),
             .twitterCardType(location.imagePath == nil ? .summary : .summaryLargeImage),
@@ -61,6 +73,16 @@ public extension Node where Context == HTML.DocumentContext {
             .unwrap(location.imagePath ?? site.imagePath, { path in
                 let url = site.url(for: path)
                 return .socialImageLink(url)
+            }),
+            .unwrap(canonical, { path in
+                let url = site.url(for: path)
+                return .link(.rel(.canonical),
+                             .href(url))
+            }),
+            .unwrap(amphtml, { path in
+                let url = site.url(for: path)
+                return .link(.attribute(named: "rel", value: "amphtml"),
+                             .href(url))
             })
         )
     }

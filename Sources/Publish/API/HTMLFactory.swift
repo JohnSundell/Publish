@@ -51,4 +51,30 @@ public protocol HTMLFactory {
     /// - parameter context: The current publishing context.
     func makeTagDetailsHTML(for page: TagDetailsPage,
                             context: PublishingContext<Site>) throws -> HTML?
+    
+    // MARK: - AMP versions
+    
+    /// Create the AMP version of the HTML to use for the website's main index page.
+    /// - parameter index: The index page to generate HTML for.
+    /// - parameter context: The current publishing context.
+    func makeAMPIndexHTML(for index: Index,
+                          context: PublishingContext<Site>) throws -> HTML
+    
+    /// Create the AMP version of the HTML to use for the index page of a section.
+    /// - parameter section: The section to generate HTML for.
+    /// - parameter context: The current publishing context.
+    func makeAMPSectionHTML(for section: Section<Site>,
+                            context: PublishingContext<Site>) throws -> HTML
+    
+    /// Create the AMP version of the HTML to use for an item.
+    /// - parameter item: The item to generate HTML for.
+    /// - parameter context: The current publishing context.
+    func makeAMPItemHTML(for item: Item<Site>,
+                         context: PublishingContext<Site>) throws -> HTML
+    
+    /// Create the AMP version of the HTML to use for a page.
+    /// - parameter page: The page to generate HTML for.
+    /// - parameter context: The current publishing context.
+    func makeAMPPageHTML(for page: Page,
+                         context: PublishingContext<Site>) throws -> HTML
 }

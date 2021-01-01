@@ -123,13 +123,43 @@ private extension HTMLGenerator {
         }
     }
     
-    /// Genetares the AMP version of the website, only for those resources specified by
+    /// Generates the AMP version of the website, only for those resources specified by
     /// `context.site.ampHTMLConfig`.
     func generateAMPHTMLIfNeeded() throws {
         guard let config = context.site.ampHTMLConfig else {
             return
         }
-        // TODO generate AMP pages
+
+        // Generate the AMP version of the index
+        if let indexPath = config.pathForLocation(context.index) {
+            let ampIndexHTML = try theme.makeAMPIndexHTML(context.index, context)
+            try writeHTMLFile(ampIndexHTML, at: indexPath)
+        }
+        
+        // Generate the AMP version of the section pages
+        for section in context.sections {
+            if let sectionPath = config.pathForLocation(section) {
+                let ampSectionHTML = try theme.makeAMPSectionHTML(section, context)
+                try writeHTMLFile(ampSectionHTML, at: sectionPath)
+            }
+            
+            for item in section.items {
+                // Generate the AMP version of the items
+                if let itemPath = config.pathForLocation(item) {
+                    let ampItemHTML = try theme.makeAMPItemHTML(item, context)
+                    try writeHTMLFile(ampItemHTML, at: itemPath)
+                }
+            }
+        }
+        
+        for page in context.pages.values {
+            if let pagePath = config.pathForLocation(page) {
+                let ampPageHTML = try theme.makeAMPPageHTML(page, context)
+                try writeHTMLFile(ampPageHTML, at: pagePath)
+            }
+        }
+        
+        // TODO generate TAG AMP pages
     }
 
     func outputHTML<T: Location>(
@@ -140,8 +170,7 @@ private extension HTMLGenerator {
     ) throws {
         let html = try generator(location, context)
         let path = filePath(for: location, fileMode: fileMode)
-        let file = try context.createOutputFile(at: path)
-        try file.write(html.render(indentedBy: indentation))
+        try writeHTMLFile(html, at: path)
     }
 
     func filePath(for location: Location, fileMode: HTMLFileMode) -> Path {
@@ -151,5 +180,10 @@ private extension HTMLGenerator {
         case .standAloneFiles:
             return "\(location.path).html"
         }
+    }
+
+    func writeHTMLFile(_ html: HTML, at path: Path) throws {
+        let ampFile = try context.createOutputFile(at: path)
+        try ampFile.write(html.render(indentedBy: indentation))
     }
 }

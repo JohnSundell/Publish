@@ -17,6 +17,13 @@ public struct Theme<Site: Website> {
     internal let makePageHTML: (Page, PublishingContext<Site>) throws -> HTML
     internal let makeTagListHTML: (TagListPage, PublishingContext<Site>) throws -> HTML?
     internal let makeTagDetailsHTML: (TagDetailsPage, PublishingContext<Site>) throws -> HTML?
+    
+    // MARK: AMP versions
+    internal let makeAMPIndexHTML: (Index, PublishingContext<Site>) throws -> HTML
+    internal let makeAMPSectionHTML: (Section<Site>, PublishingContext<Site>) throws -> HTML
+    internal let makeAMPItemHTML: (Item<Site>, PublishingContext<Site>) throws -> HTML
+    internal let makeAMPPageHTML: (Page, PublishingContext<Site>) throws -> HTML
+    
     internal let resourcePaths: Set<Path>
     internal let creationPath: Path
 
@@ -38,6 +45,10 @@ public struct Theme<Site: Website> {
         makePageHTML = factory.makePageHTML
         makeTagListHTML = factory.makeTagListHTML
         makeTagDetailsHTML = factory.makeTagDetailsHTML
+        makeAMPIndexHTML = factory.makeAMPIndexHTML
+        makeAMPSectionHTML = factory.makeAMPSectionHTML
+        makeAMPItemHTML = factory.makeAMPItemHTML
+        makeAMPPageHTML = factory.makeAMPPageHTML
         resourcePaths = resources
         creationPath = Path("\(file)")
     }
