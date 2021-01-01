@@ -40,6 +40,9 @@ public protocol Website {
     /// The configuration to use when generating tag HTML for the website.
     /// If this is `nil`, then no tag HTML will be generated.
     var tagHTMLConfig: TagHTMLConfiguration? { get }
+    /// The configuration to use when generating AMP HTML for the website.
+    /// If this is `nil`, then no AMP HTML will be generated.
+    var ampHTMLConfig: AMPHTMLConfiguration? { get }
 }
 
 // MARK: - Defaults

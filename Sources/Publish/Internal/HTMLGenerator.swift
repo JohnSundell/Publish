@@ -19,6 +19,7 @@ internal struct HTMLGenerator<Site: Website> {
         try generateSectionHTML()
         try generatePageHTML()
         try generateTagHTMLIfNeeded()
+        try generateAMPHTMLIfNeeded()
     }
 }
 
@@ -120,6 +121,15 @@ private extension HTMLGenerator {
                 fileMode: fileMode
             )
         }
+    }
+    
+    /// Genetares the AMP version of the website, only for those resources specified by
+    /// `context.site.ampHTMLConfig`.
+    func generateAMPHTMLIfNeeded() throws {
+        guard let config = context.site.ampHTMLConfig else {
+            return
+        }
+        // TODO generate AMP pages
     }
 
     func outputHTML<T: Location>(

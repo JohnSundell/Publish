@@ -23,6 +23,8 @@ public extension Path {
     static var defaultForTagHTML: Path { "tags" }
     /// The default path used for website favicons.
     static var defaultForFavicon: Path { "images/favicon.png" }
+    /// The default path used when generating HTML for AMP version of resources.
+    static var defaultForAMPHTML: Path { "amp" }
 
     /// Convert this path into an absolute string, which can be used to
     /// refer to locations and resources based on the root of a website.
