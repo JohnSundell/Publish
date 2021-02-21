@@ -36,7 +36,8 @@ public struct DeploymentMethod<Site: Website> {
 public extension DeploymentMethod {
     /// Deploy a website to a given remote using Git.
     /// - parameter remote: The full address of the remote to deploy to.
-    static func git(_ remote: String) -> Self {
+    /// - parameter branch: The branch to push to and pull from (default is master).
+    static func git(_ remote: String, branch: String = "master") -> Self {
         DeploymentMethod(name: "Git (\(remote))") { context in
             let folder = try context.createDeploymentFolder(withPrefix: "Git") { folder in
                 if !folder.containsSubfolder(named: ".git") {
@@ -54,7 +55,7 @@ public extension DeploymentMethod {
                 )
 
                 _ = try? shellOut(
-                    to: .gitPull(remote: "origin", branch: "master"),
+                    to: .gitPull(remote: "origin", branch: branch),
                     at: folder.path
                 )
 
@@ -74,7 +75,7 @@ public extension DeploymentMethod {
                 )
 
                 try shellOut(
-                    to: .gitPush(remote: "origin", branch: "master"),
+                    to: .gitPush(remote: "origin", branch: branch),
                     at: folder.path
                 )
             } catch let error as ShellOutError {
@@ -87,9 +88,10 @@ public extension DeploymentMethod {
 
     /// Deploy a website to a given GitHub repository.
     /// - parameter repository: The full name of the repository (including its username).
+    /// - parameter branch: The branch to push to and pull from (default is master).
     /// - parameter useSSH: Whether an SSH connection should be used (preferred).
-    static func gitHub(_ repository: String, useSSH: Bool = true) -> Self {
+    static func gitHub(_ repository: String, branch: String = "master", useSSH: Bool = true) -> Self {
         let prefix = useSSH ? "git@github.com:" : "https://github.com/"
-        return git("\(prefix)\(repository).git")
+        return git("\(prefix)\(repository).git", branch: branch)
     }
 }

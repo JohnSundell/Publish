@@ -32,6 +32,21 @@ final class ContentMutationTests: PublishTestCase {
         XCTAssertEqual(site.sections[.one].items.first?.body.html, "<div>Plot!</div>")
     }
 
+    func testRemovingItemsMatchingPredicate() throws {
+        let items = [
+            Item.stub(withPath: "a").setting(\.tags, to: ["one"]),
+            Item.stub(withPath: "b").setting(\.tags, to: ["one", "two"])
+        ]
+
+        let site = try publishWebsite(using: [
+            .addItems(in: items),
+            .removeAllItems(matching: \.tags ~= "two")
+        ])
+
+        XCTAssertEqual(site.sections[.one].items, [items[0]])
+        XCTAssertNil(site.sections[.one].item(at: "b"), "Item indexes not updated")
+    }
+
     func testMutatingAllSections() throws {
         let site = try publishWebsite(using: [
             .step(named: "Set section titles") { context in
@@ -280,6 +295,7 @@ extension ContentMutationTests {
         [
             ("testAddingItemUsingClosureAPI", testAddingItemUsingClosureAPI),
             ("testAddingItemUsingPlotHierarchy", testAddingItemUsingPlotHierarchy),
+            ("testRemovingItemsMatchingPredicate", testRemovingItemsMatchingPredicate),
             ("testMutatingAllSections", testMutatingAllSections),
             ("testMutatingAllItems", testMutatingAllItems),
             ("testMutatingItemsInSection", testMutatingItemsInSection),

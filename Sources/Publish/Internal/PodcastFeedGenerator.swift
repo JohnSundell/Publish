@@ -9,6 +9,7 @@ import Plot
 
 internal struct PodcastFeedGenerator<Site: Website> where Site.ItemMetadata: PodcastCompatibleWebsiteItemMetadata {
     let sectionID: Site.SectionID
+    let itemPredicate: Predicate<Item<Site>>?
     let config: PodcastFeedConfiguration<Site>
     let context: PublishingContext<Site>
     let date: Date
@@ -18,7 +19,11 @@ internal struct PodcastFeedGenerator<Site: Website> where Site.ItemMetadata: Pod
         let cacheFile = try context.cacheFile(named: "feed")
         let oldCache = try? cacheFile.read().decoded() as Cache
         let section = context.sections[sectionID]
-        let items = section.items.sorted(by: { $0.date > $1.date })
+        var items = section.items.sorted(by: { $0.date > $1.date })
+
+        if let predicate = itemPredicate?.inverse() {
+            items.removeAll(where: predicate.matches)
+        }
 
         if let date = context.lastGenerationDate, let cache = oldCache {
             if cache.config == config, cache.itemCount == items.count {

@@ -114,6 +114,37 @@ final class DeploymentTests: PublishTestCase {
         XCTAssertTrue(infoMessage.contains("receive.denyCurrentBranch"))
         XCTAssertTrue(infoMessage.contains("[remote rejected]"))
     }
+
+    func testDeployingUsingCustomOutputFolder() throws {
+        let container = try Folder.createTemporary()
+
+        // First generate
+        try publishWebsite(in: container, using: [
+            .addMarkdownFiles(),
+            .generateHTML(withTheme: .foundation)
+        ], content: [
+            "one/a.md": "Text"
+        ])
+
+        // Then deploy
+        CommandLine.arguments.append("--deploy")
+
+        var outputFolder: Folder?
+
+        try publishWebsite(in: container, using: [
+            .deploy(using: DeploymentMethod(name: "Test") { context in
+                outputFolder = try context.createDeploymentFolder(
+                    withPrefix: "Test",
+                    outputFolderPath: "CustomOutput",
+                    configure: { _ in }
+                )
+            })
+        ])
+
+        let folder = try require(outputFolder)
+        let subfolder = try folder.subfolder(named: "CustomOutput")
+        XCTAssertTrue(subfolder.containsSubfolder(at: "one/a"))
+    }
 }
 
 extension DeploymentTests {
@@ -122,7 +153,8 @@ extension DeploymentTests {
             ("testDeploymentSkippedByDefault", testDeploymentSkippedByDefault),
             ("testGenerationStepsAndPluginsSkippedWhenDeploying", testGenerationStepsAndPluginsSkippedWhenDeploying),
             ("testGitDeploymentMethod", testGitDeploymentMethod),
-            ("testGitDeploymentMethodWithError",testGitDeploymentMethodWithError)
+            ("testGitDeploymentMethodWithError", testGitDeploymentMethodWithError),
+            ("testDeployingUsingCustomOutputFolder", testDeployingUsingCustomOutputFolder)
         ]
     }
 }
