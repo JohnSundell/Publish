@@ -1,4 +1,4 @@
-name: GitHub Release
+name: Build and Upload CLI
 
 on:
   push:
@@ -6,39 +6,9 @@ on:
       - '*'
 
 jobs:
-  # build-linux:
-  #   runs-on: ubuntu-latest
-  #   container: 'swift:5.3-bionic'
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v2
-
-  #     - name: Build Binary
-  #       run: |
-  #         swift build --configuration release
-  #         mv `swift build --configuration release --show-bin-path`/publish-clie ./publish
-
-  #     - uses: actions/upload-artifact@v2
-  #       with:
-  #         name: publish-linux
-  #         path: publish
-
-  build-macos:
-    runs-on: macos-latest
+  create-release:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Build Binary
-        run: |
-          swift build --configuration release
-          mv `swift build --configuration release --show-bin-path`/publish-cli ./publish
-
-      # - uses: actions/upload-artifact@v2
-      #   with:
-      #     name: publish-macos
-      #     path: publish
-
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -49,13 +19,83 @@ jobs:
           release_name: Release ${{ github.ref }}
           draft: false
           prerelease: false
+
+      - shell: bash
+        env:
+          UPLOAD_URL: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+        run: |
+          echo ${UPLOAD_URL} > upload_url.txt
+      
+      # example from: https://docs.github.com/en/actions/guides/storing-workflow-data-as-artifacts
+      - name: Upload math result for job 1
+        uses: actions/upload-artifact@v2
+        with:
+          name: upload_url
+          path: upload_url.txt
+
+  build-linux:
+    runs-on: ubuntu-latest
+    container: 'swift:5.3-bionic'
+    steps:
+      - name: Get Upload URL
+        uses: actions/download-artifact@v2
+        with:
+          name: upload_url
+      
+      - shell: bash
+        run: |
+          echo "::set-output name=upload_url::$(cat upload_url.txt)"
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Build Binary
+        run: |
+          swift build --configuration release
+          mv `swift build --configuration release --show-bin-path`/publish-cli ./publish
+          chmod +x ./publish
+
       - name: Upload Release Asset
         id: upload-release-asset 
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+          upload_url: ${{ steps.get_upload_url.outputs.upload_url }}
           asset_path: ./publish
-          asset_name: publish-macos
+          asset_name: publish
+          asset_content_type: application/x-binary
+
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Get Upload URL
+        id: get_upload_url
+        uses: actions/download-artifact@v2
+        with:
+          name: upload_url
+
+      - shell: bash
+        run: |
+          echo "::set-output name=upload_url::$(cat upload_url.txt)"
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Build Binary
+        run: |
+          swift build --configuration release
+          mv `swift build --configuration release --show-bin-path`/publish-cli ./publish
+          chmod +x ./publish
+
+      - name: Upload Release Asset
+        id: upload-release-asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_upload_url.outputs.upload_url }}
+          asset_path: ./publish
+          asset_name: publish
           asset_content_type: application/x-binary
