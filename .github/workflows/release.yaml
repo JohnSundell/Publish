@@ -43,6 +43,7 @@ jobs:
           name: upload_url
       
       - shell: bash
+        id: get_upload_url
         run: |
           echo "::set-output name=upload_url::$(cat upload_url.txt)"
 
@@ -77,6 +78,7 @@ jobs:
           name: upload_url
 
       - shell: bash
+        id: get_upload_url
         run: |
           echo "::set-output name=upload_url::$(cat upload_url.txt)"
 
