@@ -72,7 +72,6 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Get Upload URL
-        id: get_upload_url
         uses: actions/download-artifact@v2
         with:
           name: upload_url
