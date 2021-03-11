@@ -64,7 +64,7 @@ jobs:
         with:
           upload_url: ${{ steps.get_upload_url.outputs.upload_url }}
           asset_path: ./publish
-          asset_name: publish
+          asset_name: publish-linux
           asset_content_type: application/x-binary
 
 
