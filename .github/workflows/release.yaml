@@ -52,8 +52,8 @@ jobs:
 
       - name: Build Binary
         run: |
-          swift build --configuration release
-          mv `swift build --configuration release --show-bin-path`/publish-cli ./publish
+          swift build --configuration release --arch x86_64 --arch arm64
+          mv `swift build --configuration release --arch x86_64 --arch arm64 --show-bin-path`/publish-cli ./publish
           chmod +x ./publish
 
       - name: Upload Release Asset
@@ -86,8 +86,8 @@ jobs:
 
       - name: Build Binary
         run: |
-          swift build --configuration release
-          mv `swift build --configuration release --show-bin-path`/publish-cli ./publish
+          swift build --configuration release --arch x86_64 --arch arm64
+          mv `swift build --configuration release --arch x86_64 --arch arm64 --show-bin-path`/publish-cli ./publish
           chmod +x ./publish
 
       - name: Upload Release Asset
