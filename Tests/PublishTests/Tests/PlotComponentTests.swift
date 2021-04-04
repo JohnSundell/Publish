@@ -35,6 +35,45 @@ final class PlotComponentTests: PublishTestCase {
         }
     }
 
+    func testTitleStyleDefault() {
+        let html = Node.head(
+            for: Page(path: "path", content: Content(title: "A Title")),
+            on: WebsiteStub.WithoutItemMetadata()
+        ).render()
+
+        XCTAssertTrue(html.contains(#"<title>A Title | WebsiteName</title>"#))
+    }
+
+    func testTitleStyleLocationTitle() {
+        let html = Node.head(
+            for: Page(path: "path", content: Content(title: "A Title")),
+            on: WebsiteStub.WithoutItemMetadata(),
+            titleStyle: .locationTitle
+        ).render()
+
+        XCTAssertTrue(html.contains(#"<title>A Title</title>"#))
+    }
+
+    func testTitleStyleFixed() {
+        let html = Node.head(
+            for: Page(path: "path", content: Content(title: "A Title")),
+            on: WebsiteStub.WithoutItemMetadata(),
+            titleStyle: .fixed(string: "Custom")
+        ).render()
+
+        XCTAssertTrue(html.contains(#"<title>Custom</title>"#))
+    }
+
+    func testTitleStyleSeparator() {
+        let html = Node.head(
+            for: Page(path: "path", content: Content(title: "A Title")),
+            on: WebsiteStub.WithoutItemMetadata(),
+            titleStyle: .titleAndSiteName(separator: " • ")
+        ).render()
+
+        XCTAssertTrue(html.contains(#"<title>A Title • WebsiteName</title>"#))
+    }
+
     func testRenderingAudioPlayer() throws {
         let url = try require(URL(string: "https://audio.mp3"))
         let audio = Audio(url: url, format: .mp3)
@@ -86,6 +125,10 @@ extension PlotComponentTests {
     static var allTests: Linux.TestList<PlotComponentTests> {
         [
             ("testStylesheetPaths", testStylesheetPaths),
+            ("testTitleStyleDefault", testTitleStyleDefault),
+            ("testTitleStyleLocationTitle", testTitleStyleLocationTitle),
+            ("testTitleStyleFixed", testTitleStyleFixed),
+            ("testTitleStyleSeparator", testTitleStyleSeparator),
             ("testRenderingAudioPlayer", testRenderingAudioPlayer),
             ("testRenderingHostedVideoPlayer", testRenderingHostedVideoPlayer),
             ("testRenderingYouTubeVideoPlayer", testRenderingYouTubeVideoPlayer),

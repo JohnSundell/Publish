@@ -25,18 +25,12 @@ public extension Node where Context == HTML.DocumentContext {
     static func head<T: Website>(
         for location: Location,
         on site: T,
-        titleSeparator: String = " | ",
+        titleStyle: HTMLTitleStyle = .titleAndSiteName(separator: " | "),
         stylesheetPaths: [Path] = ["/styles.css"],
         rssFeedPath: Path? = .defaultForRSSFeed,
         rssFeedTitle: String? = nil
     ) -> Node {
-        var title = location.title
-
-        if title.isEmpty {
-            title = site.name
-        } else {
-            title.append(titleSeparator + site.name)
-        }
+        let title = titleStyle.title(for: location, in: site)
 
         var description = location.description
 
