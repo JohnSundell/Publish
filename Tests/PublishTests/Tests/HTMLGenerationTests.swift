@@ -112,7 +112,7 @@ final class HTMLGenerationTests: PublishTestCase {
                 "page1.md": "# Page 1",
                 "page2.md": "# Page 2"
             ],
-            additionalSteps: [
+            preGenerationSteps: [
                 .addPage(Page(
                     path: "path/to/page3",
                     content: Content(title: "Page 3")
@@ -122,6 +122,38 @@ final class HTMLGenerationTests: PublishTestCase {
                 "page1/index.html": "Page 1",
                 "page2/index.html": "Page 2",
                 "path/to/page3/index.html": "Page 3"
+            ]
+        )
+    }
+
+    func testModifyingHTML() throws {
+        htmlFactory.makePageHTML = { page, _ in
+            HTML(.body(.text(page.title)))
+        }
+
+        try publishWebsite(
+            using: Theme(htmlFactory: htmlFactory),
+            content: [
+                "page1.md": "# Page 1",
+                "page2.md": "# Page 2"
+            ],
+            postGenerationSteps: [
+                .step(named: "Modify HTML") { context in
+                    do {
+                        let root = try context.folder(at: "")
+                        for file in root.files.recursive where file.extension == "html" {
+                            let html = try file.readAsString()
+                            let newHTML = html.replacingOccurrences(of: "Page", with: "Book")
+                            try file.write(newHTML)
+                        }
+                    } catch {
+                        XCTFail("Error while running testModifyingHTML()\n\(error)")
+                    }
+                }
+            ],
+            expectedHTML: [
+                "page1/index.html": "Book 1",
+                "page2/index.html": "Book 2"
             ]
         )
     }
@@ -219,7 +251,7 @@ final class HTMLGenerationTests: PublishTestCase {
 
         try publishWebsite(
             using: Theme(htmlFactory: htmlFactory),
-            additionalSteps: [
+            preGenerationSteps: [
                 .addItem(Item.stub(withPath: "item").setting(\.tags, to: ["tag"]))
             ],
             expectedHTML: [
@@ -240,7 +272,7 @@ final class HTMLGenerationTests: PublishTestCase {
 
         try publishWebsite(site,
             using: Theme(htmlFactory: htmlFactory),
-            additionalSteps: [
+            preGenerationSteps: [
                 .addItem(Item.stub(withPath: "item").setting(\.tags, to: ["tag"]))
             ],
             expectedHTML: [
@@ -333,6 +365,7 @@ extension HTMLGenerationTests {
             ("testGeneratingItemHTML", testGeneratingItemHTML),
             ("testGeneratingNestedItemHTML", testGeneratingNestedItemHTML),
             ("testGeneratingPageHTML", testGeneratingPageHTML),
+            ("testModifyingHTML", testModifyingHTML),
             ("testGeneratingTagHTML", testGeneratingTagHTML),
             ("testCleaningUpOldHTMLFiles", testCleaningUpOldHTMLFiles),
             ("testAlwaysGeneratingIndexPageForAllSections", testAlwaysGeneratingIndexPageForAllSections),

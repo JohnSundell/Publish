@@ -60,8 +60,10 @@ public extension Website {
     /// - parameter rssFeedSections: What sections to include in the site's RSS feed.
     /// - parameter rssFeedConfig: The configuration to use for the site's RSS feed.
     /// - parameter deploymentMethod: How to deploy the website.
-    /// - parameter additionalSteps: Any additional steps to add to the publishing
+    /// - parameter preGenerationSteps: Additional steps to add to the publishing
     ///   pipeline. Will be executed right before the HTML generation process begins.
+    /// - parameter postGenerationSteps: Additional steps to add to the publishing pipeline.
+    ///   Will be executed after generation steps, right before the deployment process begins.
     /// - parameter plugins: Plugins to be installed at the start of the publishing process.
     /// - parameter file: The file that this method is called from (auto-inserted).
     /// - parameter line: The line that this method is called from (auto-inserted).
@@ -72,7 +74,8 @@ public extension Website {
                  rssFeedSections: Set<SectionID> = Set(SectionID.allCases),
                  rssFeedConfig: RSSFeedConfiguration? = .default,
                  deployedUsing deploymentMethod: DeploymentMethod<Self>? = nil,
-                 additionalSteps: [PublishingStep<Self>] = [],
+                 preGenerationSteps: [PublishingStep<Self>] = [],
+                 postGenerationSteps: [PublishingStep<Self>] = [],
                  plugins: [Plugin<Self>] = [],
                  file: StaticString = #file) throws -> PublishedWebsite<Self> {
         try publish(
@@ -82,7 +85,7 @@ public extension Website {
                 .optional(.copyResources()),
                 .addMarkdownFiles(),
                 .sortItems(by: \.date, order: .descending),
-                .group(additionalSteps),
+                .group(preGenerationSteps),
                 .generateHTML(withTheme: theme, indentation: indentation),
                 .unwrap(rssFeedConfig) { config in
                     .generateRSSFeed(
@@ -91,6 +94,7 @@ public extension Website {
                     )
                 },
                 .generateSiteMap(indentedBy: indentation),
+                .group(postGenerationSteps),
                 .unwrap(deploymentMethod, PublishingStep.deploy)
             ],
             file: file

@@ -71,7 +71,7 @@ Here’s how we could extend our basic `publish()` call from before to inject ou
 ```swift
 try DeliciousRecipes().publish(
     withTheme: .foundation,
-    additionalSteps: [
+    preGenerationSteps: [
         // Add an item programmatically
         .addItem(Item(
             path: "my-favorite-recipe",
