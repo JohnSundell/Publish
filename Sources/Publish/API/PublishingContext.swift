@@ -22,7 +22,7 @@ public struct PublishingContext<Site: Website> {
     public var markdownParser = MarkdownParser()
     /// The date formatter that this publishing session is using when parsing
     /// dates from Markdown files.
-    public var dateFormatter: DateFormatter
+    public var dateFormatter: AnyDateFormatter
     /// A representation of the website's main index page.
     public var index = Index()
     /// The sections that the website contains.

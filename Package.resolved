@@ -3,11 +3,11 @@
     "pins": [
       {
         "package": "Codextended",
-        "repositoryURL": "https://github.com/johnsundell/codextended.git",
+        "repositoryURL": "https://github.com/addisonwebb/codextended.git",
         "state": {
-          "branch": null,
-          "revision": "8d7c46dfc9c55240870cf5561d6cefa41e3d7105",
-          "version": "0.3.0"
+          "branch": "update-any-date-formatter",
+          "revision": "69f133ad154a1b1eadbdb898b755788e987ac1c9",
+          "version": null
         }
       },
       {

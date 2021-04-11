@@ -12,3 +12,14 @@ try MyWebsite.publish(using: [
     }
 ])
 ```
+
+You can also use `ISO8601DateFormatter`.
+
+```swift
+try MyWebsite.publish(using: [
+    ...
+    .step(named: "Use ISO8601DateFormatter") { context in
+        context.dateFormatter = ISO8601DateFormatter()
+    }
+])
+```
