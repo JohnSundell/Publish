@@ -1,4 +1,4 @@
-// swift-tools-version:5.2
+// swift-tools-version:5.4
 
 /**
 *  Publish
@@ -29,7 +29,7 @@ let package = Package(
                 "Ink", "Plot", "Files", "Codextended", "ShellOut", "Sweep"
             ]
         ),
-        .target(
+        .executableTarget(
             name: "PublishCLI",
             dependencies: ["PublishCLICore"]
         ),
