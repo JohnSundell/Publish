@@ -81,15 +81,3 @@ final class PlotComponentTests: PublishTestCase {
         """)
     }
 }
-
-extension PlotComponentTests {
-    static var allTests: Linux.TestList<PlotComponentTests> {
-        [
-            ("testStylesheetPaths", testStylesheetPaths),
-            ("testRenderingAudioPlayer", testRenderingAudioPlayer),
-            ("testRenderingHostedVideoPlayer", testRenderingHostedVideoPlayer),
-            ("testRenderingYouTubeVideoPlayer", testRenderingYouTubeVideoPlayer),
-            ("testRenderingVimeoVideoPlayer", testRenderingVimeoVideoPlayer)
-        ]
-    }
-}

@@ -150,18 +150,3 @@ final class MarkdownTests: PublishTestCase {
         XCTAssertEqual(site.sections[.one].items, [])
     }
 }
-
-extension MarkdownTests {
-    static var allTests: Linux.TestList<MarkdownTests> {
-        [
-            ("testParsingFileWithTitle", testParsingFileWithTitle),
-            ("testParsingFileWithOverriddenTitle", testParsingFileWithOverriddenTitle),
-            ("testParsingFileWithNoTitle", testParsingFileWithNoTitle),
-            ("testParsingFileWithOverriddenPath", testParsingFileWithOverriddenPath),
-            ("testParsingFileWithBuiltInMetadata", testParsingFileWithBuiltInMetadata),
-            ("testParsingFileWithCustomMetadata", testParsingFileWithCustomMetadata),
-            ("testParsingPageInNestedFolder", testParsingPageInNestedFolder),
-            ("testNotParsingNonMarkdownFiles", testNotParsingNonMarkdownFiles)
-        ]
-    }
-}
