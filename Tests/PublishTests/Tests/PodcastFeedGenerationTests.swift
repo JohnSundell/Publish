@@ -164,20 +164,6 @@ final class PodcastFeedGenerationTests: PublishTestCase {
     }
 }
 
-extension PodcastFeedGenerationTests {
-    static var allTests: Linux.TestList<PodcastFeedGenerationTests> {
-        [
-            ("testOnlyIncludingSpecifiedSection", testOnlyIncludingSpecifiedSection),
-            ("testOnlyIncludingItemsMatchingPredicate", testOnlyIncludingItemsMatchingPredicate),
-            ("testConvertingRelativeLinksToAbsolute", testConvertingRelativeLinksToAbsolute),
-            ("testItemPrefixAndSuffix", testItemPrefixAndSuffix),
-            ("testReusingPreviousFeedIfNoItemsWereModified", testReusingPreviousFeedIfNoItemsWereModified),
-            ("testNotReusingPreviousFeedIfConfigChanged", testNotReusingPreviousFeedIfConfigChanged),
-            ("testNotReusingPreviousFeedIfItemWasAdded", testNotReusingPreviousFeedIfItemWasAdded)
-        ]
-    }
-}
-
 private extension PodcastFeedGenerationTests {
     typealias Site = WebsiteStub.WithPodcastMetadata
     typealias Configuration = PodcastFeedConfiguration<Site>

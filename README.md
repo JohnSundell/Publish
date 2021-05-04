@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-    <img src="https://img.shields.io/badge/Swift-5.2-orange.svg" />
+    <img src="https://img.shields.io/badge/Swift-5.4-orange.svg" />
     <a href="https://swift.org/package-manager">
         <img src="https://img.shields.io/badge/swiftpm-compatible-brightgreen.svg?style=flat" alt="Swift Package Manager" />
     </a>
@@ -161,8 +161,10 @@ extension Theme where Site == DeliciousRecipes {
 
     private struct DeliciousHTMLFactory: HTMLFactory {
         ...
-        func makeItemHTML(for item: Item<DeliciousRecipes>,
-                          context: PublishingContext<DeliciousRecipes>) throws -> HTML {
+        func makeItemHTML(
+            for item: Item<DeliciousRecipes>,
+            context: PublishingContext<DeliciousRecipes>
+        ) throws -> HTML {
             HTML(
                 .head(for: item, on: context.site),
                 .body(
@@ -230,7 +232,7 @@ For a real-world example of a Publish plugin, check out the [official Splash plu
 
 ## System requirements
 
-To be able to successfully use Publish, make sure that your system has Swift version 5.2 (or later) installed. If you’re using a Mac, also make sure that `xcode-select` is pointed at an Xcode installation that includes the required version of Swift, and that you’re running macOS Catalina (10.15) or later. 
+To be able to successfully use Publish, make sure that your system has Swift version 5.4 (or later) installed. If you’re using a Mac, also make sure that `xcode-select` is pointed at an Xcode installation that includes the required version of Swift, and that you’re running macOS Big Sur (11.0) or later. 
 
 Please note that Publish **does not** officially support any form of beta software, including beta versions of Xcode and macOS, or unreleased versions of Swift.
 
@@ -265,6 +267,12 @@ $ make
 ```
 
 Then run `publish help` for instructions on how to use it.
+
+The Publish command line tool is also available via [Homebrew](https://brew.sh) and can be installed using the following command if you have Homebrew installed:
+
+```
+brew install publish
+```
 
 ## Running and deploying
 

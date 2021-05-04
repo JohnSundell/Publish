@@ -40,11 +40,14 @@ final class SiteMapGenerationTests: PublishTestCase {
             .addItem(.stub(withPath: "itemB")),
             .addItem(.stub(withPath: "itemC", sectionID: .two)),
             .addItem(.stub(withPath: "itemD", sectionID: .two)),
+            .addItem(.stub(withPath: "itemE", sectionID: .three)),
+            .addItem(.stub(withPath: "posts/itemF", sectionID: .three)),
             .addPage(.stub(withPath: "pageA")),
             .addPage(.stub(withPath: "pageB")),
             .generateSiteMap(excluding: [
                 "one/itemB",
                 "two",
+                "three/posts/",
                 "pageB"
             ])
         ])
@@ -77,15 +80,7 @@ final class SiteMapGenerationTests: PublishTestCase {
         XCTAssertNotNil(site.sections[.one].item(at: "itemB"))
         XCTAssertNotNil(site.sections[.two].item(at: "itemC"))
         XCTAssertNotNil(site.sections[.two].item(at: "itemD"))
+        XCTAssertNotNil(site.sections[.three].item(at: "itemE"))
         XCTAssertNotNil(site.pages["pageB"])
-    }
-}
-
-extension SiteMapGenerationTests {
-    static var allTests: Linux.TestList<SiteMapGenerationTests> {
-        [
-            ("testGeneratingSiteMap", testGeneratingSiteMap),
-            ("testExcludingPathsFromSiteMap", testExcludingPathsFromSiteMap)
-        ]
     }
 }

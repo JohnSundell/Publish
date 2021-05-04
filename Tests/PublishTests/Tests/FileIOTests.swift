@@ -134,19 +134,3 @@ final class FileIOTests: PublishTestCase {
         XCTAssertFalse(folder.containsFile(named: "Output/.hidden"))
     }
 }
-
-extension FileIOTests {
-    static var allTests: Linux.TestList<FileIOTests> {
-        [
-            ("testCopyingFile", testCopyingFile),
-            ("testCopyingFileToSpecificFolder", testCopyingFileToSpecificFolder),
-            ("testCopyingFolder", testCopyingFolder),
-            ("testCopyingResourcesWithFolder", testCopyingResourcesWithFolder),
-            ("testCopyingResourcesWithoutFolder", testCopyingResourcesWithoutFolder),
-            ("testCreatingRootLevelFolder", testCreatingRootLevelFolder),
-            ("testRetrievingOutputFolder", testRetrievingOutputFolder),
-            ("testRetrievingOutputFile", testRetrievingOutputFile),
-            ("testCleaningHiddenFilesInOutputFolder", testCleaningHiddenFilesInOutputFolder)
-        ]
-    }
-}

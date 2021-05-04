@@ -28,10 +28,16 @@ struct SiteMapGenerator<Site: Website> {
 }
 
 private extension SiteMapGenerator {
+    func shouldIncludePath(_ path: Path) -> Bool {
+        !excludedPaths.contains(where: {
+            path.string.hasPrefix($0.string)
+        })
+    }
+
     func makeSiteMap(for sections: [Section<Site>], pages: [Page], site: Site) -> SiteMap {
         SiteMap(
             .forEach(sections) { section in
-                guard !excludedPaths.contains(section.path) else {
+                guard shouldIncludePath(section.path) else {
                     return .empty
                 }
 
@@ -46,7 +52,7 @@ private extension SiteMapGenerator {
                         ))
                     ),
                     .forEach(section.items) { item in
-                        guard !excludedPaths.contains(item.path) else {
+                        guard shouldIncludePath(item.path) else {
                             return .empty
                         }
 
@@ -60,7 +66,7 @@ private extension SiteMapGenerator {
                 )
             },
             .forEach(pages) { page in
-                guard !excludedPaths.contains(page.path) else {
+                guard shouldIncludePath(page.path) else {
                     return .empty
                 }
 
