@@ -16,7 +16,7 @@ let package = Package(
     ],
     dependencies: [
         .package(name: "Ink", url: "https://github.com/johnsundell/ink.git", from: "0.2.0"),
-        .package(name: "Plot", url: "https://github.com/johnsundell/plot.git", from: "0.4.0"),
+        .package(name: "Plot", url: "https://github.com/johnsundell/plot.git", from: "0.9.0"),
         .package(name: "Files", url: "https://github.com/johnsundell/files.git", from: "4.0.0"),
         .package(name: "Codextended", url: "https://github.com/johnsundell/codextended.git", from: "0.1.0"),
         .package(name: "ShellOut", url: "https://github.com/johnsundell/shellout.git", from: "2.3.0"),
