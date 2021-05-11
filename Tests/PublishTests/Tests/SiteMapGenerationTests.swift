@@ -58,6 +58,7 @@ final class SiteMapGenerationTests: PublishTestCase {
         let expectedLocations = [
             "https://swiftbysundell.com/one/",
             "https://swiftbysundell.com/one/itemA/",
+            "https://swiftbysundell.com/three/itemE/",
             "https://swiftbysundell.com/pageA/"
         ]
 
@@ -66,6 +67,7 @@ final class SiteMapGenerationTests: PublishTestCase {
             "https://swiftbysundell.com/two/",
             "https://swiftbysundell.com/two/itemC/",
             "https://swiftbysundell.com/two/itemD/",
+            "https://swiftbysundell.com/three/posts/itemF/",
             "https://swiftbysundell.com/pageB/"
         ]
 
