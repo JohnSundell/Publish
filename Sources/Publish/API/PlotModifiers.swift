@@ -1,3 +1,9 @@
+/**
+*  Publish
+*  Copyright (c) John Sundell 2021
+*  MIT license, see LICENSE file for details
+*/
+
 import Ink
 import Plot
 

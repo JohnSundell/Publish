@@ -21,7 +21,7 @@ public extension Path {
     static var defaultForRSSFeed: Path { "feed.rss" }
     /// The default path used when generating HTML for tags and tag lists.
     static var defaultForTagHTML: Path { "tags" }
-    /// The default path used for website favicons.
+    /// The default path used for website favicon.
     static var defaultForFavicon: Path { "images/favicon.png" }
 
     /// Convert this path into an absolute string, which can be used to
