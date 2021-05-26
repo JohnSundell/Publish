@@ -47,12 +47,39 @@
         }
       },
       {
+        "package": "StaticServer",
+        "repositoryURL": "https://github.com/Mastermakrela/Static-Server",
+        "state": {
+          "branch": null,
+          "revision": "e8b90a85878111dd835263cc030d541eb6e5fd90",
+          "version": "0.0.5"
+        }
+      },
+      {
         "package": "Sweep",
         "repositoryURL": "https://github.com/johnsundell/sweep.git",
         "state": {
           "branch": null,
           "revision": "801c2878e4c6c5baf32fe132e1f3f3af6f9fd1b0",
           "version": "0.4.0"
+        }
+      },
+      {
+        "package": "swift-argument-parser",
+        "repositoryURL": "https://github.com/apple/swift-argument-parser",
+        "state": {
+          "branch": null,
+          "revision": "92646c0cdbaca076c8d3d0207891785b3379cbff",
+          "version": "0.3.1"
+        }
+      },
+      {
+        "package": "swift-nio",
+        "repositoryURL": "https://github.com/apple/swift-nio.git",
+        "state": {
+          "branch": null,
+          "revision": "2bae395344d41710dffab456265d534d7dc34ab8",
+          "version": "2.25.0"
         }
       }
     ]
