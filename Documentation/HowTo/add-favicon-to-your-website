@@ -1,0 +1,31 @@
+# Add Favicon To Your Publish Website
+
+Favicon is an important icon for your website tab. With a favicon, your website is easy to recognize.
+
+To add a favicon, you should add your favicon image to your `Resources` folder.
+
+> I highly recommended your favicon dimensions is 16x16 pixel.
+
+Step:
+1. For more organized project folders, add new folder which is `Images` folder inside the `Resources` folder.
+
+```
+Resources
+        Images
+```
+
+2. Add your favicon images inside the `Images` folder.
+
+```
+Resources
+        Images
+                favicon.png
+```
+3. The final step, add the following code in the `main.swift` file.
+
+```
+struct SampleWebsite: Website {
+    ...
+    var favicon: Favicon? { .init(path: "Images/favicon.png", type: "image/png") }
+}
+```
