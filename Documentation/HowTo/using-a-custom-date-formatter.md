@@ -12,3 +12,16 @@ try MyWebsite.publish(using: [
     }
 ])
 ```
+
+Alternatively,  `ISO8601DateFormatter` may be used rather than defining a custom date formatter also via the custom publishing step.
+
+```swift
+try MyWebsite.publish(using: [
+...
+    .step(named: "Use ISO8601DateFormatter") { context in
+        if #available(OSX 10.12, *) {
+            context.dateFormatter = ISO8601DateFormatter()
+        }
+    }
+])
+```
