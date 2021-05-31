@@ -24,13 +24,15 @@ public extension Node where Context == HTML.DocumentContext {
     /// - parameter rssFeedPath: The path to any RSS feed to associate with the
     ///   resulting HTML page. Default: `feed.rss`.
     /// - parameter rssFeedTitle: An optional title for the page's RSS feed.
+    /// - parameter additionalNodes: Optional additional nodes for the page.
     static func head<T: Website>(
         for location: Location,
         on site: T,
         titleSeparator: String = " | ",
         stylesheetPaths: [Path] = ["/styles.css"],
         rssFeedPath: Path? = .defaultForRSSFeed,
-        rssFeedTitle: String? = nil
+        rssFeedTitle: String? = nil,
+        additionalNodes: [Node<HTML.HeadContext>] = []
     ) -> Node {
         var title = location.title
 
@@ -63,7 +65,8 @@ public extension Node where Context == HTML.DocumentContext {
             .unwrap(location.imagePath ?? site.imagePath, { path in
                 let url = site.url(for: path)
                 return .socialImageLink(url)
-            })
+            }),
+            .forEach(site.headNodes(for: location) + additionalNodes, {$0})
         )
     }
 }
