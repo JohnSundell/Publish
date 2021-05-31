@@ -11,7 +11,7 @@ import Codextended
 
 internal struct MarkdownContentFactory<Site: Website> {
     let parser: MarkdownParser
-    let dateFormatter: DateFormatter
+    let dateFormatter: AnyDateFormatter
 
     func makeContent(fromFile file: File) throws -> Content {
         let markdown = try parser.parse(file.readAsString())

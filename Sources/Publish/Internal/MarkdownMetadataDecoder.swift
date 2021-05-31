@@ -5,18 +5,19 @@
 */
 
 import Foundation
+import Codextended
 
 internal final class MarkdownMetadataDecoder: Decoder {
     var userInfo: [CodingUserInfoKey : Any] { [:] }
     let codingPath: [CodingKey]
 
     private let metadata: [String : String]
-    private let dateFormatter: DateFormatter
+    private let dateFormatter: AnyDateFormatter
     private lazy var keyedContainers = [ObjectIdentifier : Any]()
 
     init(metadata: [String : String],
          codingPath: [CodingKey] = [],
-         dateFormatter: DateFormatter) {
+         dateFormatter: AnyDateFormatter) {
         self.metadata = metadata
         self.codingPath = codingPath
         self.dateFormatter = dateFormatter
@@ -73,11 +74,11 @@ private extension MarkdownMetadataDecoder {
         let keys: KeyMap<Key>
         let codingPath: [CodingKey]
         let prefix: String
-        let dateFormatter: DateFormatter
+        let dateFormatter: AnyDateFormatter
 
         init(metadata: [String : String],
              codingPath: [CodingKey],
-             dateFormatter: DateFormatter) {
+             dateFormatter: AnyDateFormatter) {
             self.metadata = metadata
             self.keys = KeyMap(raw: metadata.keys, codingPath: codingPath)
             self.codingPath = codingPath
@@ -622,7 +623,7 @@ private extension Date {
     static func decode(from string: String,
                        forKey key: CodingKey?,
                        at codingPath: [CodingKey],
-                       formatter: DateFormatter) throws -> Self {
+                       formatter: AnyDateFormatter) throws -> Self {
         guard let date = formatter.date(from: string) else {
             let formatDescription = formatter.dateFormat.map {
                 " Expected format: \($0)."
