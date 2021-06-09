@@ -5,6 +5,7 @@
 */
 
 import Foundation
+import Plot
 
 /// Protocol adopted by types that can act as a location
 /// that a user can navigate to within a web browser.
@@ -61,5 +62,10 @@ public extension Location {
     var video: Video? {
         get { content.video }
         set { content.video = newValue }
+    }
+    
+    var language: Language? {
+        get { content.language }
+        set { content.language = newValue }
     }
 }

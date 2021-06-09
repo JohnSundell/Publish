@@ -15,5 +15,6 @@ Shorter articles focused on explaining how to get a given task done using Publis
 - [Expressing custom metadata values using Markdown](HowTo/custom-markdown-metadata-values.md)
 - [Nesting items within folders](HowTo/nested-items.md)
 - [Using a custom `DateFormatter`](HowTo/using-a-custom-date-formatter.md)
+- [Generate Multi-Language Site](HowTo/generate-multi-language-site.md)
 
 *Contributions adding more “How to” articles, or other kinds of documentation, are more than welcome.*

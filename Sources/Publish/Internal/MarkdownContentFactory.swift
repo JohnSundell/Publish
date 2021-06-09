@@ -8,6 +8,9 @@ import Foundation
 import Ink
 import Files
 import Codextended
+import Plot
+
+extension Language: Decodable {}
 
 internal struct MarkdownContentFactory<Site: Website> {
     let parser: MarkdownParser
@@ -67,13 +70,14 @@ private extension MarkdownContentFactory {
         let imagePath = try decoder.decodeIfPresent("image", as: Path.self)
         let audio = try decoder.decodeIfPresent("audio", as: Audio.self)
         let video = try decoder.decodeIfPresent("video", as: Video.self)
-
+        let language = try decoder.decodeIfPresent("language", as: Language.self)
         return Content(
             title: title ?? markdown.title ?? file.nameExcludingExtension,
             description: description ?? "",
             body: Content.Body(html: markdown.html),
             date: date,
             lastModified: lastModified,
+            language: language,
             imagePath: imagePath,
             audio: audio,
             video: video
