@@ -289,25 +289,3 @@ final class ContentMutationTests: PublishTestCase {
         XCTAssertEqual(site.pages["b"]?.title, "")
     }
 }
-
-extension ContentMutationTests {
-    static var allTests: Linux.TestList<ContentMutationTests> {
-        [
-            ("testAddingItemUsingClosureAPI", testAddingItemUsingClosureAPI),
-            ("testAddingItemUsingPlotHierarchy", testAddingItemUsingPlotHierarchy),
-            ("testRemovingItemsMatchingPredicate", testRemovingItemsMatchingPredicate),
-            ("testMutatingAllSections", testMutatingAllSections),
-            ("testMutatingAllItems", testMutatingAllItems),
-            ("testMutatingItemsInSection", testMutatingItemsInSection),
-            ("testMutatingItemsMatchingPredicate", testMutatingItemsMatchingPredicate),
-            ("testMutatingItemsByChangingTags", testMutatingItemsByChangingTags),
-            ("testMutatingItemsByRemovingTags", testMutatingItemsByRemovingTags),
-            ("testSortingItems", testSortingItems),
-            ("testSortingItemsInSection", testSortingItemsInSection),
-            ("testMutatingItemUsingContentProxyProperties", testMutatingItemUsingContentProxyProperties),
-            ("testMutatingPage", testMutatingPage),
-            ("testMutatingPageByChangingPath", testMutatingPageByChangingPath),
-            ("testMutatingAllPagesMatchingPredicate", testMutatingAllPagesMatchingPredicate)
-        ]
-    }
-}

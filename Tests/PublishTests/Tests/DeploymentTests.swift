@@ -146,15 +146,3 @@ final class DeploymentTests: PublishTestCase {
         XCTAssertTrue(subfolder.containsSubfolder(at: "one/a"))
     }
 }
-
-extension DeploymentTests {
-    static var allTests: Linux.TestList<DeploymentTests> {
-        [
-            ("testDeploymentSkippedByDefault", testDeploymentSkippedByDefault),
-            ("testGenerationStepsAndPluginsSkippedWhenDeploying", testGenerationStepsAndPluginsSkippedWhenDeploying),
-            ("testGitDeploymentMethod", testGitDeploymentMethod),
-            ("testGitDeploymentMethodWithError", testGitDeploymentMethodWithError),
-            ("testDeployingUsingCustomOutputFolder", testDeployingUsingCustomOutputFolder)
-        ]
-    }
-}

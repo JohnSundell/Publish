@@ -47,19 +47,37 @@ public struct Content: Hashable, ContentProtocol {
 }
 
 public extension Content {
+    /// Type that represents the main renderable body of a piece of content.
     struct Body: Hashable {
+        /// The content's renderable HTML.
         public var html: String
+        /// A node that can be used to embed the content in a Plot hierarchy.
         public var node: Node<HTML.BodyContext> { .raw(html) }
+        /// Whether this value doesn't contain any content.
         public var isEmpty: Bool { html.isEmpty }
 
+        /// Initialize an instance with a ready-made HTML string.
+        /// - parameter html: The content HTML that the instance should cointain.
         public init(html: String) {
             self.html = html
         }
 
+        /// Initialize an instance with a Plot `Node`.
+        /// - parameter node: The node to render. See `Node` for more information.
+        /// - parameter indentation: Any indentation to apply when rendering the node.
         public init(node: Node<HTML.BodyContext>,
                     indentation: Indentation.Kind? = nil) {
             html = node.render(indentedBy: indentation)
         }
+
+        /// Initialize an instance using Plot's `Component` API.
+        /// - parameter indentation: Any indentation to apply when rendering the components.
+        /// - parameter components: The components that should make up this instance's content.
+        public init(indentation: Indentation.Kind? = nil,
+                    @ComponentBuilder components: () -> Component) {
+           self.init(node: .component(components()),
+                     indentation: indentation)
+       }
     }
 }
 
@@ -67,4 +85,8 @@ extension Content.Body: ExpressibleByStringInterpolation {
     public init(stringLiteral value: String) {
         self.init(html: value)
     }
+}
+
+extension Content.Body: Component {
+    public var body: Component { node }
 }

@@ -89,22 +89,6 @@ final class CLITests: PublishTestCase {
     }
 }
 
-extension CLITests {
-    static var allTests: Linux.TestList<CLITests> {
-        [
-            ("testWebsiteProjectGeneration", testWebsiteProjectGeneration),
-            ("testPluginProjectGeneration", testPluginProjectGeneration),
-            ("testSiteName", testSiteName),
-            ("testSiteNameFromLowercasedFolderName", testSiteNameFromLowercasedFolderName),
-            ("testSiteNameFromFolderNameStartingWithDigit", testSiteNameFromFolderNameStartingWithDigit),
-            ("testSiteNameFromCamelCaseFolderName", testSiteNameFromCamelCaseFolderName),
-            ("testSiteNameWithNonLetterValidCharactersFolderName", testSiteNameWithNonLetterValidCharactersFolderName),
-            ("testSiteNameFromFolderNameWithNonLetters", testSiteNameFromFolderNameWithNonLetters),
-            ("testSiteNameFromDigitsOnlyFolderName", testSiteNameFromDigitsOnlyFolderName)
-        ]
-    }
-}
-
 private extension CLITests {
     func makeCLI(in folder: Folder, command: String...) throws -> CLI {
         let thisFile = try File(path: "\(#file)")

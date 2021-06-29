@@ -9,6 +9,8 @@ import Plot
 import Ink
 import Sweep
 
+// MARK: - Nodes and Attributes
+
 public extension Node where Context == HTML.DocumentContext {
     /// Add an HTML `<head>` tag within the current context, based
     /// on inferred information from the current location and `Website`
@@ -97,35 +99,28 @@ public extension Node where Context: HTML.BodyContext {
     }
 
     /// Add an inline audio player within the current context.
-    /// - Parameter audio: The audio to add a player for.
-    /// - Parameter showControls: Whether playback controls should be shown to the user.
+    /// - parameter audio: The audio to add a player for.
+    /// - parameter showControls: Whether playback controls should be shown to the user.
     static func audioPlayer(for audio: Audio,
                             showControls: Bool = true) -> Node {
-        return .audio(
-            .controls(showControls),
-            .source(.type(audio.format), .src(audio.url))
+        AudioPlayer(
+            audio: audio,
+            showControls: showControls
         )
+        .convertToNode()
     }
 
     /// Add an inline video player within the current context.
-    /// - Parameter video: The video to add a player for.
-    /// - Parameter showControls: Whether playback controls should be shown to the user.
+    /// - parameter video: The video to add a player for.
+    /// - parameter showControls: Whether playback controls should be shown to the user.
     ///   Note that this parameter is only relevant for hosted videos.
     static func videoPlayer(for video: Video,
                             showControls: Bool = true) -> Node {
-        switch video {
-        case .hosted(let url, let format):
-            return .video(
-                .controls(showControls),
-                .source(.type(format), .src(url))
-            )
-        case .youTube(let id):
-            let url = "https://www.youtube-nocookie.com/embed/" + id
-            return .iframeVideoPlayer(forURL: url)
-        case .vimeo(let id):
-            let url = "https://player.vimeo.com/video/" + id
-            return .iframeVideoPlayer(forURL: url)
-        }
+        VideoPlayer(
+            video: video,
+            showControls: showControls
+        )
+        .convertToNode()
     }
 }
 
@@ -201,13 +196,91 @@ internal extension Node where Context == PodcastFeed.ItemContext {
     }
 }
 
-private extension Node where Context: HTML.BodyContext {
-    static func iframeVideoPlayer(forURL url: String) -> Node {
-        return .iframe(
-            .frameborder(false),
-            .allow("accelerometer", "encrypted-media", "gyroscope", "picture-in-picture"),
-            .allowfullscreen(true),
-            .src(url)
+// MARK: - Extensions to Plot's built-in components
+
+public extension AudioPlayer {
+    /// Create an inline player for an `Audio` model.
+    /// - parameter audio: The audio to create a player for.
+    /// - parameter showControls: Whether playback controls should be shown to the user.
+    init(audio: Audio, showControls: Bool = true) {
+        self.init(
+            source: Source(url: audio.url, format: audio.format),
+            showControls: showControls
+        )
+    }
+}
+
+// MARK: - New Component implementations
+
+/// Component that can be used to parse a Markdown string into HTML
+/// that's then rendered as the body of the component.
+///
+/// You can control what `MarkdownParser` that's used for parsing
+/// using the `markdownParser` environment key, or by applying the
+/// `markdownParser` modifier to a component.
+public struct Markdown: Component {
+    /// The Markdown string to render.
+    public var string: String
+
+    @EnvironmentValue(.markdownParser) private var parser
+
+    /// Initialize an instance of this component with a Markdown string.
+    /// - parameter string: The Markdown string to render.
+    public init(_ string: String) {
+        self.string = string
+    }
+
+    public var body: Component {
+        Node.markdown(string, using: parser)
+    }
+}
+
+/// Component that can be used to render an inline video player, using either
+/// the `<video>` element (for hosted videos), or by embedding either a YouTube
+/// or Vimeo player using an `<iframe>`.
+public struct VideoPlayer: Component {
+    /// The video to create a player for.
+    public var video: Video
+    /// Whether playback controls should be shown to the user. Note that this
+    /// property is ignored when rendering a video hosted by a service like YouTube.
+    public var showControls: Bool
+
+    /// Create an inline player for a `Video` model.
+    /// - parameter video: The video to create a player for.
+    /// - parameter showControls: Whether playback controls should be shown to the user.
+    ///   Note that this parameter is only relevant for hosted videos.
+    public init(video: Video, showControls: Bool = true) {
+        self.video = video
+        self.showControls = showControls
+    }
+
+    public var body: Component {
+        switch video {
+        case .hosted(let url, let format):
+            return Node.video(
+                .controls(showControls),
+                .source(.type(format), .src(url))
+            )
+        case .youTube(let id):
+            let url = "https://www.youtube-nocookie.com/embed/" + id
+            return iframeVideoPlayer(for: url)
+        case .vimeo(let id):
+            let url = "https://player.vimeo.com/video/" + id
+            return iframeVideoPlayer(for: url)
+        }
+    }
+
+    private func iframeVideoPlayer(for url: URLRepresentable) -> Component {
+        IFrame(
+            url: url,
+            addBorder: false,
+            allowFullScreen: true,
+            enabledFeatureNames: [
+                "accelerometer",
+                "encrypted-media",
+                "gyroscope",
+                "picture-in-picture"
+            ]
         )
     }
 }

@@ -324,22 +324,3 @@ final class HTMLGenerationTests: PublishTestCase {
         XCTAssertTrue(try tagDetails.readAsString().contains("tagA"))
     }
 }
-
-extension HTMLGenerationTests {
-    static var allTests: Linux.TestList<HTMLGenerationTests> {
-        [
-            ("testGeneratingIndexHTML", testGeneratingIndexHTML),
-            ("testGeneratingSectionHTML", testGeneratingSectionHTML),
-            ("testGeneratingItemHTML", testGeneratingItemHTML),
-            ("testGeneratingNestedItemHTML", testGeneratingNestedItemHTML),
-            ("testGeneratingPageHTML", testGeneratingPageHTML),
-            ("testGeneratingTagHTML", testGeneratingTagHTML),
-            ("testCleaningUpOldHTMLFiles", testCleaningUpOldHTMLFiles),
-            ("testAlwaysGeneratingIndexPageForAllSections", testAlwaysGeneratingIndexPageForAllSections),
-            ("testNotGeneratingTagHTMLForIncompatibleTheme", testNotGeneratingTagHTMLForIncompatibleTheme),
-            ("testNotGeneratingTagHTMLWhenDisabled", testNotGeneratingTagHTMLWhenDisabled),
-            ("testGeneratingStandAloneHTMLFiles", testGeneratingStandAloneHTMLFiles),
-            ("testFoundationTheme", testFoundationTheme)
-        ]
-    }
-}

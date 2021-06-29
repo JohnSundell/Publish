@@ -62,13 +62,3 @@ final class PluginTests: PublishTestCase {
         )
     }
 }
-
-extension PluginTests {
-    static var allTests: Linux.TestList<PluginTests> {
-        [
-            ("testAddingContentUsingPlugin", testAddingContentUsingPlugin),
-            ("testAddingInkModifierUsingPlugin", testAddingInkModifierUsingPlugin),
-            ("testAddingPluginToDefaultPipeline", testAddingPluginToDefaultPipeline)
-        ]
-    }
-}
