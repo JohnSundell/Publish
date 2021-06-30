@@ -90,6 +90,13 @@ private extension PodcastFeedGenerator {
                 guard let audioSize = audio.byteSize else {
                     throw PodcastError(path: item.path, reason: .missingAudioSize)
                 }
+                
+                var imageUrl = config.imageURL
+                if let imagePath = item.imagePath {
+                    if let url = URL(string: imagePath.absoluteString){
+                        imageUrl = url
+                    }
+                }
 
                 let title = item.rssTitle
                 let metadata = item.metadata.podcast
@@ -106,7 +113,7 @@ private extension PodcastFeedGenerator {
                     .summary(item.description),
                     .explicit(metadata?.isExplicit ?? false),
                     .duration(audioDuration),
-                    .image(config.imageURL),
+                    .image(imageUrl),
                     .unwrap(metadata?.episodeNumber, Node.episodeNumber),
                     .unwrap(metadata?.seasonNumber, Node.seasonNumber),
                     .audio(
