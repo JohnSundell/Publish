@@ -21,7 +21,7 @@ public struct ItemRSSProperties: Codable, Hashable {
     public var bodyPrefix: String?
     /// Any suffix that should be added to the item's body HTML within an RSS feed.
     public var bodySuffix: String?
-    /// Any specific URL that the item should link to when inlcluded in an RSS
+    /// Any specific URL that the item should link to when included in an RSS
     /// feed. By default, the item's location on its website will be used. Note that
     /// this link won't be automatically used as the item's GUID, however, setting
     /// this property to a non-`nil` value will set the GUID's `isPermaLink` attribute
