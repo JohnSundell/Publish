@@ -43,7 +43,7 @@ private extension SiteMapGenerator {
 
                 return .group(
                     .url(
-                        .loc(site.url(for: section)),
+                        .loc(site.url(for: section).appendingPathComponent("/")),
                         .changefreq(.daily),
                         .priority(1.0),
                         .lastmod(max(
@@ -57,7 +57,7 @@ private extension SiteMapGenerator {
                         }
 
                         return .url(
-                            .loc(site.url(for: item)),
+                            .loc(site.url(for: item).appendingPathComponent("/")),
                             .changefreq(.monthly),
                             .priority(0.5),
                             .lastmod(item.lastModified)
@@ -71,7 +71,7 @@ private extension SiteMapGenerator {
                 }
 
                 return .url(
-                    .loc(site.url(for: page)),
+                    .loc(site.url(for: page).appendingPathComponent("/")),
                     .changefreq(.monthly),
                     .priority(0.5),
                     .lastmod(page.lastModified)
