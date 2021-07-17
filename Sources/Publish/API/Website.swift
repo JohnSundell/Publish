@@ -9,6 +9,14 @@ import Plot
 
 /// Protocol that all `Website.SectionID` implementations must conform to.
 public protocol WebsiteSectionID: Decodable, Hashable, CaseIterable, RawRepresentable where RawValue == String {}
+/// Convienence implementation of SectionID to allow a website to be published without sections.
+/// To supress the generation of website sections, add `typealias SectionID = NoSectionID` to 
+/// the `Website` definition.
+struct NoSectionID: WebsiteSectionID {
+    static var allCases: [NoSectionID] = []
+    var rawValue: String
+    init?(rawValue: String) { return nil }
+}
 /// Protocol that all `Website.ItemMetadata` implementations must conform to.
 public typealias WebsiteItemMetadata = Decodable & Hashable
 
