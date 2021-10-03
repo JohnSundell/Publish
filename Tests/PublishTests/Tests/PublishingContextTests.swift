@@ -23,11 +23,3 @@ final class PublishingContextTests: PublishTestCase {
         XCTAssertEqual(expectedOrder, actualOrder)
     }
 }
-
-extension PublishingContextTests {
-    static var allTests: Linux.TestList<PublishingContextTests> {
-        [
-            ("testSectionIterationOrder", testSectionIterationOrder)
-        ]
-    }
-}

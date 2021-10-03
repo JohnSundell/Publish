@@ -7,6 +7,7 @@
 import XCTest
 import Publish
 import Plot
+import Ink
 
 final class PlotComponentTests: PublishTestCase {
     func testStylesheetPaths() {
@@ -60,10 +61,10 @@ final class PlotComponentTests: PublishTestCase {
         let html = Node.videoPlayer(for: video).render()
 
         XCTAssertEqual(html, """
-        <iframe frameborder="0"\
-         allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"\
+        <iframe src="https://www.youtube-nocookie.com/embed/123"\
+         frameborder="0"\
          allowfullscreen="true"\
-         src="https://www.youtube-nocookie.com/embed/123"\
+         allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"\
         ></iframe>
         """)
     }
@@ -73,23 +74,35 @@ final class PlotComponentTests: PublishTestCase {
         let html = Node.videoPlayer(for: video).render()
 
         XCTAssertEqual(html, """
-        <iframe frameborder="0"\
-         allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"\
+        <iframe src="https://player.vimeo.com/video/123"\
+         frameborder="0"\
          allowfullscreen="true"\
-         src="https://player.vimeo.com/video/123"\
+         allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"\
         ></iframe>
         """)
     }
-}
 
-extension PlotComponentTests {
-    static var allTests: Linux.TestList<PlotComponentTests> {
-        [
-            ("testStylesheetPaths", testStylesheetPaths),
-            ("testRenderingAudioPlayer", testRenderingAudioPlayer),
-            ("testRenderingHostedVideoPlayer", testRenderingHostedVideoPlayer),
-            ("testRenderingYouTubeVideoPlayer", testRenderingYouTubeVideoPlayer),
-            ("testRenderingVimeoVideoPlayer", testRenderingVimeoVideoPlayer)
-        ]
+    func testRenderingMarkdownComponent() {
+        let customParser = MarkdownParser(modifiers: [
+            Modifier(target: .links) { html, _ in
+                return "<b>\(html)</b>"
+            }
+        ])
+
+        let html = Div {
+            Markdown("[First](/first)")
+            Div {
+                Markdown("[Second](/second)")
+            }
+            .markdownParser(customParser)
+        }
+        .render()
+
+        XCTAssertEqual(html, """
+        <div>\
+        <p><a href="/first">First</a></p>\
+        <div><p><b><a href="/second">Second</a></b></p></div>\
+        </div>
+        """)
     }
 }

@@ -34,14 +34,3 @@ final class PathTests: PublishTestCase {
         XCTAssertEqual(wrapper, try data.decoded())
     }
 }
-
-extension PathTests {
-    static var allTests: Linux.TestList<PathTests> {
-        [
-            ("testAbsoluteString", testAbsoluteString),
-            ("testAppendingComponent", testAppendingComponent),
-            ("testStringInterpolation", testStringInterpolation),
-            ("testCoding", testCoding)
-        ]
-    }
-}

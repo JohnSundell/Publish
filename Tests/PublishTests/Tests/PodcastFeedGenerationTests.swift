@@ -183,6 +183,7 @@ final class PodcastFeedGenerationTests: PublishTestCase {
     }
 }
 
+<<<<<<< HEAD
 extension PodcastFeedGenerationTests {
     static var allTests: Linux.TestList<PodcastFeedGenerationTests> {
         [
@@ -198,6 +199,8 @@ extension PodcastFeedGenerationTests {
     }
 }
 
+=======
+>>>>>>> 9e1b20a23c73ba078966a4fcce23146088d0de63
 private extension PodcastFeedGenerationTests {
     typealias Site = WebsiteStub.WithPodcastMetadata
     typealias Configuration = PodcastFeedConfiguration<Site>
