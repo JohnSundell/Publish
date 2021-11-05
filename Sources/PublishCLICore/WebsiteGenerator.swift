@@ -10,12 +10,13 @@ import ShellOut
 
 internal struct WebsiteGenerator {
     let folder: Folder
+    let target: String?
 
     func generate() throws {
         try folder.verifyAsSwiftPackage()
 
         try shellOut(
-            to: "swift run",
+            to: "swift run \(target ?? "")",
             at: folder.path,
             outputHandle: FileHandle.standardOutput,
             errorHandle: FileHandle.standardError

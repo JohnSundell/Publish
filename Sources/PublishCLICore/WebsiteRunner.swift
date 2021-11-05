@@ -11,9 +11,10 @@ import ShellOut
 internal struct WebsiteRunner {
     let folder: Folder
     var portNumber: Int
+    let target: String?
 
     func run() throws {
-        let generator = WebsiteGenerator(folder: folder)
+        let generator = WebsiteGenerator(folder: folder, target: target)
         try generator.generate()
 
         let outputFolder = try resolveOutputFolder()

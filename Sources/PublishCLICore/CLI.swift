@@ -37,14 +37,16 @@ public struct CLI {
 
             try generator.generate()
         case "generate":
-            let generator = WebsiteGenerator(folder: folder)
+            let target = extractTarget(from: arguments)
+            let generator = WebsiteGenerator(folder: folder, target: target)
             try generator.generate()
         case "deploy":
             let deployer = WebsiteDeployer(folder: folder)
             try deployer.deploy()
         case "run":
-            let portNumber = extractPortNumber(from: arguments)
-            let runner = WebsiteRunner(folder: folder, portNumber: portNumber)
+            let target = extractTarget(from: arguments)
+            let portNumber = extractPortNumber(from: arguments, didSpecifyTarget: target != nil)
+            let runner = WebsiteRunner(folder: folder, portNumber: portNumber, target: target)
             try runner.run()
         default:
             outputHelpText()
@@ -66,18 +68,27 @@ private extension CLI {
         - new: Set up a new website in the current folder.
         - generate: Generate the website in the current folder.
         - run: Generate and run a localhost server on default port 8000
-               for the website in the current folder. Use the "-p"
-               or "--port" option for customizing the default port.
+               for the website in the current folder. If you have multiple targets,
+               you can specify the target name as the argument after "run".
+               Use the "-p" or "--port" option for customizing the default port.
+               Example: publish run <target> -p 5555
         - deploy: Generate and deploy the website in the current
                folder, according to its deployment method.
         """)
     }
 
-    private func extractPortNumber(from arguments: [String]) -> Int {
-        if arguments.count > 3 {
-            switch arguments[2] {
+    private func extractTarget(from arguments: [String]) -> String? {
+        if arguments.count > 2, (arguments[2] != "-p" || arguments[2] != "--port") {
+            return arguments[2]
+        }
+        return nil // don't specify a target
+    }
+
+    private func extractPortNumber(from arguments: [String], didSpecifyTarget: Bool) -> Int {
+        if arguments.count > (didSpecifyTarget ? 4 : 3) {
+            switch arguments[didSpecifyTarget ? 3 : 2] {
             case "-p", "--port":
-                guard let portNumber = Int(arguments[3]) else {
+                guard let portNumber = Int(arguments[didSpecifyTarget ? 4 : 3]) else {
                     break
                 }
                 return portNumber
