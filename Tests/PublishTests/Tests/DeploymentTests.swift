@@ -61,7 +61,7 @@ final class DeploymentTests: PublishTestCase {
         let repo = try container.createSubfolder(named: "Repo")
 
         try shellOut(to: [
-            "git init",
+            "git init --initial-branch=master",
             "git config --local receive.denyCurrentBranch updateInstead"
         ], at: remote.path)
 
@@ -86,7 +86,7 @@ final class DeploymentTests: PublishTestCase {
         let remote = try container.createSubfolder(named: "Remote.git")
         let repo = try container.createSubfolder(named: "Repo")
 
-        try shellOut(to: .gitInit(), at: remote.path)
+        try shellOut(to: "git init --initial-branch=master", at: remote.path)
         
         // First generate
         try publishWebsite(in: repo, using: [
