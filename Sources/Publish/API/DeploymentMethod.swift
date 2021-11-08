@@ -41,10 +41,7 @@ public extension DeploymentMethod {
         DeploymentMethod(name: "Git (\(remote))") { context in
             let folder = try context.createDeploymentFolder(withPrefix: "Git") { folder in
                 if !folder.containsSubfolder(named: ".git") {
-                    try shellOut(
-                        to: .gitInit(),
-                        at: folder.path
-                    )
+                    try shellOut(to: .gitInit(), at: folder.path)
 
                     try shellOut(
                         to: "git remote add origin \(remote)",
