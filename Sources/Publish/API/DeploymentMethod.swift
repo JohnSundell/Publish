@@ -42,7 +42,7 @@ public extension DeploymentMethod {
             let folder = try context.createDeploymentFolder(withPrefix: "Git") { folder in
                 if !folder.containsSubfolder(named: ".git") {
                     try shellOut(
-                        to: "git init -b \(branch)",
+                        to: "git init --initial-branch=\(branch)",
                         at: folder.path
                     )
 
