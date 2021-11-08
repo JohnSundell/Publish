@@ -59,6 +59,11 @@ public extension DeploymentMethod {
                     at: folder.path
                 )
 
+                try shellOut(
+                    to: .gitCheckout(branch: branch),
+                    at: folder.path
+                )
+
                 try folder.empty()
             }
 
