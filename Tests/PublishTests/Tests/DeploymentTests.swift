@@ -61,7 +61,9 @@ final class DeploymentTests: PublishTestCase {
         let repo = try container.createSubfolder(named: "Repo")
 
         try shellOut(to: [
-            "git init --initial-branch=master",
+            "git init",
+            // Not all git installations init with a master branch.
+            "git checkout master || git checkout -b master",
             "git config --local receive.denyCurrentBranch updateInstead"
         ], at: remote.path)
 
@@ -86,7 +88,14 @@ final class DeploymentTests: PublishTestCase {
         let remote = try container.createSubfolder(named: "Remote.git")
         let repo = try container.createSubfolder(named: "Repo")
 
-        try shellOut(to: "git init --initial-branch=master", at: remote.path)
+        try shellOut(
+          to: [
+            "git init",
+            // Not all git installations init with a master branch.
+            "git checkout master || git checkout -b master"
+          ],
+          at: remote.path
+        )
         
         // First generate
         try publishWebsite(in: repo, using: [
