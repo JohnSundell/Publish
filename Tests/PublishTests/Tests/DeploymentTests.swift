@@ -60,8 +60,10 @@ final class DeploymentTests: PublishTestCase {
         let remote = try container.createSubfolder(named: "Remote.git")
         let repo = try container.createSubfolder(named: "Repo")
 
+        let branch = "master"
+
         try shellOut(to: [
-            "git init",
+            "git init -b \(branch)",
             "git config --local receive.denyCurrentBranch updateInstead"
         ], at: remote.path)
 
@@ -74,7 +76,7 @@ final class DeploymentTests: PublishTestCase {
         CommandLine.arguments.append("--deploy")
 
         try publishWebsite(in: repo, using: [
-            .deploy(using: .git(remote.path))
+            .deploy(using: .git(remote.path, branch: branch))
         ])
 
         let indexFile = try remote.file(named: "index.html")
@@ -86,7 +88,9 @@ final class DeploymentTests: PublishTestCase {
         let remote = try container.createSubfolder(named: "Remote.git")
         let repo = try container.createSubfolder(named: "Repo")
 
-        try shellOut(to: .gitInit(), at: remote.path)
+        let branch = "master"
+
+        try shellOut(to: "git init -b \(branch)", at: remote.path)
         
         // First generate
         try publishWebsite(in: repo, using: [
@@ -99,10 +103,9 @@ final class DeploymentTests: PublishTestCase {
         var thrownError: PublishingError?
 
         do {
-            try publishWebsite(
-                in: repo,
-                using: [.deploy(using: .git(remote.path))]
-            )
+            try publishWebsite(in: repo, using: [
+                .deploy(using: .git(remote.path, branch: branch))
+            ])
         } catch {
             thrownError = error as? PublishingError
         }
