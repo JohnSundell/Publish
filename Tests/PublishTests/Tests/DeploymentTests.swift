@@ -63,7 +63,8 @@ final class DeploymentTests: PublishTestCase {
         let branch = "master"
 
         try shellOut(to: [
-            "git init -b \(branch)",
+            "git init",
+            "git checkout -b \(branch)",
             "git config --local receive.denyCurrentBranch updateInstead"
         ], at: remote.path)
 
@@ -90,7 +91,10 @@ final class DeploymentTests: PublishTestCase {
 
         let branch = "master"
 
-        try shellOut(to: "git init -b \(branch)", at: remote.path)
+        try shellOut(to: [
+            "git init",
+            "git checkout -b \(branch)"
+        ], at: remote.path)
         
         // First generate
         try publishWebsite(in: repo, using: [
