@@ -169,19 +169,3 @@ final class ErrorTests: PublishTestCase {
         CommandLine.arguments.removeLast()
     }
 }
-
-extension ErrorTests {
-    static var allTests: Linux.TestList<ErrorTests> {
-        [
-            ("testErrorForInvalidRootPath", testErrorForInvalidRootPath),
-            ("testErrorForMissingMarkdownMetadata", testErrorForMissingMarkdownMetadata),
-            ("testErrorForInvalidMarkdownMetadata", testErrorForInvalidMarkdownMetadata),
-            ("testErrorForThrowingDuringItemMutation", testErrorForThrowingDuringItemMutation),
-            ("testErrorForMissingPage", testErrorForMissingPage),
-            ("testErrorForThrowingDuringPageMutation", testErrorForThrowingDuringPageMutation),
-            ("testErrorForMissingFolder", testErrorForMissingFolder),
-            ("testErrorForMissingFile", testErrorForMissingFile),
-            ("testErrorForNoPublishingSteps", testErrorForNoPublishingSteps)
-        ]
-    }
-}
