@@ -162,6 +162,26 @@ final class PodcastFeedGenerationTests: PublishTestCase {
         let feedB = try folder.file(at: "Output/feed.rss").readAsString()
         XCTAssertNotEqual(feedA, feedB)
     }
+    
+    func testPodcastTitle() throws {
+        let folder = try Folder.createTemporary()
+        let contentFile = try folder.createFile(at: "Content/one/item.md")
+        try contentFile.write(makeStubbedAudioMetadata())
+
+        var newConfig = try makeConfigStub()
+        try generateFeed(in: folder, config: newConfig)
+        let feedWithoutTitle = try folder.file(at: "Output/feed.rss").readAsString()
+        
+        newConfig.title = "Appleseed's Podcast"
+        try generateFeed(in: folder, config: newConfig)
+        let feedWithTitle = try folder.file(at: "Output/feed.rss").readAsString()
+
+        
+        //Should default to site name if title is not set.
+        XCTAssertTrue(feedWithoutTitle.contains("<title>WebsiteName</title>"))
+        //Should use specified title if set.
+        XCTAssertTrue(feedWithTitle.contains("<title>Appleseed's Podcast</title>"))
+    }
 }
 
 private extension PodcastFeedGenerationTests {
