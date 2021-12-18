@@ -55,7 +55,7 @@ private extension PodcastFeedGenerator {
                   section: Section<Site>) throws -> PodcastFeed {
         try PodcastFeed(
             .unwrap(config.newFeedURL, Node.newFeedURL),
-            .title(config.title != nil ? config.title! : context.site.name),
+            .title(context.site.name),
             .description(config.description),
             .link(context.site.url(for: section)),
             .language(context.site.language),
