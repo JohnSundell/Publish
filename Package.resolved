@@ -21,11 +21,11 @@
       },
       {
         "package": "Ink",
-        "repositoryURL": "https://github.com/Goosse/Ink",
+        "repositoryURL": "https://github.com/johnsundell/ink.git",
         "state": {
-          "branch": "master",
-          "revision": "a19406993e4eb2a2286bfc205f993477607e81b9",
-          "version": null
+          "branch": null,
+          "revision": "77c3d8953374a9cf5418ef0bd7108524999de85a",
+          "version": "0.5.1"
         }
       },
       {

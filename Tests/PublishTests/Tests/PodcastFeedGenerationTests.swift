@@ -162,45 +162,8 @@ final class PodcastFeedGenerationTests: PublishTestCase {
         let feedB = try folder.file(at: "Output/feed.rss").readAsString()
         XCTAssertNotEqual(feedA, feedB)
     }
-    
-    func testUseOptionalItemImageIfAvailableDefaultToConfigImage() throws {
-        let folder = try Folder.createTemporary()
-
-        try generateFeed(in: folder, content: [
-            "one/a.md": """
-            \(makeStubbedAudioMetadata(including:"image: image-item.png"))
-            # Image included
-            """,
-            "one/b": """
-            \(makeStubbedAudioMetadata())
-            # Image not included
-            """
-        ])
-
-        let feed = try folder.file(at: "Output/feed.rss").readAsString()
-        XCTAssertTrue(feed.contains("image.png"))
-        XCTAssertTrue(feed.contains("image-item.png"))
-    }
 }
 
-<<<<<<< HEAD
-extension PodcastFeedGenerationTests {
-    static var allTests: Linux.TestList<PodcastFeedGenerationTests> {
-        [
-            ("testOnlyIncludingSpecifiedSection", testOnlyIncludingSpecifiedSection),
-            ("testOnlyIncludingItemsMatchingPredicate", testOnlyIncludingItemsMatchingPredicate),
-            ("testConvertingRelativeLinksToAbsolute", testConvertingRelativeLinksToAbsolute),
-            ("testItemPrefixAndSuffix", testItemPrefixAndSuffix),
-            ("testReusingPreviousFeedIfNoItemsWereModified", testReusingPreviousFeedIfNoItemsWereModified),
-            ("testNotReusingPreviousFeedIfConfigChanged", testNotReusingPreviousFeedIfConfigChanged),
-            ("testNotReusingPreviousFeedIfItemWasAdded", testNotReusingPreviousFeedIfItemWasAdded),
-            ("testUseOptionalItemImageIfAvailableDefaultToConfigImage", testUseOptionalItemImageIfAvailableDefaultToConfigImage)
-        ]
-    }
-}
-
-=======
->>>>>>> 9e1b20a23c73ba078966a4fcce23146088d0de63
 private extension PodcastFeedGenerationTests {
     typealias Site = WebsiteStub.WithPodcastMetadata
     typealias Configuration = PodcastFeedConfiguration<Site>
