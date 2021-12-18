@@ -173,22 +173,6 @@ final class RSSFeedGenerationTests: PublishTestCase {
     }
 }
 
-extension RSSFeedGenerationTests {
-    static var allTests: Linux.TestList<RSSFeedGenerationTests> {
-        [
-            ("testOnlyIncludingSpecifiedSections", testOnlyIncludingSpecifiedSections),
-            ("testOnlyIncludingItemsMatchingPredicate", testOnlyIncludingItemsMatchingPredicate),
-            ("testConvertingRelativeLinksToAbsolute", testConvertingRelativeLinksToAbsolute),
-            ("testItemTitlePrefixAndSuffix", testItemTitlePrefixAndSuffix),
-            ("testItemBodyPrefixAndSuffix", testItemBodyPrefixAndSuffix),
-            ("testCustomItemLink", testCustomItemLink),
-            ("testReusingPreviousFeedIfNoItemsWereModified", testReusingPreviousFeedIfNoItemsWereModified),
-            ("testNotReusingPreviousFeedIfConfigChanged", testNotReusingPreviousFeedIfConfigChanged),
-            ("testNotReusingPreviousFeedIfItemWasAdded", testNotReusingPreviousFeedIfItemWasAdded)
-        ]
-    }
-}
-
 private extension RSSFeedGenerationTests {
     typealias Site = WebsiteStub.WithoutItemMetadata
 

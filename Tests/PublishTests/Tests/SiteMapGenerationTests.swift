@@ -86,12 +86,3 @@ final class SiteMapGenerationTests: PublishTestCase {
         XCTAssertNotNil(site.pages["pageB"])
     }
 }
-
-extension SiteMapGenerationTests {
-    static var allTests: Linux.TestList<SiteMapGenerationTests> {
-        [
-            ("testGeneratingSiteMap", testGeneratingSiteMap),
-            ("testExcludingPathsFromSiteMap", testExcludingPathsFromSiteMap)
-        ]
-    }
-}

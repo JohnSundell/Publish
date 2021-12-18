@@ -82,21 +82,3 @@ final class WebsiteTests: PublishTestCase {
         )
     }
 }
-
-extension WebsiteTests {
-    static var allTests: Linux.TestList<WebsiteTests> {
-        [
-            ("testDefaultTagListPath", testDefaultTagListPath),
-            ("testCustomTagListPath", testCustomTagListPath),
-            ("testPathForSectionID", testPathForSectionID),
-            ("testPathForSectionIDWithRawValue", testPathForSectionIDWithRawValue),
-            ("testDefaultPathForTag", testDefaultPathForTag),
-            ("testCustomPathForTag", testCustomPathForTag),
-            ("testDefaultURLForTag", testDefaultURLForTag),
-            ("testCustomURLForTag", testCustomURLForTag),
-            ("testURLForRelativePath", testURLForRelativePath),
-            ("testURLForAbsolutePath", testURLForAbsolutePath),
-            ("testURLForLocation", testURLForLocation)
-        ]
-    }
-}
