@@ -227,6 +227,13 @@ public extension PublishingStep {
         }
     }
 
+    static func mutateIndexHtml(using mutation: @escaping HTMLIndexMutation<Site>) -> Self {
+        step(named: "Mutate Index HTML") { context in
+            context.mutateIndexHTML(using: mutation)
+        }
+
+    }
+
     /// Sort all items, optionally within a specific section, using a key path.
     /// - parameter section: Any specific section to sort all items within.
     /// - parameter keyPath: The key path to use when sorting.

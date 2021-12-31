@@ -48,7 +48,9 @@ private extension HTMLGenerator {
     func generateIndexHTML() throws {
         let html = try theme.makeIndexHTML(context.index, context)
         let indexFile = try context.createOutputFile(at: "index.html")
-        try indexFile.write(html.render(indentedBy: indentation))
+        var renderedHtml = html.render(indentedBy: indentation)
+        renderedHtml = try context.htmlMutations.mutateHtml(context: context, renderedHtml: renderedHtml)
+        try indexFile.write(renderedHtml)
     }
 
     func generateSectionHTML() throws {
@@ -122,6 +124,28 @@ private extension HTMLGenerator {
         }
     }
 
+    func renderHTML<T: Location>(
+        for location: T,
+        indentedBy indentation: Indentation.Kind?,
+        using generator: (T, PublishingContext<Site>) throws -> HTML
+    ) throws -> String {
+        let html = try generator(location, context)
+        return html.render(indentedBy: indentation)
+    }
+
+    func outputHTML(
+        for section: Section<Site>,
+        indentedBy indentation: Indentation.Kind?,
+        using generator: (Section<Site>, PublishingContext<Site>) throws -> HTML,
+        fileMode: HTMLFileMode
+    ) throws {
+        var renderedHtml = try renderHTML(for: section, indentedBy: indentation, using: generator)
+        renderedHtml = try context.htmlMutations.mutateHtml(context: context, section: section, renderedHtml: renderedHtml)
+        let path = filePath(for: section, fileMode: fileMode)
+        let file = try context.createOutputFile(at: path)
+        try file.write(renderedHtml)
+    }
+
     func outputHTML<T: Location>(
         for location: T,
         indentedBy indentation: Indentation.Kind?,
@@ -143,3 +167,4 @@ private extension HTMLGenerator {
         }
     }
 }
+
