@@ -227,12 +227,38 @@ public extension PublishingStep {
         }
     }
 
-    static func mutateIndexHtml(using mutation: @escaping HTMLIndexMutation<Site>) -> Self {
+    static func mutateIndexHTML(using mutation: @escaping HTMLIndexMutation<Site>) -> Self {
         step(named: "Mutate Index HTML") { context in
             context.mutateIndexHTML(using: mutation)
         }
-
     }
+
+    static func mutateSectionHTML(using mutation: @escaping HTMLSectionMutation<Site>) -> Self {
+        step(named: "Mutate Section HTML") { context in
+            context.mutateSectionHTML(using: mutation)
+        }
+    }
+
+    static func mutateItemHTML(using mutation: @escaping HTMLItemMutation<Site>) -> Self {
+        step(named: "Mutate Item HTML") { context in
+            context.mutateItemHTML(using: mutation)
+        }
+    }
+
+    static func mutatePageHTML(using mutation: @escaping HTMLPageMutation<Site>) -> Self {
+        step(named: "Mutate Page HTML") { context in
+            context.mutatePageHTML(using: mutation)
+        }
+    }
+
+    static func mutateAllHTML(using mutation: @escaping HTMLAllMutation<Site>) -> Self {
+        step(named: "Mutate All HTML") { context in
+            context.mutateAllHTML(using: mutation)
+        }
+    }
+
+
+
 
     /// Sort all items, optionally within a specific section, using a key path.
     /// - parameter section: Any specific section to sort all items within.

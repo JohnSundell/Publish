@@ -15,10 +15,7 @@ internal struct HTMLMutations<Site: Website> {
         for mutation in indexMutations {
             mutatedHtml = try mutation(context, mutatedHtml)
         }
-
-        for mutation in allMutations {
-            mutatedHtml = try mutation(context, context.index, mutatedHtml)
-        }
+        mutatedHtml = try mutateHtml(context: context, location: context.index, renderedHtml: mutatedHtml)
         return mutatedHtml
     }
 
@@ -27,9 +24,7 @@ internal struct HTMLMutations<Site: Website> {
         for mutation in sectionMutations {
             mutatedHtml = try mutation(context, section, mutatedHtml)
         }
-        for mutation in allMutations {
-            mutatedHtml = try mutation(context, section, mutatedHtml)
-        }
+        mutatedHtml = try mutateHtml(context: context, location: section, renderedHtml: mutatedHtml)
         return mutatedHtml
     }
 
@@ -38,9 +33,7 @@ internal struct HTMLMutations<Site: Website> {
         for mutation in itemMutations {
             mutatedHtml = try mutation(context, item, mutatedHtml)
         }
-        for mutation in allMutations {
-            mutatedHtml = try mutation(context, item, mutatedHtml)
-        }
+        mutatedHtml = try mutateHtml(context: context, location: item, renderedHtml: mutatedHtml)
         return mutatedHtml
     }
 
@@ -49,10 +42,17 @@ internal struct HTMLMutations<Site: Website> {
         for mutation in pageMutations {
             mutatedHtml = try mutation(context, page, mutatedHtml)
         }
+        mutatedHtml = try mutateHtml(context: context, location: page, renderedHtml: mutatedHtml)
+        return mutatedHtml
+    }
+
+    func mutateHtml(context: PublishingContext<Site>, location: Location, renderedHtml: String) throws -> String {
+        var mutatedHtml = renderedHtml
         for mutation in allMutations {
-            mutatedHtml = try mutation(context, page, mutatedHtml)
+            mutatedHtml = try mutation(context, location, mutatedHtml)
         }
         return mutatedHtml
     }
+
 }
 

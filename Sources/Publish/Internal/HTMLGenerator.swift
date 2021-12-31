@@ -133,29 +133,25 @@ private extension HTMLGenerator {
         return html.render(indentedBy: indentation)
     }
 
-    func outputHTML(
-        for section: Section<Site>,
-        indentedBy indentation: Indentation.Kind?,
-        using generator: (Section<Site>, PublishingContext<Site>) throws -> HTML,
-        fileMode: HTMLFileMode
-    ) throws {
-        var renderedHtml = try renderHTML(for: section, indentedBy: indentation, using: generator)
-        renderedHtml = try context.htmlMutations.mutateHtml(context: context, section: section, renderedHtml: renderedHtml)
-        let path = filePath(for: section, fileMode: fileMode)
-        let file = try context.createOutputFile(at: path)
-        try file.write(renderedHtml)
-    }
-
     func outputHTML<T: Location>(
         for location: T,
         indentedBy indentation: Indentation.Kind?,
         using generator: (T, PublishingContext<Site>) throws -> HTML,
         fileMode: HTMLFileMode
     ) throws {
-        let html = try generator(location, context)
+        var renderedHtml = try renderHTML(for: location, indentedBy: indentation, using: generator)
+        if let section = location as? Section<Site> {
+            renderedHtml = try context.htmlMutations.mutateHtml(context: context, section: section, renderedHtml: renderedHtml)
+        } else if let item = location as? Item<Site> {
+            renderedHtml = try context.htmlMutations.mutateHtml(context: context, item: item, renderedHtml: renderedHtml)
+        } else if let page = location as? Page {
+            renderedHtml = try context.htmlMutations.mutateHtml(context: context, page: page, renderedHtml: renderedHtml)
+        } else {
+            renderedHtml = try context.htmlMutations.mutateHtml(context: context, location: location, renderedHtml: renderedHtml)
+        }
         let path = filePath(for: location, fileMode: fileMode)
         let file = try context.createOutputFile(at: path)
-        try file.write(html.render(indentedBy: indentation))
+        try file.write(renderedHtml)
     }
 
     func filePath(for location: Location, fileMode: HTMLFileMode) -> Path {
