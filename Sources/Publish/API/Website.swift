@@ -40,6 +40,8 @@ public protocol Website {
     /// The configuration to use when generating tag HTML for the website.
     /// If this is `nil`, then no tag HTML will be generated.
     var tagHTMLConfig: TagHTMLConfiguration? { get }
+    /// File or folder names to exclude when adding Markdown files. Regular expressions may be used.
+    var ignoredPaths: [String]? { get }
 }
 
 // MARK: - Defaults
@@ -153,5 +155,14 @@ public extension Website {
     /// - parameter location: The location to return a URL for.
     func url(for location: Location) -> URL {
         url(for: location.path)
+    }
+    
+    var ignoredPaths: [String]? { nil }
+
+    func shouldIgnore(name: String) -> Bool {
+        guard let ignoredPaths = ignoredPaths else { return false }
+        return !ignoredPaths.filter({
+            name.range(of: $0, options: .regularExpression) != nil
+        }).isEmpty
     }
 }
