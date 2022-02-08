@@ -293,6 +293,7 @@ internal extension PublishingContext {
 
     func copyFileToOutput(_ file: File,
                           targetFolderPath: Path?) throws {
+        guard !site.shouldIgnore(name: file.name) else { return }
         try copyLocationToOutput(
             file,
             targetFolderPath: targetFolderPath,
@@ -302,6 +303,7 @@ internal extension PublishingContext {
 
     func copyFolderToOutput(_ folder: Folder,
                             targetFolderPath: Path?) throws {
+        guard !site.shouldIgnore(name: folder.name) else { return }
         try copyLocationToOutput(
             folder,
             targetFolderPath: targetFolderPath,
@@ -349,6 +351,7 @@ private extension PublishingContext {
         targetFolderPath: Path?,
         errorReason: FileIOError.Reason
     ) throws {
+        guard !site.shouldIgnore(name: location.name) else { return }
         let targetFolder = try targetFolderPath.map {
             try createOutputFolder(at: $0)
         }
