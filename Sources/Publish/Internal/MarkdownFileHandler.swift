@@ -22,7 +22,7 @@ internal struct MarkdownFileHandler<Site: Website> {
         }
 
         for subfolder in folder.subfolders {
-            guard !context.site.shouldIgnore(name: subfolder.name) else { return }
+            guard !context.site.shouldIgnore(name: subfolder.name) else { continue }
             guard let sectionID = Site.SectionID(rawValue: subfolder.name.lowercased()) else {
                 try addPagesForMarkdownFiles(
                     inFolder: subfolder,
@@ -36,7 +36,7 @@ internal struct MarkdownFileHandler<Site: Website> {
             }
 
             for file in subfolder.files.recursive {
-                guard !context.site.shouldIgnore(name: file.name) else { return }
+                guard !context.site.shouldIgnore(name: file.name) else { continue }
                 guard file.isMarkdown else { continue }
 
                 if file.nameExcludingExtension == "index", file.parent == subfolder {
@@ -88,7 +88,7 @@ private extension MarkdownFileHandler {
         factory: MarkdownContentFactory<Site>
     ) throws {
         for file in folder.files {
-            guard !context.site.shouldIgnore(name: file.name) else { return }
+            guard !context.site.shouldIgnore(name: file.name) else { continue }
             guard file.isMarkdown else { continue }
 
             if file.nameExcludingExtension == "index", !recursively {
