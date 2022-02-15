@@ -40,7 +40,10 @@ public protocol Website {
     /// The configuration to use when generating tag HTML for the website.
     /// If this is `nil`, then no tag HTML will be generated.
     var tagHTMLConfig: TagHTMLConfiguration? { get }
-    /// File or folder names to exclude when adding Markdown files. Regular expressions may be used.
+    /// File or folder names to exclude when publishing the site. Regular expressions may be used.
+    /// - Bare strings with no regexp-related characters will be matched exactly. For example `"templates"` will ignore anything named `templates` but not something named `templates1` or `my templates`, etc.
+    /// - Wildcards are allowed and follow usual regular expression meanings. For example, `templates.*` means to ignore anything that starts with `templates` and includes zero or more characters after `templates`.
+    /// - It's not necessary to use `^` or `$` to indicate the start or end of a regular expression, but it's not harmful either.
     var ignoredPaths: [String]? { get }
 }
 
@@ -157,12 +160,19 @@ public extension Website {
         url(for: location.path)
     }
     
+    /// Make `ignoredPaths` optional.
     var ignoredPaths: [String]? { nil }
-
+    
+    /// Should the site ignore a file or folder with a specific name?
+    /// - Parameter name: Name of a file or folder, commonly `file.name` or `folder.name`.
+    /// - Returns: True if the web site should ignore the file/folder name
+    ///
+    /// Sites can indicate file/folder names to ignore using the `ignoredPaths` property. See that property for a discussion of how to use it.
+    ///
+    /// If a folder is ignored, everything in that folder will be ignored, regardless of whether the folder contents match anything in `ignoredPaths`.
     func shouldIgnore(name: String) -> Bool {
         guard let ignoredPaths = ignoredPaths else { return false }
         return !ignoredPaths.filter({
-            name.range(of: $0, options: .regularExpression) != nil
             // Add `^` and `$` to the ends of the pattern to avoid unexpected matches. Matching something like "foo" anywhere in a filename requires wildcards, e.g. ".*foo.*". Extra line start/end markers don't affect matching, so there's no need to check for them before trying the pattern.
             name.range(of: "^\($0)$", options: .regularExpression) != nil
         }).isEmpty
