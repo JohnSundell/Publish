@@ -107,7 +107,7 @@ final class WebsiteTests: PublishTestCase {
     }
 }
 
-private extension Website {
+extension Website {
     var ignoredPaths: [String]? { [
         "templates", // Should only match the exact string
         "skip-this-file.*", // Should match anyhing starting with "skip-this-file" and 0 or more chars after that
