@@ -163,6 +163,8 @@ public extension Website {
         guard let ignoredPaths = ignoredPaths else { return false }
         return !ignoredPaths.filter({
             name.range(of: $0, options: .regularExpression) != nil
+            // Add `^` and `$` to the ends of the pattern to avoid unexpected matches. Matching something like "foo" anywhere in a filename requires wildcards, e.g. ".*foo.*". Extra line start/end markers don't affect matching, so there's no need to check for them before trying the pattern.
+            name.range(of: "^\($0)$", options: .regularExpression) != nil
         }).isEmpty
     }
 }
