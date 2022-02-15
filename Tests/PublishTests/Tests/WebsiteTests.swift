@@ -81,4 +81,39 @@ final class WebsiteTests: PublishTestCase {
             URL(string: "https://swiftbysundell.com/mypage")
         )
     }
+    
+    func testIgnorePatterns() {
+        XCTAssertTrue(website.shouldIgnore(name: "templates"))
+        XCTAssertFalse(website.shouldIgnore(name: "templates1"))
+        XCTAssertFalse(website.shouldIgnore(name: "@templates"))
+        
+        XCTAssertTrue(website.shouldIgnore(name: "skip-this-file.md"))
+        XCTAssertTrue(website.shouldIgnore(name: "skip-this-file-too.png"))
+        XCTAssertTrue(website.shouldIgnore(name: "skip-this-file"))
+        XCTAssertFalse(website.shouldIgnore(name: "dont-skip-this-file"))
+
+        XCTAssertTrue(website.shouldIgnore(name: "notes"))
+        XCTAssertFalse(website.shouldIgnore(name: "notes1"))
+
+        XCTAssertTrue(website.shouldIgnore(name: "batter"))
+        XCTAssertTrue(website.shouldIgnore(name: "butter"))
+        XCTAssertFalse(website.shouldIgnore(name: "butter1"))
+        
+        XCTAssertTrue(website.shouldIgnore(name: "lisp"))
+        XCTAssertTrue(website.shouldIgnore(name: "lip"))
+        XCTAssertTrue(website.shouldIgnore(name: "lp"))
+        XCTAssertTrue(website.shouldIgnore(name: "l1234567890p"))
+        XCTAssertFalse(website.shouldIgnore(name: "lisp-too"))
+    }
 }
+
+private extension Website {
+    var ignoredPaths: [String]? { [
+        "templates", // Should only match the exact string
+        "skip-this-file.*", // Should match anyhing starting with "skip-this-file" and 0 or more chars after that
+        "^notes$", // Should match "notes" exactly and nothing else. Included because `shouldIgnore` adds a "^" and "$", which should not be affected by including those in the pattern.
+        "b.tter",
+        "l.*p"
+    ] }
+}
+
