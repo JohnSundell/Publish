@@ -6,6 +6,7 @@
 
 import Foundation
 import Plot
+import Files
 
 /// Protocol that all `Website.SectionID` implementations must conform to.
 public protocol WebsiteSectionID: Decodable, Hashable, CaseIterable, RawRepresentable where RawValue == String {}
@@ -44,6 +45,7 @@ public protocol Website {
     /// - Bare strings with no regexp-related characters will be matched exactly. For example `"templates"` will ignore anything named `templates` but not something named `templates1` or `my templates`, etc.
     /// - Wildcards are allowed and follow usual regular expression meanings. For example, `templates.*` means to ignore anything that starts with `templates` and includes zero or more characters after `templates`.
     /// - It's not necessary to use `^` or `$` to indicate the start or end of a regular expression, but it's not harmful either.
+    /// If a folder is ignored, everything in that folder will be ignored, regardless of whether the folder contents match anything in `ignoredPaths`.
     var ignoredPaths: [String]? { get }
 }
 
@@ -169,12 +171,29 @@ public extension Website {
     ///
     /// Sites can indicate file/folder names to ignore using the `ignoredPaths` property. See that property for a discussion of how to use it.
     ///
-    /// If a folder is ignored, everything in that folder will be ignored, regardless of whether the folder contents match anything in `ignoredPaths`.
+    /// This function checks only strings and should be called with a file or folder name.
     func shouldIgnore(name: String) -> Bool {
         guard let ignoredPaths = ignoredPaths else { return false }
         return !ignoredPaths.filter({
             // Add `^` and `$` to the ends of the pattern to avoid unexpected matches. Matching something like "foo" anywhere in a filename requires wildcards, e.g. ".*foo.*". Extra line start/end markers don't affect matching, so there's no need to check for them before trying the pattern.
             name.range(of: "^\($0)$", options: .regularExpression) != nil
         }).isEmpty
+    }
+    
+    /// Should the site ignore a `File` or `Folder`?
+    /// - Returns: True if the site should ignore the `File`/`Folder`.
+    ///
+    /// Sites can indicate file/folder names to ignore using the `ignoredPaths` property. See that property for a discussion of how to use it.
+    ///
+    /// *This function checks all path components for the location.* A file or folder that doesn't match the ignore list could still be contained in a folder that does match. This function deals with this by checking all path components against the `ignoredPaths` list and returning true if any matches are found. If you want to check a file or folder's name without checking the entire path, use `shouldIgnore(name:)`
+    func shouldIgnore<T: Files.Location>(_ location: T) -> Bool {
+        location.pathComponents.reduce(false) { (_, component) in shouldIgnore(name: component) }
+    }
+}
+
+extension Files.Location {
+    // Used in `shouldIgnore<T: Files.Location>(_ location)`
+    var pathComponents: [String] {
+        path.split(separator: "/").map { String($0) }
     }
 }

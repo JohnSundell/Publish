@@ -6,6 +6,7 @@
 
 import XCTest
 import Publish
+import Files
 
 final class WebsiteTests: PublishTestCase {
     private var website: WebsiteStub.WithoutItemMetadata!
@@ -82,7 +83,7 @@ final class WebsiteTests: PublishTestCase {
         )
     }
     
-    func testIgnorePatterns() {
+    func testIgnoreStrings() {
         XCTAssertTrue(website.shouldIgnore(name: "templates"))
         XCTAssertFalse(website.shouldIgnore(name: "templates1"))
         XCTAssertFalse(website.shouldIgnore(name: "@templates"))
@@ -105,6 +106,18 @@ final class WebsiteTests: PublishTestCase {
         XCTAssertTrue(website.shouldIgnore(name: "l1234567890p"))
         XCTAssertFalse(website.shouldIgnore(name: "lisp-too"))
     }
+    
+    func testIgnoreFiles() {
+        // Set up a couple of real files to test ignore-matching on a File, since they require existing files.
+        let folder: Folder! = try! Folder.temporary.createSubfolderIfNeeded(withName: ".publishTest")
+        let includeFile = try! folder.createFile(named: "include.txt")
+        XCTAssertFalse(website.shouldIgnore(includeFile))
+
+        let ignoreFile = try! folder.createFile(named: "ignore.txt")
+        XCTAssertTrue(website.shouldIgnore(ignoreFile))
+
+        try? folder.delete()
+    }
 }
 
 extension Website {
@@ -113,7 +126,9 @@ extension Website {
         "skip-this-file.*", // Should match anyhing starting with "skip-this-file" and 0 or more chars after that
         "^notes$", // Should match "notes" exactly and nothing else. Included because `shouldIgnore` adds a "^" and "$", which should not be affected by including those in the pattern.
         "b.tter",
-        "l.*p"
+        "l.*p",
+//        (#file as NSString).lastPathComponent
+        "ignore.txt"
     ] }
 }
 
