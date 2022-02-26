@@ -40,6 +40,8 @@ public protocol Website {
     /// The configuration to use when generating tag HTML for the website.
     /// If this is `nil`, then no tag HTML will be generated.
     var tagHTMLConfig: TagHTMLConfiguration? { get }
+    /// Preferred file-generation mode. Default is `.foldersAndIndexFiles`
+    var fileMode: HTMLFileMode { get }
 }
 
 // MARK: - Defaults
@@ -154,4 +156,7 @@ public extension Website {
     func url(for location: Location) -> URL {
         url(for: location.path)
     }
+    
+    /// Provide a default file mode.
+    var fileMode: HTMLFileMode { .foldersAndIndexFiles }
 }

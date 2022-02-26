@@ -61,3 +61,17 @@ private extension Item {
         "\(sectionID.rawValue)/\(relativePath)"
     }
 }
+
+public extension Item {
+    /// An `Item` location depends on the site's file mode. This function returns the appropriat path for the site.
+    /// - Parameter site: The site being published
+    /// - Returns: Path to the `Item` suitable for use in a list of links in a generated section index page.
+    func linkPath(for site:Site) -> String {
+        switch site.fileMode {
+        case .foldersAndIndexFiles:
+            return "/\(sectionID.rawValue)/\(relativePath)"
+        case .standAloneFiles:
+            return "/\(sectionID.rawValue)/\(relativePath).html"
+        }
+    }
+}

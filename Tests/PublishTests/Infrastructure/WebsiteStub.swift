@@ -20,7 +20,8 @@ class WebsiteStub {
     var imagePath: Path? = nil
     var faviconPath: Path? = nil
     var tagHTMLConfig: TagHTMLConfiguration? = .default
-
+    var fileMode: HTMLFileMode = .foldersAndIndexFiles
+    
     required init() {}
 
     func title(for sectionID: WebsiteStub.SectionID) -> String {

@@ -197,7 +197,7 @@ private struct ItemList<Site: Website>: Component {
     var body: Component {
         List(items) { item in
             Article {
-                H1(Link(item.title, url: item.path.absoluteString))
+                H1(Link(item.title, url: item.linkPath(for: site)))
                 ItemTagList(item: item, site: site)
                 Paragraph(item.description)
             }
