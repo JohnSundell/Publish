@@ -58,6 +58,7 @@ private extension ProjectGenerator {
         /.swiftpm
         /*.xcodeproj
         .publish
+        Output
         """)
     }
 
