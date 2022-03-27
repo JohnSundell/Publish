@@ -62,7 +62,8 @@ private extension ProjectGenerator {
     }
 
     func generateResourcesFolder() throws {
-        try folder.createSubfolder(named: "Resources")
+        let resourcesFolder = try folder.createSubfolder(named: "Resources")
+        try resourcesFolder.createFile(named: ".gitkeep")
     }
 
     func generateContentFolder() throws {
