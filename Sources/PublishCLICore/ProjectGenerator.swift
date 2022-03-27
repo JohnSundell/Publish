@@ -101,7 +101,7 @@ private extension ProjectGenerator {
         }
 
         try folder.createFile(named: "Package.swift").write("""
-        // swift-tools-version:5.2
+        // swift-tools-version:5.5
 
         import PackageDescription
 
@@ -114,12 +114,14 @@ private extension ProjectGenerator {
                 )
             ],
             dependencies: [
-                .package(name: "Publish", \(dependencyString))
+                .package(\(dependencyString))
             ],
             targets: [
-                .target(
+                .executableTarget(
                     name: "\(name)",
-                    dependencies: ["Publish"]
+                    dependencies: [
+                        .product(name: "Publish", package: "publish")
+                    ]
                 )
             ]
         )
