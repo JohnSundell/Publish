@@ -187,7 +187,7 @@ public extension Website {
     ///
     /// *This function checks all path components for the location.* A file or folder that doesn't match the ignore list could still be contained in a folder that does match. This function deals with this by checking all path components against the `ignoredPaths` list and returning true if any matches are found. If you want to check a file or folder's name without checking the entire path, use `shouldIgnore(name:)`
     func shouldIgnore<T: Files.Location>(_ location: T) -> Bool {
-        location.pathComponents.reduce(false) { (_, component) in shouldIgnore(name: component) }
+        !location.pathComponents.filter({ shouldIgnore(name:$0) }).isEmpty
     }
 }
 
