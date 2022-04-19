@@ -48,6 +48,7 @@ public struct PublishingContext<Site: Website> {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm"
         dateFormatter.timeZone = .current
+        dateFormatter.locale = Locale(identifier: "en_us_POSIX")
         self.dateFormatter = dateFormatter
     }
 }

@@ -75,6 +75,7 @@ private extension ProjectGenerator {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm"
         dateFormatter.timeZone = .current
+        dateFormatter.locale = Locale(identifier: "en_us_POSIX")
 
         try postsFolder.createFile(named: "first-post.md").write("""
         ---
