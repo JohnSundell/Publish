@@ -15,7 +15,7 @@ import Plot
 /// Steps are added when calling `Website.publish`.
 public struct PublishingStep<Site: Website> {
     /// Closure type used to define the main body of a publishing step.
-    public typealias Closure = (inout PublishingContext<Site>) throws -> Void
+    public typealias Closure = (inout PublishingContext<Site>) async throws -> Void
 
     internal let kind: Kind
     internal let body: Body
@@ -60,7 +60,7 @@ public extension PublishingStep {
             return step
         case .operation(let name, let closure):
             return .step(named: name, kind: step.kind) { context in
-                do { try closure(&context) }
+                do { try await closure(&context) }
                 catch {}
             }
         }
@@ -131,7 +131,7 @@ public extension PublishingStep {
     static func addMarkdownFiles(at path: Path = "Content") -> Self {
         step(named: "Add Markdown files from '\(path)' folder") { context in
             let folder = try context.folder(at: path)
-            try MarkdownFileHandler().addMarkdownFiles(in: folder, to: &context)
+            try await MarkdownFileHandler().addMarkdownFiles(in: folder, to: &context)
         }
     }
     
@@ -164,21 +164,52 @@ public extension PublishingStep {
         matching predicate: Predicate<Item<Site>> = .any,
         using mutations: @escaping Mutations<Item<Site>>
     ) -> Self {
-        let nameSuffix = section.map { " in '\($0)'" } ?? ""
+        mutateAllItems(
+            in: section.map { [$0] } ?? Set(Site.SectionID.allCases),
+            matching: predicate,
+            using: mutations
+        )
+    }
 
-        return step(named: "Mutate items" + nameSuffix) { context in
-            if let section = section {
-                try context.sections[section].mutateItems(
-                    matching: predicate,
-                    using: mutations
+    /// Mutate all items matching a predicate within a certain set of sections.
+    /// - parameter sections: The sections to mutate all items within.
+    /// - parameter predicate: Any predicate to filter the items using.
+    /// - parameter mutations: The mutations to apply to each item.
+    static func mutateAllItems(
+        in sections: Set<Site.SectionID>,
+        matching predicate: Predicate<Item<Site>> = .any,
+        using mutations: @escaping Mutations<Item<Site>>
+    ) -> Self {
+        var stepName = "Mutate all items"
+        
+        if sections.count != Site.SectionID.allCases.count {
+            let sectionDescription = sections
+                .map(\.rawValue)
+                .joined(separator: ", ")
+            
+            stepName.append(" in \(sectionDescription)")
+        }
+        
+        return step(named: stepName) { context in
+            for section in sections {
+                try await context.sections[section].replaceItems(
+                    with: context.sections[section].items.concurrentMap { item in
+                        guard predicate.matches(item) else {
+                            return item
+                        }
+
+                        do {
+                            var item = item
+                            try mutations(&item)
+                            return item
+                        } catch {
+                            throw ContentError(
+                                path: item.path,
+                                reason: .itemMutationFailed(error)
+                            )
+                        }
+                    }
                 )
-            } else {
-                for section in context.sections.ids {
-                    try context.sections[section].mutateItems(
-                        matching: predicate,
-                        using: mutations
-                    )
-                }
             }
         }
     }
@@ -343,7 +374,7 @@ public extension PublishingStep {
                 context: context
             )
 
-            try generator.generate()
+            try await generator.generate()
         }
     }
 
@@ -372,7 +403,7 @@ public extension PublishingStep {
                 date: date
             )
 
-            try generator.generate()
+            try await generator.generate()
         }
     }
 
@@ -420,7 +451,7 @@ public extension PublishingStep where Site.ItemMetadata: PodcastCompatibleWebsit
                 date: date
             )
 
-            try generator.generate()
+            try await generator.generate()
         }
     }
 }

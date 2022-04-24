@@ -5,12 +5,13 @@
 */
 
 import Files
+import CollectionConcurrencyKit
 
 internal struct MarkdownFileHandler<Site: Website> {
     func addMarkdownFiles(
         in folder: Folder,
         to context: inout PublishingContext<Site>
-    ) throws {
+    ) async throws {
         let factory = context.makeMarkdownContentFactory()
 
         if let indexFile = try? folder.file(named: "index.md") {
@@ -21,26 +22,24 @@ internal struct MarkdownFileHandler<Site: Website> {
             }
         }
 
-        for subfolder in folder.subfolders {
+        let folderResults: [FolderResult] = try await folder.subfolders.concurrentMap { subfolder in
             guard let sectionID = Site.SectionID(rawValue: subfolder.name.lowercased()) else {
-                try addPagesForMarkdownFiles(
+                return try await .pages(makePagesForMarkdownFiles(
                     inFolder: subfolder,
-                    to: &context,
                     recursively: true,
                     parentPath: Path(subfolder.name),
                     factory: factory
-                )
-
-                continue
+                ))
             }
 
-            for file in subfolder.files.recursive {
-                guard file.isMarkdown else { continue }
+            var sectionContent: Content?
+            
+            let items: [Item<Site>] = try await subfolder.files.recursive.concurrentCompactMap { file in
+                guard file.isMarkdown else { return nil }
 
                 if file.nameExcludingExtension == "index", file.parent == subfolder {
-                    let content = try factory.makeContent(fromFile: file)
-                    context.sections[sectionID].content = content
-                    continue
+                    sectionContent = try factory.makeContent(fromFile: file)
+                    return nil
                 }
 
                 do {
@@ -53,60 +52,82 @@ internal struct MarkdownFileHandler<Site: Website> {
                         path = Path(fileName)
                     }
 
-                    let item = try factory.makeItem(
+                    return try factory.makeItem(
                         fromFile: file,
                         at: path,
                         sectionID: sectionID
                     )
-
-                    context.addItem(item)
                 } catch {
                     let path = Path(file.path(relativeTo: folder))
                     throw wrap(error, forPath: path)
                 }
             }
+
+            return .section(id: sectionID, content: sectionContent, items: items)
         }
 
-        try addPagesForMarkdownFiles(
+        for result in folderResults {
+            switch result {
+            case .pages(let pages):
+                for page in pages {
+                    context.addPage(page)
+                }
+            case .section(let id, let content, let items):
+                if let content = content {
+                    context.sections[id].content = content
+                }
+
+                for item in items {
+                    context.addItem(item)
+                }
+            }
+        }
+
+        let rootPages = try await makePagesForMarkdownFiles(
             inFolder: folder,
-            to: &context,
             recursively: false,
             parentPath: "",
             factory: factory
         )
+
+        for page in rootPages {
+            context.addPage(page)
+        }
     }
 }
 
 private extension MarkdownFileHandler {
-    func addPagesForMarkdownFiles(
+    enum FolderResult {
+        case pages([Page])
+        case section(id: Site.SectionID, content: Content?, items: [Item<Site>])
+    }
+
+    func makePagesForMarkdownFiles(
         inFolder folder: Folder,
-        to context: inout PublishingContext<Site>,
         recursively: Bool,
         parentPath: Path,
         factory: MarkdownContentFactory<Site>
-    ) throws {
-        for file in folder.files {
-            guard file.isMarkdown else { continue }
+    ) async throws -> [Page] {
+        let pages: [Page] = try await folder.files.concurrentCompactMap { file in
+            guard file.isMarkdown else { return nil }
 
             if file.nameExcludingExtension == "index", !recursively {
-                continue
+                return nil
             }
 
             let pagePath = parentPath.appendingComponent(file.nameExcludingExtension)
-            let page = try factory.makePage(fromFile: file, at: pagePath)
-            context.addPage(page)
+            return try factory.makePage(fromFile: file, at: pagePath)
         }
 
         guard recursively else {
-            return
+            return pages
         }
 
-        for subfolder in folder.subfolders {
+        return try await pages + folder.subfolders.concurrentFlatMap { subfolder -> [Page] in
             let parentPath = parentPath.appendingComponent(subfolder.name)
 
-            try addPagesForMarkdownFiles(
+            return try await makePagesForMarkdownFiles(
                 inFolder: subfolder,
-                to: &context,
                 recursively: true,
                 parentPath: parentPath,
                 factory: factory

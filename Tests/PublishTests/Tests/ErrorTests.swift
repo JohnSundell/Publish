@@ -81,7 +81,7 @@ final class ErrorTests: PublishTestCase {
                 }
             ]),
             PublishingError(
-                stepName: "Mutate items",
+                stepName: "Mutate all items",
                 path: "one/path/to/item",
                 infoMessage: "Item mutation failed",
                 underlyingError: Error()

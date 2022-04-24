@@ -15,7 +15,7 @@ internal struct RSSFeedGenerator<Site: Website> {
     let context: PublishingContext<Site>
     let date: Date
 
-    func generate() throws {
+    func generate() async throws {
         let outputFile = try context.createOutputFile(at: config.targetPath)
         let cacheFile = try context.cacheFile(named: "feed")
         let oldCache = try? cacheFile.read().decoded() as Cache
@@ -41,7 +41,7 @@ internal struct RSSFeedGenerator<Site: Website> {
             }
         }
 
-        let feed = makeFeed(containing: items).render(indentedBy: config.indentation)
+        let feed = await makeFeed(containing: items).render(indentedBy: config.indentation)
 
         let newCache = Cache(config: config, feed: feed, itemCount: items.count)
         try cacheFile.write(newCache.encoded())
@@ -56,7 +56,7 @@ private extension RSSFeedGenerator {
         let itemCount: Int
     }
 
-    func makeFeed(containing items: [Item<Site>]) -> RSS {
+    func makeFeed(containing items: [Item<Site>]) async -> RSS {
         RSS(
             .title(context.site.name),
             .description(context.site.description),
@@ -66,7 +66,7 @@ private extension RSSFeedGenerator {
             .pubDate(date, timeZone: context.dateFormatter.timeZone),
             .ttl(Int(config.ttlInterval)),
             .atomLink(context.site.url(for: config.targetPath)),
-            .forEach(items.prefix(config.maximumItemCount)) { item in
+            .group(await items.prefix(config.maximumItemCount).concurrentMap { item in
                 .item(
                     .guid(for: item, site: context.site),
                     .title(item.rssTitle),
@@ -75,7 +75,7 @@ private extension RSSFeedGenerator {
                     .pubDate(item.date, timeZone: context.dateFormatter.timeZone),
                     .content(for: item, site: context.site)
                 )
-            }
+            })
         )
     }
 }

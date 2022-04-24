@@ -16,7 +16,7 @@ internal struct PublishingPipeline<Site: Website> {
 }
 
 extension PublishingPipeline {
-    func execute(for site: Site, at path: Path?) throws -> PublishedWebsite<Site> {
+    func execute(for site: Site, at path: Path?) async throws -> PublishedWebsite<Site> {
         let stepKind = resolveStepKind()
 
         let folders = try setUpFolders(
@@ -52,7 +52,7 @@ extension PublishingPipeline {
                 let message = "[\(index + 1)/\(steps.count)] \(step.name)"
                 CommandLine.output(message, as: .info)
                 context.prepareForStep(named: step.name)
-                try step.closure(&context)
+                try await step.closure(&context)
             } catch let error as PublishingErrorConvertible {
                 throw error.publishingError(forStepNamed: step.name)
             } catch {
