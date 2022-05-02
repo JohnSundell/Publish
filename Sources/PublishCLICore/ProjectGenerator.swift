@@ -115,12 +115,14 @@ private extension ProjectGenerator {
                 )
             ],
             dependencies: [
-                .package(name: "Publish", \(dependencyString))
+                .package(\(dependencyString))
             ],
             targets: [
                 .executableTarget(
                     name: "\(name)",
-                    dependencies: ["Publish"]
+                    dependencies: [
+                        .product(name: "Publish", package: "publish")
+                    ]
                 )
             ]
         )
