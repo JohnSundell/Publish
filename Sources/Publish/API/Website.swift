@@ -6,6 +6,7 @@
 
 import Foundation
 import Plot
+import Dispatch
 
 /// Protocol that all `Website.SectionID` implementations must conform to.
 public protocol WebsiteSectionID: Decodable, Hashable, CaseIterable, RawRepresentable where RawValue == String {}
@@ -111,7 +112,23 @@ public extension Website {
             originFilePath: Path("\(file)")
         )
 
-        return try pipeline.execute(for: self, at: path)
+        let semaphore = DispatchSemaphore(value: 0)
+        var result: Result<PublishedWebsite<Self>, Error>?
+        let completionHandler = { result = $0 }
+        
+        Task {
+            do {
+                let website = try await pipeline.execute(for: self, at: path)
+                completionHandler(.success(website))
+            } catch {
+                completionHandler(.failure(error))
+            }
+            
+            semaphore.signal()
+        }
+        
+        semaphore.wait()
+        return try result!.get()
     }
 }
 

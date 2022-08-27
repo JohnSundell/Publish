@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-    <img src="https://img.shields.io/badge/Swift-5.4-orange.svg" />
+    <img src="https://img.shields.io/badge/Swift-5.5-orange.svg" />
     <a href="https://swift.org/package-manager">
         <img src="https://img.shields.io/badge/swiftpm-compatible-brightgreen.svg?style=flat" alt="Swift Package Manager" />
     </a>
@@ -273,6 +273,8 @@ The Publish command line tool is also available via [Homebrew](https://brew.sh) 
 ```
 brew install publish
 ```
+
+However, please note that Homebrew support is not officially maintained by John Sundell, and you might therefore be installing an older version of the Publish command line tool when using Homebrew. Using `make`, as described above, is the preferred way to install the Publish command line tool.
 
 ## Running and deploying
 
