@@ -1,20 +1,104 @@
 /**
-*  Publish
-*  Copyright (c) John Sundell 2019
-*  MIT license, see LICENSE file for details
-*/
+ *  Publish
+ *  Copyright (c) John Sundell 2019
+ *  MIT license, see LICENSE file for details
+ */
 
 import Foundation
 import Files
 import ShellOut
+import FileWatcher
 
 internal struct WebsiteRunner {
+    static let normalTerminationStatus = 15
+    static let debounceInterval: TimeInterval = 3
+    static let runLoopInterval: TimeInterval = 0.1
     let folder: Folder
-    var portNumber: Int
+    let portNumber: Int
+    let shouldWatch: Bool
 
     func run() throws {
+        var lastModified: Date?
+        var watcher: FileWatcher?
+        let serverProcess: Process = try generateAndRun()
+
+        if shouldWatch {
+            watcher = try startWatcher {
+                if lastModified == nil {
+                    let file = try? File(path: $0)
+                    print("Change detected at \(file?.name ?? "Unknown"), scheduling regeneration")
+                }
+                lastModified = Date()
+            }
+        }
+
+        let interruptHandler = registerInterruptHandler {
+            watcher?.stop()
+            serverProcess.terminate()
+            exit(0)
+        }
+
+        interruptHandler.resume()
+
+        while true {
+            defer {
+                RunLoop.main.run(until: Date(timeIntervalSinceNow: Self.runLoopInterval))
+            }
+
+            guard let date = lastModified, date.timeIntervalSinceNow < -Self.debounceInterval else {
+                continue
+            }
+
+            lastModified = nil
+
+            print("Regenerating...")
+            let generator = WebsiteGenerator(folder: folder)
+            do {
+                try generator.generate()
+            } catch {
+                outputErrorMessage("Regeneration failed")
+            }
+        }
+    }
+}
+
+private extension WebsiteRunner {
+    var foldersToWatch: [Folder] {
+        get throws {
+            try ["Sources", "Resources", "Content"].map(folder.subfolder(named:))
+        }
+    }
+
+    func startWatcher(_ didChange: @escaping (String) -> Void) throws -> FileWatcher {
+        let filePaths = try foldersToWatch.map(\.path)
+        let watcher = FileWatcher(filePaths)
+
+        watcher.callback = { event in
+            if event.isFileChanged || event.isDirectoryChanged {
+                didChange(event.path)
+            }
+        }
+
+        watcher.start()
+        return watcher
+    }
+
+    func registerInterruptHandler(_ handler: @escaping () -> Void) -> DispatchSourceSignal {
+        let interruptHandler = DispatchSource.makeSignalSource(signal: SIGINT, queue: .main)
+
+        signal(SIGINT, SIG_IGN)
+
+        interruptHandler.setEventHandler(handler: handler)
+        return interruptHandler
+    }
+
+    func generate() throws {
         let generator = WebsiteGenerator(folder: folder)
         try generator.generate()
+    }
+
+    func generateAndRun() throws -> Process {
+        try generate()
 
         let outputFolder = try resolveOutputFolder()
 
@@ -24,7 +108,7 @@ internal struct WebsiteRunner {
         print("""
         🌍 Starting web server at http://localhost:\(portNumber)
 
-        Press ENTER to stop the server and exit
+        Press CTRL+C to stop the server and exit
         """)
 
         serverQueue.async {
@@ -44,12 +128,9 @@ internal struct WebsiteRunner {
             exit(1)
         }
 
-        _ = readLine()
-        serverProcess.terminate()
+        return serverProcess
     }
-}
 
-private extension WebsiteRunner {
     func resolveOutputFolder() throws -> Folder {
         do { return try folder.subfolder(named: "Output") }
         catch { throw CLIError.outputFolderNotFound }
@@ -70,6 +151,20 @@ private extension WebsiteRunner {
             """
         }
 
-        fputs("\n❌ Failed to start local web server:\n\(message)\n", stderr)
+        outputErrorMessage("Failed to start local web server:\n\(message)")
+    }
+
+    func outputErrorMessage(_ message: String) {
+        fputs("\n❌ \(message)\n", stderr)
+    }
+}
+
+private extension FileWatcherEvent {
+    var isFileChanged: Bool {
+        fileRenamed || fileRemoved || fileCreated || fileModified
+    }
+
+    var isDirectoryChanged: Bool {
+        dirRenamed || dirRemoved || dirCreated || dirModified
     }
 }

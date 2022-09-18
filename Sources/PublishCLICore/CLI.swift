@@ -9,6 +9,7 @@ import Foundation
 import ShellOut
 
 public struct CLI {
+    private static let defaultPortNumber = 8000
     private let arguments: [String]
     private let publishRepositoryURL: URL
     private let publishVersion: String
@@ -44,7 +45,8 @@ public struct CLI {
             try deployer.deploy()
         case "run":
             let portNumber = extractPortNumber(from: arguments)
-            let runner = WebsiteRunner(folder: folder, portNumber: portNumber)
+            let shouldWatch = extractShouldWatch(from: arguments)
+            let runner = WebsiteRunner(folder: folder, portNumber: portNumber, shouldWatch: shouldWatch)
             try runner.run()
         default:
             outputHelpText()
@@ -68,24 +70,30 @@ private extension CLI {
         - run: Generate and run a localhost server on default port 8000
                for the website in the current folder. Use the "-p"
                or "--port" option for customizing the default port.
+               Use the "-w" or "--watch" option to watch for file changes.
         - deploy: Generate and deploy the website in the current
                folder, according to its deployment method.
         """)
     }
 
     private func extractPortNumber(from arguments: [String]) -> Int {
-        if arguments.count > 3 {
-            switch arguments[2] {
-            case "-p", "--port":
-                guard let portNumber = Int(arguments[3]) else {
-                    break
-                }
-                return portNumber
-            default:
-                return 8000 // default portNumber
-            }
+        guard let index = arguments.firstIndex(of: "-p") ?? arguments.firstIndex(of: "--port") else {
+            return Self.defaultPortNumber
         }
-        return 8000 // default portNumber
+
+        guard arguments.count > index + 1 else {
+            return Self.defaultPortNumber
+        }
+
+        guard let portNumber = Int(arguments[index + 1]) else {
+            return Self.defaultPortNumber
+        }
+
+        return portNumber
+    }
+
+    private func extractShouldWatch(from arguments: [String]) -> Bool {
+        arguments.contains("-w") || arguments.contains("--watch")
     }
 
     private func resolveProjectKind(from arguments: [String]) -> ProjectKind {
