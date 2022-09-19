@@ -11,29 +11,41 @@ import FileWatcher
 
 internal struct WebsiteRunner {
     static let normalTerminationStatus = 15
-    static let debounceInterval: TimeInterval = 3
+    static let debounceDuration = 3 * NSEC_PER_SEC
     static let runLoopInterval: TimeInterval = 0.1
+    static let exitMessage = "Press CTRL+C to stop the server and exit"
     let folder: Folder
     let portNumber: Int
     let shouldWatch: Bool
 
+    var foldersToWatch: [Folder] {
+        get throws {
+            try ["Sources", "Resources", "Content"].map(folder.subfolder(named:))
+        }
+    }
+
     func run() throws {
-        var lastModified: Date?
-        var watcher: FileWatcher?
         let serverProcess: Process = try generateAndRun()
 
+        var watchTask: Task<Void, Error>?
+
         if shouldWatch {
-            watcher = try startWatcher {
-                if lastModified == nil {
-                    let file = try? File(path: $0)
-                    print("Change detected at \(file?.name ?? "Unknown"), scheduling regeneration")
+            watchTask = Task.detached {
+                for try await _ in changes(on: try foldersToWatch, debouncedBy: Self.debounceDuration) {
+                    print("Changes detected, regenerating...")
+                    let generator = WebsiteGenerator(folder: folder)
+                    do {
+                        try generator.generate()
+                        print(Self.exitMessage)
+                    } catch {
+                        outputErrorMessage("Regeneration failed")
+                    }
                 }
-                lastModified = Date()
             }
         }
 
         let interruptHandler = registerInterruptHandler {
-            watcher?.stop()
+            watchTask?.cancel()
             serverProcess.terminate()
             exit(0)
         }
@@ -41,47 +53,48 @@ internal struct WebsiteRunner {
         interruptHandler.resume()
 
         while true {
-            defer {
-                RunLoop.main.run(until: Date(timeIntervalSinceNow: Self.runLoopInterval))
-            }
-
-            guard let date = lastModified, date.timeIntervalSinceNow < -Self.debounceInterval else {
-                continue
-            }
-
-            lastModified = nil
-
-            print("Regenerating...")
-            let generator = WebsiteGenerator(folder: folder)
-            do {
-                try generator.generate()
-            } catch {
-                outputErrorMessage("Regeneration failed")
-            }
+            RunLoop.main.run(until: Date(timeIntervalSinceNow: Self.runLoopInterval))
         }
     }
 }
 
 private extension WebsiteRunner {
-    var foldersToWatch: [Folder] {
-        get throws {
-            try ["Sources", "Resources", "Content"].map(folder.subfolder(named:))
-        }
-    }
+    func changes(on folders: [Folder], debouncedBy nanoseconds: UInt64?) -> AsyncThrowingStream<String, Error> {
+        .init { continuation in
+            let watcher = FileWatcher(folders.map(\.path))
 
-    func startWatcher(_ didChange: @escaping (String) -> Void) throws -> FileWatcher {
-        let filePaths = try foldersToWatch.map(\.path)
-        let watcher = FileWatcher(filePaths)
+            var deferredTask: Task<Void, Error>?
 
-        watcher.callback = { event in
-            if event.isFileChanged || event.isDirectoryChanged {
-                didChange(event.path)
+            watcher.callback = { event in
+                guard event.isFileChanged || event.isDirectoryChanged else {
+                    return
+                }
+
+                guard let nanoseconds = nanoseconds else {
+                    continuation.yield(event.path)
+                    return
+                }
+
+                deferredTask?.cancel()
+
+                deferredTask = Task {
+                    do {
+                        try await Task.sleep(nanoseconds: nanoseconds)
+                        continuation.yield(event.path)
+                    } catch where !(error is CancellationError) {
+                        continuation.finish()
+                    }
+                }
+            }
+
+            watcher.start()
+
+            continuation.onTermination = { _ in
+                watcher.stop()
             }
         }
-
-        watcher.start()
-        return watcher
     }
+
 
     func registerInterruptHandler(_ handler: @escaping () -> Void) -> DispatchSourceSignal {
         let interruptHandler = DispatchSource.makeSignalSource(signal: SIGINT, queue: .main)
@@ -108,7 +121,7 @@ private extension WebsiteRunner {
         print("""
         🌍 Starting web server at http://localhost:\(portNumber)
 
-        Press CTRL+C to stop the server and exit
+        \(Self.exitMessage)
         """)
 
         serverQueue.async {
