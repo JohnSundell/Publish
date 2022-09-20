@@ -7,13 +7,15 @@
 import Foundation
 import Files
 import ShellOut
+
 #if canImport(FileWatcher)
 import FileWatcher
 #endif
 
 internal struct WebsiteRunner {
+    static let nanosecondsPerSecond: UInt64 = 1_000_000_000
     static let normalTerminationStatus = 15
-    static let debounceDuration = 3 * NSEC_PER_SEC
+    static let debounceDuration = 3 * nanosecondsPerSecond
     static let runLoopInterval: TimeInterval = 0.1
     static let exitMessage = "Press CTRL+C to stop the server and exit"
     let folder: Folder
