@@ -7,7 +7,9 @@
 import Foundation
 import Files
 import ShellOut
+#if canImport(FileWatcher)
 import FileWatcher
+#endif
 
 internal struct WebsiteRunner {
     static let normalTerminationStatus = 15
@@ -26,23 +28,7 @@ internal struct WebsiteRunner {
 
     func run() throws {
         let serverProcess: Process = try generateAndRun()
-
-        var watchTask: Task<Void, Error>?
-
-        if shouldWatch {
-            watchTask = Task.detached {
-                for try await _ in changes(on: try foldersToWatch, debouncedBy: Self.debounceDuration) {
-                    print("Changes detected, regenerating...")
-                    let generator = WebsiteGenerator(folder: folder)
-                    do {
-                        try generator.generate()
-                        print(Self.exitMessage)
-                    } catch {
-                        outputErrorMessage("Regeneration failed")
-                    }
-                }
-            }
-        }
+        let watchTask = shouldWatch ? watch() : nil
 
         let interruptHandler = registerInterruptHandler {
             watchTask?.cancel()
@@ -59,43 +45,6 @@ internal struct WebsiteRunner {
 }
 
 private extension WebsiteRunner {
-    func changes(on folders: [Folder], debouncedBy nanoseconds: UInt64?) -> AsyncThrowingStream<String, Error> {
-        .init { continuation in
-            let watcher = FileWatcher(folders.map(\.path))
-
-            var deferredTask: Task<Void, Error>?
-
-            watcher.callback = { event in
-                guard event.isFileChanged || event.isDirectoryChanged else {
-                    return
-                }
-
-                guard let nanoseconds = nanoseconds else {
-                    continuation.yield(event.path)
-                    return
-                }
-
-                deferredTask?.cancel()
-
-                deferredTask = Task {
-                    do {
-                        try await Task.sleep(nanoseconds: nanoseconds)
-                        continuation.yield(event.path)
-                    } catch where !(error is CancellationError) {
-                        continuation.finish()
-                    }
-                }
-            }
-
-            watcher.start()
-
-            continuation.onTermination = { _ in
-                watcher.stop()
-            }
-        }
-    }
-
-
     func registerInterruptHandler(_ handler: @escaping () -> Void) -> DispatchSourceSignal {
         let interruptHandler = DispatchSource.makeSignalSource(signal: SIGINT, queue: .main)
 
@@ -103,6 +52,26 @@ private extension WebsiteRunner {
 
         interruptHandler.setEventHandler(handler: handler)
         return interruptHandler
+    }
+
+    func watch() -> Task<Void, Error>? {
+#if canImport(FileWatcher)
+        return Task.detached {
+            for try await _ in FileWatcher.changes(on: try foldersToWatch, debouncedBy: Self.debounceDuration) {
+                print("Changes detected, regenerating...")
+                let generator = WebsiteGenerator(folder: folder)
+                do {
+                    try generator.generate()
+                    print(Self.exitMessage)
+                } catch {
+                    outputErrorMessage("Regeneration failed")
+                }
+            }
+        }
+#else
+        print("File watching not available")
+        return nil
+#endif
     }
 
     func generate() throws {
@@ -172,6 +141,45 @@ private extension WebsiteRunner {
     }
 }
 
+#if canImport(FileWatcher)
+private extension FileWatcher {
+    static func changes(on folders: [Folder], debouncedBy nanoseconds: UInt64?) -> AsyncThrowingStream<String, Error> {
+        .init { continuation in
+            let watcher = FileWatcher(folders.map(\.path))
+
+            var deferredTask: Task<Void, Error>?
+
+            watcher.callback = { event in
+                guard event.isFileChanged || event.isDirectoryChanged else {
+                    return
+                }
+
+                guard let nanoseconds = nanoseconds else {
+                    continuation.yield(event.path)
+                    return
+                }
+
+                deferredTask?.cancel()
+
+                deferredTask = Task {
+                    do {
+                        try await Task.sleep(nanoseconds: nanoseconds)
+                        continuation.yield(event.path)
+                    } catch where !(error is CancellationError) {
+                        continuation.finish()
+                    }
+                }
+            }
+
+            watcher.start()
+
+            continuation.onTermination = { _ in
+                watcher.stop()
+            }
+        }
+    }
+}
+
 private extension FileWatcherEvent {
     var isFileChanged: Bool {
         fileRenamed || fileRemoved || fileCreated || fileModified
@@ -181,3 +189,4 @@ private extension FileWatcherEvent {
         dirRenamed || dirRemoved || dirCreated || dirModified
     }
 }
+#endif

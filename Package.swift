@@ -72,7 +72,7 @@ let package = Package(
         ),
         .target(
             name: "PublishCLICore",
-            dependencies: ["Publish", "FileWatcher"]
+            dependencies: ["Publish", .byName(name: "FileWatcher", condition: .when(platforms: [.macOS]))]
         ),
         .testTarget(
             name: "PublishTests",
