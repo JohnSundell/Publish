@@ -75,8 +75,8 @@ public extension Website {
                  deployedUsing deploymentMethod: DeploymentMethod<Self>? = nil,
                  additionalSteps: [PublishingStep<Self>] = [],
                  plugins: [Plugin<Self>] = [],
-                 file: StaticString = #file) throws -> PublishedWebsite<Self> {
-        try publish(
+                 file: StaticString = #file) async throws -> PublishedWebsite<Self> {
+        try await publish(
             at: path,
             using: [
                 .group(plugins.map(PublishingStep.installPlugin)),
@@ -106,29 +106,13 @@ public extension Website {
     @discardableResult
     func publish(at path: Path? = nil,
                  using steps: [PublishingStep<Self>],
-                 file: StaticString = #file) throws -> PublishedWebsite<Self> {
+                 file: StaticString = #file) async throws -> PublishedWebsite<Self> {
         let pipeline = PublishingPipeline(
             steps: steps,
             originFilePath: Path("\(file)")
         )
 
-        let semaphore = DispatchSemaphore(value: 0)
-        var result: Result<PublishedWebsite<Self>, Error>?
-        let completionHandler = { result = $0 }
-        
-        Task {
-            do {
-                let website = try await pipeline.execute(for: self, at: path)
-                completionHandler(.success(website))
-            } catch {
-                completionHandler(.failure(error))
-            }
-            
-            semaphore.signal()
-        }
-        
-        semaphore.wait()
-        return try result!.get()
+        return try await pipeline.execute(for: self, at: path)
     }
 }
 
