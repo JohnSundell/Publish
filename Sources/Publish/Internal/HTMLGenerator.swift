@@ -48,7 +48,7 @@ private extension HTMLGenerator {
         let creationFile = try File(path: theme.creationPath.string)
         let packageFolder = try creationFile.resolveSwiftPackageFolder()
 
-        return try await theme.resourcePaths.concurrentMap { path in
+        return try await theme.resourcePaths.concurrentMap { path -> Path in
             do {
                 let file = try packageFolder.file(at: path.string)
                 try context.copyFileToOutput(file, targetFolderPath: nil)
@@ -72,7 +72,7 @@ private extension HTMLGenerator {
     }
 
     func generateSectionHTML() async throws -> [Path] {
-        try await context.sections.concurrentFlatMap { section in
+        try await context.sections.concurrentFlatMap { section -> [Path] in
             var allPaths = [Path]()
 
             let sectionPath = try outputHTML(
@@ -82,8 +82,8 @@ private extension HTMLGenerator {
                 fileMode: .foldersAndIndexFiles
             )
             allPaths.append(sectionPath)
-            
-            let sectionItemPaths = try await section.items.concurrentMap { item in
+
+            let sectionItemPaths = try await section.items.concurrentMap { item -> Path in
                 try outputHTML(
                     for: item,
                     indentedBy: indentation,
@@ -98,7 +98,7 @@ private extension HTMLGenerator {
     }
 
     func generatePageHTML() async throws -> [Path] {
-        try await context.pages.values.concurrentMap { page in
+        try await context.pages.values.concurrentMap { page -> Path in
             try outputHTML(
                 for: page,
                 indentedBy: indentation,
@@ -127,7 +127,7 @@ private extension HTMLGenerator {
             allPaths.append(listPath)
         }
 
-        let tagPaths: [Path] = try await context.allTags.concurrentCompactMap { tag in
+        let tagPaths: [Path] = try await context.allTags.concurrentCompactMap { tag -> Path? in
             let detailsPath = context.site.path(for: tag)
             let detailsContent = config.detailsContentResolver(tag)
 
