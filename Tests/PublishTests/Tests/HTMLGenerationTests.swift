@@ -282,6 +282,31 @@ final class HTMLGenerationTests: PublishTestCase {
         )
     }
 
+    func testGeneratingConflictingFilesThrowsError() throws {
+        let folder = try Folder.createTemporary()
+
+        var thrownError: PublishingError?
+        do {
+            try publishWebsite(
+                in: folder,
+                using: [
+                    .addMarkdownFiles(),
+                    .generateHTML(withTheme: .foundation)
+                ],
+                content: [
+                    // This file has the same name as the `WebsiteStub.SectionID.one` case, which
+                    // causes multiple outputs at the same location.
+                    "one.md": "# One content",
+                ]
+            )
+        } catch {
+            thrownError = error as? PublishingError
+        }
+
+        let path = try require(thrownError?.path)
+        XCTAssertEqual(path, "one/index.html")
+    }
+
     func testFoundationTheme() throws {
         let folder = try Folder.createTemporary()
 
