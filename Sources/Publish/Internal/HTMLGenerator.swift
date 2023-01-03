@@ -22,19 +22,7 @@ internal struct HTMLGenerator<Site: Website> {
             group.addTask { (substep: "Generate pages", paths: try await generatePageHTML()) }
             group.addTask { (substep: "Generate tags", paths: try await generateTagHTMLIfNeeded()) }
 
-            var substepsByPath = [Path: [String]]()
-            for try await (substep, paths) in group {
-                for path in paths {
-                    if let previousSubsteps = substepsByPath[path] {
-                        let substeps = previousSubsteps.appending(substep)
-                        throw PublishingError(
-                            path: path,
-                            infoMessage: "Path conflict in substeps: \(substeps)"
-                        )
-                    }
-                    substepsByPath[path, default: []].append(substep)
-                }
-            }
+            try await validate(group)
         }
     }
 }
@@ -151,6 +139,22 @@ private extension HTMLGenerator {
 
         allPaths.append(contentsOf: tagPaths)
         return allPaths
+    }
+
+    func validate(_ group: ThrowingTaskGroup<(substep: String, paths: [Path]), Error>) async throws {
+        var pathSubsteps = [Path: [String]]()
+        for try await (substep, paths) in group {
+            for path in paths {
+                if let previousSubsteps = pathSubsteps[path] {
+                    let substeps = previousSubsteps.appending(substep)
+                    throw PublishingError(
+                        path: path,
+                        infoMessage: "Path conflict in substeps: \(substeps)"
+                    )
+                }
+                pathSubsteps[path, default: []].append(substep)
+            }
+        }
     }
 
     func outputHTML<T: Location>(
