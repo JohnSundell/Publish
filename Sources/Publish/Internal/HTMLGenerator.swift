@@ -143,16 +143,16 @@ private extension HTMLGenerator {
 
     func validate(_ group: ThrowingTaskGroup<(substep: String, paths: [Path]), Error>) async throws {
         var pathSubsteps = [Path: [String]]()
-        for try await (substep, paths) in group {
-            for path in paths {
+        for try await substepAndPaths in group {
+            for path in substepAndPaths.paths {
                 if let previousSubsteps = pathSubsteps[path] {
-                    let substeps = previousSubsteps.appending(substep)
+                    let substeps = previousSubsteps.appending(substepAndPaths.substep)
                     throw PublishingError(
                         path: path,
                         infoMessage: "Path conflict in substeps: \(substeps)"
                     )
                 }
-                pathSubsteps[path, default: []].append(substep)
+                pathSubsteps[path, default: []].append(substepAndPaths.substep)
             }
         }
     }
