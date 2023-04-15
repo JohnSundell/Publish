@@ -69,6 +69,7 @@ public extension DeploymentMethod {
 
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd HH:mm"
+            dateFormatter.locale = Locale(identifier: "en_us_POSIX")
             let dateString = dateFormatter.string(from: Date())
 
             do {
