@@ -364,13 +364,13 @@ public extension PublishingStep {
     static func generateHTML(
         withTheme theme: Theme<Site>,
         indentation: Indentation.Kind? = nil,
-        fileMode: HTMLFileMode = .foldersAndIndexFiles
+        fileMode: HTMLFileMode? = nil
     ) -> Self {
         step(named: "Generate HTML") { context in
             let generator = HTMLGenerator(
                 theme: theme,
                 indentation: indentation,
-                fileMode: fileMode,
+                fileMode: fileMode ?? context.site.fileMode,
                 context: context
             )
 

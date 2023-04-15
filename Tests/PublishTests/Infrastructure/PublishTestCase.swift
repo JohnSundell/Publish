@@ -14,13 +14,15 @@ class PublishTestCase: XCTestCase {
     func publishWebsite(
         in folder: Folder? = nil,
         using steps: [PublishingStep<WebsiteStub.WithoutItemMetadata>],
-        content: [Path : String] = [:]
+        content: [Path : String] = [:],
+        fileMode: HTMLFileMode = .foldersAndIndexFiles
     ) throws -> PublishedWebsite<WebsiteStub.WithoutItemMetadata> {
         try performWebsitePublishing(
             in: folder,
             using: steps,
             files: content,
-            filePathPrefix: "Content/"
+            filePathPrefix: "Content/",
+            fileMode: fileMode
         )
     }
 
@@ -33,9 +35,12 @@ class PublishTestCase: XCTestCase {
         plugins: [Plugin<WebsiteStub.WithoutItemMetadata>] = [],
         expectedHTML: [Path : String],
         allowWhitelistedOutputFiles: Bool = true,
+        fileMode: HTMLFileMode = .foldersAndIndexFiles,
         file: StaticString = #file,
         line: UInt = #line
     ) throws {
+        site.fileMode = fileMode
+        
         let folder = try folder ?? Folder.createTemporary()
 
         let contentFolderName = "Content"
@@ -65,6 +70,7 @@ class PublishTestCase: XCTestCase {
         in folder: Folder? = nil,
         using steps: [PublishingStep<WebsiteStub.WithPodcastMetadata>],
         content: [Path : String] = [:],
+        fileMode: HTMLFileMode = .foldersAndIndexFiles,
         file: StaticString = #file,
         line: UInt = #line
     ) throws {
@@ -72,7 +78,8 @@ class PublishTestCase: XCTestCase {
             in: folder,
             using: steps,
             files: content,
-            filePathPrefix: "Content/"
+            filePathPrefix: "Content/",
+            fileMode: fileMode
         )
     }
 
@@ -136,12 +143,14 @@ class PublishTestCase: XCTestCase {
     func publishWebsite<T: WebsiteItemMetadata>(
         withItemMetadataType itemMetadataType: T.Type,
         using steps: [PublishingStep<WebsiteStub.WithItemMetadata<T>>],
-        content: [Path : String] = [:]
+        content: [Path : String] = [:],
+        fileMode: HTMLFileMode = .foldersAndIndexFiles
     ) throws -> PublishedWebsite<WebsiteStub.WithItemMetadata<T>> {
         try performWebsitePublishing(
             using: steps,
             files: content,
-            filePathPrefix: "Content/"
+            filePathPrefix: "Content/",
+            fileMode: fileMode
         )
     }
 
@@ -197,13 +206,16 @@ private extension PublishTestCase {
         in folder: Folder? = nil,
         using steps: [PublishingStep<T>],
         files: [Path : String],
-        filePathPrefix: String = ""
+        filePathPrefix: String = "",
+        fileMode: HTMLFileMode
     ) throws -> PublishedWebsite<T> {
         let folder = try folder ?? Folder.createTemporary()
 
         try addFiles(withContent: files, to: folder, pathPrefix: filePathPrefix)
 
-        return try T().publish(
+        let site = T()
+        site.fileMode = fileMode
+        return try site.publish(
             at: Path(folder.path),
             using: steps
         )
