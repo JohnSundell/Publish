@@ -36,8 +36,8 @@ public struct DeploymentMethod<Site: Website> {
 public extension DeploymentMethod {
     /// Deploy a website to a given remote using Git.
     /// - parameter remote: The full address of the remote to deploy to.
-    /// - parameter branch: The branch to push to and pull from (default is master).
-    static func git(_ remote: String, branch: String = "master") -> Self {
+    /// - parameter branch: The branch to push to and pull from (default is main).
+    static func git(_ remote: String, branch: String = "main") -> Self {
         DeploymentMethod(name: "Git (\(remote))") { context in
             let folder = try context.createDeploymentFolder(withPrefix: "Git") { folder in
                 if !folder.containsSubfolder(named: ".git") {
@@ -93,9 +93,9 @@ public extension DeploymentMethod {
 
     /// Deploy a website to a given GitHub repository.
     /// - parameter repository: The full name of the repository (including its username).
-    /// - parameter branch: The branch to push to and pull from (default is master).
+    /// - parameter branch: The branch to push to and pull from (default is main).
     /// - parameter useSSH: Whether an SSH connection should be used (preferred).
-    static func gitHub(_ repository: String, branch: String = "master", useSSH: Bool = true) -> Self {
+    static func gitHub(_ repository: String, branch: String = "main", useSSH: Bool = true) -> Self {
         let prefix = useSSH ? "git@github.com:" : "https://github.com/"
         return git("\(prefix)\(repository).git", branch: branch)
     }
