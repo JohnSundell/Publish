@@ -50,7 +50,13 @@ let package = Package(
             name: "CollectionConcurrencyKit",
             url: "https://github.com/johnsundell/collectionConcurrencyKit.git",
             from: "0.1.0"
+        ),
+        .package(
+            name: "FileWatcher",
+            url: "https://github.com/eonist/FileWatcher.git",
+            from: "0.2.3"
         )
+
     ],
     targets: [
         .target(
@@ -66,7 +72,7 @@ let package = Package(
         ),
         .target(
             name: "PublishCLICore",
-            dependencies: ["Publish"]
+            dependencies: ["Publish", .byName(name: "FileWatcher", condition: .when(platforms: [.macOS]))]
         ),
         .testTarget(
             name: "PublishTests",

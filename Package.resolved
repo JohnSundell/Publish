@@ -29,6 +29,15 @@
         }
       },
       {
+        "package": "FileWatcher",
+        "repositoryURL": "https://github.com/eonist/FileWatcher.git",
+        "state": {
+          "branch": null,
+          "revision": "e67c2a99502eade343fecabeca8c57e749a55b59",
+          "version": "0.2.3"
+        }
+      },
+      {
         "package": "Ink",
         "repositoryURL": "https://github.com/johnsundell/ink.git",
         "state": {
