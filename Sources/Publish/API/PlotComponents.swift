@@ -34,7 +34,7 @@ public extension Node where Context == HTML.DocumentContext {
     ) -> Node {
         var title = location.title
 
-        if title.isEmpty {
+        if title.isEmpty || title.lowercased() == "index" {
             title = site.name
         } else {
             title.append(titleSeparator + site.name)
