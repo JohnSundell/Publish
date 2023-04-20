@@ -379,3 +379,123 @@ private extension PublishingContext {
         }
     }
 }
+
+public extension PublishingContext where Site: MultiLanguageWebsite {
+    func section(_ id: Site.SectionID, in language: Language) -> Section<Site> {
+        if let section = MultiLanguageContentManager.location(at: Path(id.rawValue), in: language, for: self.site) as? Section<Site> {
+            return section
+        }
+        var dummySection = Section<Site>(id: id)
+        dummySection.language = language
+        self.add(dummySection)
+        return dummySection
+    }
+    
+    /// Return all items within this website, sorted by a given key path.
+    /// - parameter sortingKeyPath: The key path to sort the items by.
+    /// - parameter order: The order to use when sorting the items.
+    func allItems<T: Comparable>(
+        sortedBy sortingKeyPath: KeyPath<Item<Site>, T>,
+        in language: Language,
+        order: SortOrder = .ascending
+    ) -> [Item<Site>] {
+        let items = sections.flatMap { $0.items(in: language) }
+        return items.sorted(
+            by: order.makeSorter(forKeyPath: sortingKeyPath)
+        )
+    }
+    
+    /// Return all items that were tagged with a given tag.
+    /// - parameter tag: The tag to return all items for.
+    /// - parameter language: The language to return all items for.
+    func items(taggedWith tag: Tag, in language: Language) -> [Item<Site>] {
+        sections.flatMap { $0.items(taggedWith: tag).filter{ $0.language == language } }
+    }
+    
+    /// Return all items that were tagged with a given tag, sorted by
+    /// a given key path.
+    /// - parameter tag: The tag to return all items for.
+    /// - parameter sortingKeyPath: The key path to sort the items by.
+    /// - parameter order: The order to use when sorting the items.
+    func items<T: Comparable>(
+        taggedWith tag: Tag,
+        sortedBy sortingKeyPath: KeyPath<Item<Site>, T>,
+        in language: Language,
+        order: SortOrder = .ascending
+    ) -> [Item<Site>] {
+        let a = items(taggedWith: tag, in: language).sorted(
+            by: order.makeSorter(forKeyPath: sortingKeyPath)
+        )
+        return a 
+    }
+    
+    /// Return all items that were tagged with a given tag.
+    /// - parameter language: The language to return all items for.
+    func items(in language: Language) -> [Item<Site>] {
+        sections.flatMap { $0.items.filter{ $0.language == language } }
+    }
+    
+    /// Return all tags that has items in a language.
+    /// - parameter language: The language to return all tags for.
+    func allTags(in language: Language) -> Set<Tag> {
+        self.allTags.filter{tag in self.items(taggedWith: tag, in: language).count > 0 }
+    }
+    
+    /// Index page localized in language.
+    /// - parameter language: The language to return index for.
+    func index(in language: Language) -> Index {
+        if let index = MultiLanguageContentManager.location(at: "", in: language, for: self.site) as? Index {
+            return index
+        }
+        // make dummy index
+        var dummyIndex = Index()
+        dummyIndex.language = language
+        self.add(dummyIndex)
+        return dummyIndex
+    }
+    
+    func alternateLinks(for location: Location) -> [Language: Path] {
+        MultiLanguageContentManager.alternateLinks(for: location, in: self)
+    }
+    
+    var index: Index {
+        get {
+            index(in: self.site.language)
+        }
+        set {
+            var index = newValue
+            index.language = site.language
+            add(index)
+        }
+    }
+    
+    /// Add a page to the website programmatically.
+    /// - parameter page: The page to add.
+    mutating func addPage(_ page: Page) {
+        pages[Path(site.pathPrefix(for: page.language!)).appendingComponent(page.path.string)] = page
+        add(page)
+    }
+}
+
+internal extension PublishingContext where Site: MultiLanguageWebsite {
+    func add(_ location: Location) {
+        MultiLanguageContentManager.register(
+            location,
+            for: self.site
+        )
+        if let item = location as? Item<Site> {
+            item.tags.forEach { tag in
+                var detailsPage = TagDetailsPage(
+                    tag: tag,
+                    path: site.path(for: tag),
+                    content: .init()
+                )
+                detailsPage.language = item.language!
+                MultiLanguageContentManager.register(
+                    detailsPage,
+                    for: self.site
+                )
+            }
+        }
+    }
+}

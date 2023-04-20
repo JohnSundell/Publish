@@ -17,6 +17,7 @@ public struct Content: Hashable, ContentProtocol {
     public var imagePath: Path?
     public var audio: Audio?
     public var video: Video?
+    public var language: Language?
 
     /// Initialize a new instance of this type
     /// - parameter title: The location's title.
@@ -24,6 +25,7 @@ public struct Content: Hashable, ContentProtocol {
     /// - parameter body: The main body of the location's content.
     /// - parameter date: The location's main publishing date.
     /// - parameter lastModified: The last modification date.
+    /// - parameter language: The language of the content.
     /// - parameter imagePath: A path to any image for the location.
     /// - parameter audio: Any audio data associated with this content.
     /// - parameter video: Any video data associated with this content.
@@ -32,6 +34,7 @@ public struct Content: Hashable, ContentProtocol {
                 body: Body = Body(html: ""),
                 date: Date = Date(),
                 lastModified: Date = Date(),
+                language: Language? = nil,
                 imagePath: Path? = nil,
                 audio: Audio? = nil,
                 video: Video? = nil) {
@@ -40,6 +43,7 @@ public struct Content: Hashable, ContentProtocol {
         self.body = body
         self.date = date
         self.lastModified = lastModified
+        self.language = language
         self.imagePath = imagePath
         self.audio = audio
         self.video = video

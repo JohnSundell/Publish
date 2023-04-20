@@ -5,6 +5,7 @@
 */
 
 import Foundation
+import Plot
 
 /// Type representing one of a website's top sections, as defined by
 /// its `SectionID` type. Each section can contain content of its own,
@@ -184,5 +185,11 @@ private extension Section {
                 itemIndexesByTag[tag, default: []].insert(index)
             }
         }
+    }
+}
+
+public extension Section where Site: MultiLanguageWebsite {
+    func items(in language: Language) -> [Item<Site>] {
+        self.items.filter { $0.language == language }
     }
 }

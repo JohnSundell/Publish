@@ -5,6 +5,7 @@
 */
 
 import Foundation
+import Plot
 
 /// Protocol adopted by types that represent the content for a location.
 public protocol ContentProtocol {
@@ -43,4 +44,8 @@ public protocol ContentProtocol {
     /// can be used to display inline video players using the `videoPlayer`
     /// Plot component. See `Video` for more info.
     var video: Video? { get set }
+    /// The language of the location's content, which
+    /// can be used to specify the language using the `lang`
+    /// Plot component. See `Language` for more info.
+    var language: Language? { get set }
 }
