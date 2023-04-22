@@ -102,7 +102,7 @@ a {
 }
 
 .tag-list {
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 .tag-list li,
@@ -113,6 +113,7 @@ a {
     padding: 4px 6px;
     border-radius: 5px;
     margin-right: 5px;
+    margin-bottom: 5px;
 }
 
 .tag-list a,
@@ -136,6 +137,7 @@ a {
 .all-tags li {
     font-size: 1.4em;
     margin-right: 10px;
+    margin-bottom: 10px;
     padding: 6px 10px;
 }
 
