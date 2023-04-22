@@ -41,9 +41,9 @@
         "package": "Plot",
         "repositoryURL": "https://github.com/johnsundell/plot.git",
         "state": {
-          "branch": null,
-          "revision": "4237057acdaaea5def56d350815e37fa8311d1fd",
-          "version": "0.13.0"
+          "branch": "0.9.0",
+          "revision": "80612b34252188edbef280e5375e2fc5249ac770",
+          "version": null
         }
       },
       {
