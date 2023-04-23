@@ -127,6 +127,7 @@ a {
 
 .content {
     margin-bottom: 40px;
+    overflow-wrap: break-word;
 }
 
 .browse-all {
