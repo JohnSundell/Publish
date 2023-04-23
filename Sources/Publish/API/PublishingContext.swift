@@ -34,6 +34,8 @@ public struct PublishingContext<Site: Website> {
     /// Any date when the website was last generated.
     public private(set) var lastGenerationDate: Date?
 
+    internal var htmlMutations = HTMLMutations<Site>()
+
     private let folders: Folder.Group
     private var tagCache = TagCache()
     private var stepName: String
@@ -273,6 +275,27 @@ public extension PublishingContext {
             )
         }
     }
+
+    mutating func mutateIndexHTML(using mutation: @escaping HTMLIndexMutation<Site>) {
+        self.htmlMutations.indexMutations.append(mutation)
+    }
+
+    mutating func mutateSectionHTML(using mutation: @escaping HTMLSectionMutation<Site>) {
+        self.htmlMutations.sectionMutations.append(mutation)
+    }
+
+    mutating func mutateItemHTML(using mutation: @escaping HTMLItemMutation<Site>) {
+        self.htmlMutations.itemMutations.append(mutation)
+    }
+
+    mutating func mutatePageHTML(using mutation: @escaping HTMLPageMutation<Site>) {
+        self.htmlMutations.pageMutations.append(mutation)
+    }
+
+    mutating func mutateAllHTML(using mutation: @escaping HTMLAllMutation<Site>) {
+        self.htmlMutations.allMutations.append(mutation)
+    }
+
 }
 
 internal extension PublishingContext {

@@ -54,7 +54,9 @@ private extension HTMLGenerator {
     func generateIndexHTML() throws {
         let html = try theme.makeIndexHTML(context.index, context)
         let indexFile = try context.createOutputFile(at: "index.html")
-        try indexFile.write(html.render(indentedBy: indentation))
+        var renderedHtml = html.render(indentedBy: indentation)
+        renderedHtml = try context.htmlMutations.mutateHtml(context: context, renderedHtml: renderedHtml)
+        try indexFile.write(renderedHtml)
     }
 
     func generateSectionHTML() async throws {
@@ -128,16 +130,34 @@ private extension HTMLGenerator {
         }
     }
 
+    func renderHTML<T: Location>(
+        for location: T,
+        indentedBy indentation: Indentation.Kind?,
+        using generator: (T, PublishingContext<Site>) throws -> HTML
+    ) throws -> String {
+        let html = try generator(location, context)
+        return html.render(indentedBy: indentation)
+    }
+
     func outputHTML<T: Location>(
         for location: T,
         indentedBy indentation: Indentation.Kind?,
         using generator: (T, PublishingContext<Site>) throws -> HTML,
         fileMode: HTMLFileMode
     ) throws {
-        let html = try generator(location, context)
+        var renderedHtml = try renderHTML(for: location, indentedBy: indentation, using: generator)
+        if let section = location as? Section<Site> {
+            renderedHtml = try context.htmlMutations.mutateHtml(context: context, section: section, renderedHtml: renderedHtml)
+        } else if let item = location as? Item<Site> {
+            renderedHtml = try context.htmlMutations.mutateHtml(context: context, item: item, renderedHtml: renderedHtml)
+        } else if let page = location as? Page {
+            renderedHtml = try context.htmlMutations.mutateHtml(context: context, page: page, renderedHtml: renderedHtml)
+        } else {
+            renderedHtml = try context.htmlMutations.mutateHtml(context: context, location: location, renderedHtml: renderedHtml)
+        }
         let path = filePath(for: location, fileMode: fileMode)
         let file = try context.createOutputFile(at: path)
-        try file.write(html.render(indentedBy: indentation))
+        try file.write(renderedHtml)
     }
 
     func filePath(for location: Location, fileMode: HTMLFileMode) -> Path {
@@ -149,3 +169,4 @@ private extension HTMLGenerator {
         }
     }
 }
+
