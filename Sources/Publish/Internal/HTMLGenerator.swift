@@ -141,11 +141,6 @@ private extension HTMLGenerator {
     }
 
     func filePath(for location: Location, fileMode: HTMLFileMode) -> Path {
-        switch fileMode {
-        case .foldersAndIndexFiles:
-            return "\(location.path)/index.html"
-        case .standAloneFiles:
-            return "\(location.path).html"
-        }
+        return fileMode.filePath(for: location)
     }
 }
