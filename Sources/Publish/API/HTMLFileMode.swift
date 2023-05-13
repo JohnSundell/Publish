@@ -21,11 +21,16 @@ extension HTMLFileMode {
 
     ///Determining the right file name based on HTMLFileMode
     public func filePath(for location: Location) -> Path {
+        return filePath(path: location.path)
+    }
+    
+    ///Determining the right file name based on HTMLFileMode
+    public func filePath(path: Path) -> Path {
         switch self {
             case .foldersAndIndexFiles:
-                return "\(location.path)/index.html"
+                return "\(path)/index.html"
             case .standAloneFiles:
-                return "\(location.path).html"
+                return "\(path).html"
         }
     }
     
