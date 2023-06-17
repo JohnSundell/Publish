@@ -71,11 +71,12 @@ public extension DeploymentMethod {
             dateFormatter.dateFormat = "yyyy-MM-dd HH:mm"
             let dateString = dateFormatter.string(from: Date())
 
+            let currentCommitHash = try shellOut(to: ["git rev-parse --short HEAD"])
             do {
                 try shellOut(
-                    to: """
-                    git add . && git commit -a -m \"Publish deploy \(dateString)\" --allow-empty
-                    """,
+                    to: #"""
+                    git add . && git commit -a -m "Publish deploy \#(currentCommitHash) on \#(dateString)" --allow-empty
+                    """#,
                     at: folder.path
                 )
 
