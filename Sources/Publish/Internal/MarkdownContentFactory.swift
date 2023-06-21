@@ -5,9 +5,9 @@
 */
 
 import Foundation
-import Ink
 import Files
 import Codextended
+import MarkdownParser
 
 internal struct MarkdownContentFactory<Site: Website> {
     let parser: MarkdownParser
@@ -50,14 +50,14 @@ internal struct MarkdownContentFactory<Site: Website> {
 }
 
 private extension MarkdownContentFactory {
-    func makeMetadataDecoder(for markdown: Ink.Markdown) -> MarkdownMetadataDecoder {
+    func makeMetadataDecoder(for markdown: MarkdownDocument) -> MarkdownMetadataDecoder {
         MarkdownMetadataDecoder(
             metadata: markdown.metadata,
             dateFormatter: dateFormatter
         )
     }
 
-    func makeContent(fromMarkdown markdown: Ink.Markdown,
+    func makeContent(fromMarkdown markdown: MarkdownDocument,
                      file: File,
                      decoder: MarkdownMetadataDecoder) throws -> Content {
         let title = try decoder.decodeIfPresent("title", as: String.self)
@@ -71,7 +71,7 @@ private extension MarkdownContentFactory {
         return Content(
             title: title ?? markdown.title ?? file.nameExcludingExtension,
             description: description ?? "",
-            body: Content.Body(html: markdown.html),
+            body: Content.Body(node: markdown.body),
             date: date,
             lastModified: lastModified,
             imagePath: imagePath,

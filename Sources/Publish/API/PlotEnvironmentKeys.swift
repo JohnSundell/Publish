@@ -5,7 +5,7 @@
 */
 
 import Plot
-import Ink
+import MarkdownParser
 
 public extension EnvironmentKey where Value == MarkdownParser {
     /// Environment key that can be used to pass what `MarkdownParser` that

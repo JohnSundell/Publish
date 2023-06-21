@@ -7,7 +7,6 @@
 import XCTest
 import Publish
 import Plot
-import Ink
 
 final class PlotComponentTests: PublishTestCase {
     func testStylesheetPaths() {
@@ -63,7 +62,7 @@ final class PlotComponentTests: PublishTestCase {
         XCTAssertEqual(html, """
         <iframe src="https://www.youtube-nocookie.com/embed/123"\
          frameborder="0"\
-         allowfullscreen="true"\
+         allowfullscreen\
          allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"\
         ></iframe>
         """)
@@ -76,23 +75,22 @@ final class PlotComponentTests: PublishTestCase {
         XCTAssertEqual(html, """
         <iframe src="https://player.vimeo.com/video/123"\
          frameborder="0"\
-         allowfullscreen="true"\
+         allowfullscreen\
          allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"\
         ></iframe>
         """)
     }
 
     func testRenderingMarkdownComponent() {
-        let customParser = MarkdownParser(modifiers: [
-            Modifier(target: .links) { html, _ in
-                return "<b>\(html)</b>"
-            }
-        ])
+        var customParser = MarkdownParser()
+        customParser.addModifier(for: .link) { html, _, _ in
+            return .b(html)
+        }
 
         let html = Div {
-            Markdown("[First](/first)")
+            MarkdownComponent("[First](/first)")
             Div {
-                Markdown("[Second](/second)")
+                MarkdownComponent("[Second](/second)")
             }
             .markdownParser(customParser)
         }

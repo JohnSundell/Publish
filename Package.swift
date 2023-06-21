@@ -13,14 +13,10 @@ let package = Package(
     platforms: [.macOS(.v12)],
     products: [
         .library(name: "Publish", targets: ["Publish"]),
+        .library(name: "MarkdownParser", targets: ["MarkdownParser"]),
         .executable(name: "publish-cli", targets: ["PublishCLI"])
     ],
     dependencies: [
-        .package(
-            name: "Ink",
-            url: "https://github.com/johnsundell/ink.git",
-            from: "0.2.0"
-        ),
         .package(
             name: "Plot",
             url: "https://github.com/johnsundell/plot.git",
@@ -50,14 +46,24 @@ let package = Package(
             name: "CollectionConcurrencyKit",
             url: "https://github.com/johnsundell/collectionConcurrencyKit.git",
             from: "0.1.0"
-        )
+        ),
+        .package(url: "https://github.com/apple/swift-markdown.git", .branch("main")),
+        .package(url: "https://github.com/pointfreeco/swift-parsing.git", from: "0.12.0"),
     ],
     targets: [
         .target(
             name: "Publish",
             dependencies: [
-                "Ink", "Plot", "Files", "Codextended",
-                "ShellOut", "Sweep", "CollectionConcurrencyKit"
+                "MarkdownParser", "Plot", "Files", "Codextended",
+                "ShellOut", "Sweep", "CollectionConcurrencyKit",
+            ]
+        ),
+        .target(
+            name: "MarkdownParser",
+            dependencies: [
+                "Plot",
+                .product(name: "Markdown", package: "swift-markdown"),
+                .product(name: "Parsing", package: "swift-parsing")
             ]
         ),
         .executableTarget(
@@ -71,6 +77,11 @@ let package = Package(
         .testTarget(
             name: "PublishTests",
             dependencies: ["Publish", "PublishCLICore"]
+        ),
+        .testTarget(
+            name: "MarkdownParserTests",
+            dependencies: ["MarkdownParser", "Publish"]
         )
+
     ]
 )

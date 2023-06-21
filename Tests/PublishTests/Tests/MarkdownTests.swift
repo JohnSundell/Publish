@@ -6,7 +6,6 @@
 
 import XCTest
 import Files
-import Ink
 import Publish
 
 final class MarkdownTests: PublishTestCase {

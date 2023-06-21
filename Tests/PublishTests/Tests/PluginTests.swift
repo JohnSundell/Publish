@@ -7,7 +7,6 @@
 import XCTest
 import Publish
 import Plot
-import Ink
 
 final class PluginTests: PublishTestCase {
     func testAddingContentUsingPlugin() throws {
@@ -23,12 +22,9 @@ final class PluginTests: PublishTestCase {
     func testAddingInkModifierUsingPlugin() throws {
         let site = try publishWebsite(using: [
             .installPlugin(Plugin(name: "Plugin") { context in
-                context.markdownParser.addModifier(Modifier(
-                    target: .paragraphs,
-                    closure: { html, _ in
-                        "<div>\(html)</div>"
-                    }
-                ))
+                context.markdownParser.addModifier(for: .paragraph) { html, document, markup in
+                        .div(html)
+                }
             }),
             .addMarkdownFiles()
         ], content: [
@@ -51,12 +47,9 @@ final class PluginTests: PublishTestCase {
             using: Theme(htmlFactory: htmlFactory),
             content: ["index.md": "Hello, World!"],
             plugins: [Plugin(name: "Plugin") { context in
-                context.markdownParser.addModifier(Modifier(
-                    target: .paragraphs,
-                    closure: { html, _ in
-                        "<section>\(html)</section>"
-                    }
-                ))
+                context.markdownParser.addModifier(for: .paragraph) { html, document, markup in
+                        .section(html)
+                }
             }],
             expectedHTML: ["index.html": "<section><p>Hello, World!</p></section>"]
         )
