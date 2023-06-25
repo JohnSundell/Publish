@@ -18,7 +18,7 @@ let package = Package(
     dependencies: [
         .package(
             name: "Ink",
-            url: "https://github.com/johnsundell/ink.git",
+            url: "https://github.com/Vithanco/ink.git",
             from: "0.2.0"
         ),
         .package(
