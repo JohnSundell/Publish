@@ -72,6 +72,13 @@ final class WebsiteTests: PublishTestCase {
             URL(string: "https://swiftbysundell.com/a/path")
         )
     }
+    
+    func testURLForPathContainingAbsoluteURL() {
+        XCTAssertEqual(
+            website.url(for: Path("https://swiftbysundell.com/a/path")),
+            URL(string: "https://swiftbysundell.com/a/path")
+        )
+    }
 
     func testURLForLocation() {
         let page = Page(path: "mypage", content: Content())

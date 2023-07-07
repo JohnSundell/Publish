@@ -224,6 +224,8 @@ public extension Website {
     /// - parameter path: The path to return a URL for.
     func url(for path: Path) -> URL {
         guard !path.string.isEmpty else { return url }
+        guard !path.string.hasPrefix("http://") else { return URL(string: path.string) ?? url }
+        guard !path.string.hasPrefix("https://") else { return URL(string: path.string) ?? url }
         return url.appendingPathComponent(path.string)
     }
 
