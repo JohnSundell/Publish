@@ -48,18 +48,23 @@ public struct Content: Hashable, ContentProtocol {
 
 public extension Content {
     /// Type that represents the main renderable body of a piece of content.
-    struct Body: Hashable {
+    struct Body {
         /// The content's renderable HTML.
-        public var html: String
-        /// A node that can be used to embed the content in a Plot hierarchy.
-        public var node: Node<HTML.BodyContext> { .raw(html) }
+        public var node: Node<HTML.BodyContext>
+
+        private var indentation: Indentation.Kind? = nil
+
+        public var html: String {
+            node.render(indentedBy: indentation)
+        }
+
         /// Whether this value doesn't contain any content.
-        public var isEmpty: Bool { html.isEmpty }
 
         /// Initialize an instance with a ready-made HTML string.
         /// - parameter html: The content HTML that the instance should cointain.
         public init(html: String) {
-            self.html = html
+            self.node = .raw(html)
+            self.indentation = nil
         }
 
         /// Initialize an instance with a Plot `Node`.
@@ -67,7 +72,8 @@ public extension Content {
         /// - parameter indentation: Any indentation to apply when rendering the node.
         public init(node: Node<HTML.BodyContext>,
                     indentation: Indentation.Kind? = nil) {
-            html = node.render(indentedBy: indentation)
+            self.node = node
+            self.indentation = indentation
         }
 
         /// Initialize an instance using Plot's `Component` API.
@@ -75,8 +81,10 @@ public extension Content {
         /// - parameter components: The components that should make up this instance's content.
         public init(indentation: Indentation.Kind? = nil,
                     @ComponentBuilder components: () -> Component) {
-           self.init(node: .component(components()),
-                     indentation: indentation)
+            self.init(
+                node: .component(components()),
+                indentation: indentation
+            )
        }
     }
 }
@@ -89,4 +97,14 @@ extension Content.Body: ExpressibleByStringInterpolation {
 
 extension Content.Body: Component {
     public var body: Component { node }
+}
+
+extension Content.Body: Hashable {
+    public static func ==(lhs: Self, rhs: Self) -> Bool {
+        lhs.html == rhs.html
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(html)
+    }
 }

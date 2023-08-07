@@ -53,7 +53,6 @@ final class ErrorTests: PublishTestCase {
         audio.url: 🤷‍♂️
         ---
         """
-
         assertErrorThrown(
             try generateItem(
                 in: .one,
