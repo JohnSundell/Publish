@@ -11,7 +11,9 @@ import CollectionConcurrencyKit
 internal struct HTMLGenerator<Site: Website> {
     let theme: Theme<Site>
     let indentation: Indentation.Kind?
-    let fileMode: HTMLFileMode
+    var fileMode: HTMLFileMode {
+        return context.fileMode
+    }
     let context: PublishingContext<Site>
 
     func generate() async throws {
