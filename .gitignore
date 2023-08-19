@@ -3,3 +3,4 @@
 .swiftpm
 /*.xcodeproj
 xcuserdata/
+.vscode

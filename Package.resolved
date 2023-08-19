@@ -39,10 +39,10 @@
       },
       {
         "package": "Plot",
-        "repositoryURL": "https://github.com/johnsundell/plot.git",
+        "repositoryURL": "https://github.com/vithanco/plot.git",
         "state": {
           "branch": null,
-          "revision": "271926b4413fe868739d99f5eadcf2bd6cd62fb8",
+          "revision": "2aa5c4bfdab0b9d097047ba7e812d06791c3d518",
           "version": "0.14.0"
         }
       },
