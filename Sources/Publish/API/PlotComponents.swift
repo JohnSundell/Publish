@@ -1,8 +1,8 @@
 /**
-*  Publish
-*  Copyright (c) John Sundell 2019
-*  MIT license, see LICENSE file for details
-*/
+ *  Publish
+ *  Copyright (c) John Sundell 2019
+ *  MIT license, see LICENSE file for details
+ */
 
 import Foundation
 import Plot
@@ -33,19 +33,19 @@ public extension Node where Context == HTML.DocumentContext {
         rssFeedTitle: String? = nil
     ) -> Node {
         var title = location.title
-
+        
         if title.isEmpty {
             title = site.name
         } else {
             title.append(titleSeparator + site.name)
         }
-
+        
         var description = location.description
-
+        
         if description.isEmpty {
             description = site.description
         }
-
+        
         return .head(
             .encoding(.utf8),
             .siteName(site.name),
@@ -74,7 +74,7 @@ public extension Node where Context == HTML.HeadContext {
     static func stylesheet(_ path: Path) -> Node {
         .stylesheet(path.absoluteString)
     }
-
+    
     /// Declare a favicon for the HTML page.
     /// - parameter favicon: The favicon to declare.
     static func favicon(_ favicon: Favicon) -> Node {
@@ -88,7 +88,7 @@ public extension Node where Context: HTML.BodyContext {
     static func contentBody(_ body: Content.Body) -> Node {
         .raw(body.html)
     }
-
+    
     /// Render a string of inline Markdown as HTML within the current context.
     /// - parameter markdown: The Markdown string to render.
     /// - parameter parser: The Markdown parser to use. Pass `context.markdownParser` to
@@ -97,7 +97,7 @@ public extension Node where Context: HTML.BodyContext {
                          using parser: MarkdownParser = .init()) -> Node {
         .raw(parser.html(from: markdown))
     }
-
+    
     /// Add an inline audio player within the current context.
     /// - parameter audio: The audio to add a player for.
     /// - parameter showControls: Whether playback controls should be shown to the user.
@@ -109,7 +109,7 @@ public extension Node where Context: HTML.BodyContext {
         )
         .convertToNode()
     }
-
+    
     /// Add an inline video player within the current context.
     /// - parameter video: The video to add a player for.
     /// - parameter showControls: Whether playback controls should be shown to the user.
@@ -147,17 +147,17 @@ internal extension Node where Context: RSSItemContext {
             .isPermaLink(item.rssProperties.guid == nil && item.rssProperties.link == nil)
         )
     }
-
+    
     static func content<T>(for item: Item<T>, site: T) -> Node {
         let baseURL = site.url
         let prefixes = (href: "href=\"", src: "src=\"")
-
+        
         var html = item.rssProperties.bodyPrefix ?? ""
         html.append(item.body.html)
         html.append(item.rssProperties.bodySuffix ?? "")
-
+        
         var links = [(url: URL, range: ClosedRange<String.Index>, isHref: Bool)]()
-
+        
         html.scan(using: [
             Matcher(
                 identifiers: [
@@ -169,19 +169,19 @@ internal extension Node where Context: RSSItemContext {
                     guard url.first == "/" else {
                         return
                     }
-
+                    
                     let absoluteURL = baseURL.appendingPathComponent(String(url))
                     let isHref = (html[range.lowerBound] == "h")
                     links.append((absoluteURL, range, isHref))
                 }
             )
         ])
-
+        
         for (url, range, isHref) in links.reversed() {
             let prefix = isHref ? prefixes.href : prefixes.src
             html.replaceSubrange(range, with: prefix + url.absoluteString + "\"")
         }
-
+        
         return content(html)
     }
 }
@@ -221,15 +221,15 @@ public extension AudioPlayer {
 public struct Markdown: Component {
     /// The Markdown string to render.
     public var string: String
-
+    
     @EnvironmentValue(.markdownParser) private var parser
-
+    
     /// Initialize an instance of this component with a Markdown string.
     /// - parameter string: The Markdown string to render.
     public init(_ string: String) {
         self.string = string
     }
-
+    
     public var body: Component {
         Node.markdown(string, using: parser)
     }
@@ -244,7 +244,7 @@ public struct VideoPlayer: Component {
     /// Whether playback controls should be shown to the user. Note that this
     /// property is ignored when rendering a video hosted by a service like YouTube.
     public var showControls: Bool
-
+    
     /// Create an inline player for a `Video` model.
     /// - parameter video: The video to create a player for.
     /// - parameter showControls: Whether playback controls should be shown to the user.
@@ -253,25 +253,26 @@ public struct VideoPlayer: Component {
         self.video = video
         self.showControls = showControls
     }
-
+    
     public var body: Component {
         switch video {
-        case .hosted(let url, let format):
-            return Node.video(
-                .controls(showControls),
-                .source(.type(format), .src(url))
-            )
-        case .youTube(let id):
-            let url = "https://www.youtube-nocookie.com/embed/" + id
-            return iframeVideoPlayer(for: url)
-        case .vimeo(let id):
-            let url = "https://player.vimeo.com/video/" + id
-            return iframeVideoPlayer(for: url)
+            case .hosted(let url, let format):
+                return Node.video(
+                    .controls(showControls),
+                    .source(.type(format), .src(url))
+                )
+            case .youTube(let id):
+                let url = "https://www.youtube-nocookie.com/embed/" + id
+                return iframeVideoPlayer(for: url)
+            case .vimeo(let id):
+                let url = "https://player.vimeo.com/video/" + id
+                return iframeVideoPlayer(for: url)
             case .tedTalk(let id):
-            let url = "https://embed.ted.com/talks/" + id
+                let url = "https://embed.ted.com/talks/" + id
+                return iframeVideoPlayer(for: url)
         }
     }
-
+    
     private func iframeVideoPlayer(for url: URLRepresentable) -> Component {
         IFrame(
             url: url,

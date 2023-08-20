@@ -26,6 +26,8 @@ extension Video: Decodable {
             self = .youTube(id: youTubeID)
         } else if let vimeoID: String = try decoder.decodeIfPresent("vimeo") {
             self = .vimeo(id: vimeoID)
+        } else if let tedTalkID: String = try decoder.decodeIfPresent("tedTalk") {
+            self = .tedTalk(id: tedTalkID)
         } else {
             self = try .hosted(
                 url: decoder.decode("url"),
