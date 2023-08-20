@@ -16,6 +16,8 @@ public enum Video: Hashable {
     case youTube(id: String)
     /// A Vimeo video with a given ID.
     case vimeo(id: String)
+    /// A Ted Talk with a given ID.
+    case tedTalk(id: String)
 }
 
 extension Video: Decodable {

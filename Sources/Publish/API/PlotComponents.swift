@@ -267,6 +267,8 @@ public struct VideoPlayer: Component {
         case .vimeo(let id):
             let url = "https://player.vimeo.com/video/" + id
             return iframeVideoPlayer(for: url)
+            case .tedTalk(let id):
+            let url = "https://embed.ted.com/talks/" + id
         }
     }
 
