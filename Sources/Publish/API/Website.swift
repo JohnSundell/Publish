@@ -240,13 +240,13 @@ public extension Website {
 extension Website {
     public func tag2htmlfileName(tag: Tag) -> String {
         let result = self.fileMode.filePath(path: self.path(for: tag)).absoluteString
-        debugPrint("tag2htmlfileName: \(tag) -> \(result)")
+        //debugPrint("tag2htmlfileName: \(tag) -> \(result)")
         return result
     }
     
     public func item2htmlfileName(item: Item<Self>) -> String {
         let result = self.fileMode.filePath(path: item.path).absoluteString
-        debugPrint("item2htmlfileName: \(item) -> \(result)")
+        //debugPrint("item2htmlfileName: \(item) -> \(result)")
         return result
     }
 }
