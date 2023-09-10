@@ -58,6 +58,12 @@ private extension ProjectGenerator {
         /.swiftpm
         /*.xcodeproj
         .publish
+
+        # We recommend against adding the Output directory to your .gitignore:
+        # - Pros: `git diff` will help you see how your site changed overtime;
+        # - Cons: bigger commits or pull requests, probably hard to review.
+        # You should judge for yourself.
+        # /Output
         """)
     }
 
