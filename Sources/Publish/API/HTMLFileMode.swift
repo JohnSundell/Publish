@@ -15,3 +15,23 @@ public enum HTMLFileMode {
     /// `section/item` becomes `section/item/index.html`.
     case foldersAndIndexFiles
 }
+
+
+extension HTMLFileMode {
+
+    ///Determining the right file name based on HTMLFileMode
+    public func filePath(for location: Location) -> Path {
+        return filePath(path: location.path)
+    }
+    
+    ///Determining the right file name based on HTMLFileMode
+    public func filePath(path: Path) -> Path {
+        switch self {
+            case .foldersAndIndexFiles:
+                return "\(path)/index.html"
+            case .standAloneFiles:
+                return "\(path).html"
+        }
+    }
+    
+}

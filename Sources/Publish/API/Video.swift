@@ -16,6 +16,8 @@ public enum Video: Hashable {
     case youTube(id: String)
     /// A Vimeo video with a given ID.
     case vimeo(id: String)
+    /// A Ted Talk with a given ID.
+    case tedTalk(id: String)
 }
 
 extension Video: Decodable {
@@ -24,6 +26,8 @@ extension Video: Decodable {
             self = .youTube(id: youTubeID)
         } else if let vimeoID: String = try decoder.decodeIfPresent("vimeo") {
             self = .vimeo(id: vimeoID)
+        } else if let tedTalkID: String = try decoder.decodeIfPresent("tedTalk") {
+            self = .tedTalk(id: tedTalkID)
         } else {
             self = try .hosted(
                 url: decoder.decode("url"),

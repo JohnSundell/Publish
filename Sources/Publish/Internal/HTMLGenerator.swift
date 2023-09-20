@@ -11,7 +11,9 @@ import CollectionConcurrencyKit
 internal struct HTMLGenerator<Site: Website> {
     let theme: Theme<Site>
     let indentation: Indentation.Kind?
-    let fileMode: HTMLFileMode
+    var fileMode: HTMLFileMode {
+        return context.fileMode
+    }
     let context: PublishingContext<Site>
 
     func generate() async throws {
@@ -141,11 +143,6 @@ private extension HTMLGenerator {
     }
 
     func filePath(for location: Location, fileMode: HTMLFileMode) -> Path {
-        switch fileMode {
-        case .foldersAndIndexFiles:
-            return "\(location.path)/index.html"
-        case .standAloneFiles:
-            return "\(location.path).html"
-        }
+        return fileMode.filePath(for: location)
     }
 }
