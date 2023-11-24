@@ -108,7 +108,7 @@ public extension PublishingStep {
 
     /// Add a page to website programmatically.
     /// - parameter page: The page to add.
-    static func addPage(_ page: Page) -> Self {
+    static func addPage(_ page: Page<Site>) -> Self {
         step(named: "Add page '\(page.path)'") { context in
             context.addPage(page)
         }
@@ -118,7 +118,7 @@ public extension PublishingStep {
     /// - parameter sequence: The pages to add.
     static func addPages<S: Sequence>(
         in sequence: S
-    ) -> Self where S.Element == Page {
+    ) -> Self where S.Element == Page<Site> {
         step(named: "Add pages in sequence") { context in
             sequence.forEach { context.addPage($0) }
         }
@@ -233,7 +233,7 @@ public extension PublishingStep {
     /// - parameter mutations: The mutations to apply to the page.
     static func mutatePage(
         at path: Path,
-        using mutations: @escaping Mutations<Page>
+        using mutations: @escaping Mutations<Page<Site>>
     ) -> Self {
         step(named: "Mutate page at '\(path)'") { context in
             try context.mutatePage(at: path, using: mutations)
@@ -244,8 +244,8 @@ public extension PublishingStep {
     /// - parameter predicate: Any predicate to filter the items using.
     /// - parameter mutations: The mutations to apply to the page.
     static func mutateAllPages(
-        matching predicate: Predicate<Page> = .any,
-        using mutations: @escaping Mutations<Page>
+        matching predicate: Predicate<Page<Site>> = .any,
+        using mutations: @escaping Mutations<Page<Site>>
     ) -> Self {
         step(named: "Mutate all pages") { context in
             for path in context.pages.keys {

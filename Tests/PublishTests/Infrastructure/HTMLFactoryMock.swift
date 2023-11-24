@@ -13,7 +13,7 @@ final class HTMLFactoryMock<Site: Website>: HTMLFactory {
     var makeIndexHTML: Closure<Index> = { _, _ in HTML(.body()) }
     var makeSectionHTML: Closure<Section<Site>> = { _, _ in HTML(.body()) }
     var makeItemHTML: Closure<Item<Site>> = { _, _ in HTML(.body()) }
-    var makePageHTML: Closure<Page> = { _, _ in HTML(.body()) }
+    var makePageHTML: Closure<Page<Site>> = { _, _ in HTML(.body()) }
     var makeTagListHTML: Closure<TagListPage>? = { _, _ in HTML(.body()) }
     var makeTagDetailsHTML: Closure<TagDetailsPage>? = { _, _ in HTML(.body()) }
 
@@ -32,7 +32,7 @@ final class HTMLFactoryMock<Site: Website>: HTMLFactory {
         try makeItemHTML(item, context)
     }
 
-    func makePageHTML(for page: Page,
+    func makePageHTML(for page: Page<Site>,
                       context: PublishingContext<Site>) throws -> HTML {
         try makePageHTML(page, context)
     }

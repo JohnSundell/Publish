@@ -10,7 +10,7 @@ import Publish
 final class ErrorTests: PublishTestCase {
     func testErrorForInvalidRootPath() throws {
         assertErrorThrown(
-            try WebsiteStub.WithoutItemMetadata().publish(
+            try WebsiteStub.WithoutMetadata().publish(
                 at: "🤷‍♂️",
                 using: []
             ),

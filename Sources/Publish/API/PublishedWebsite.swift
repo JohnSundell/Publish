@@ -15,5 +15,5 @@ public struct PublishedWebsite<Base: Website> {
     /// The sections that were published.
     public let sections: SectionMap<Base>
     /// The free-form pages that were published.
-    public let pages: [Path : Page]
+    public let pages: [Path : Page<Base>]
 }

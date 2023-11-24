@@ -28,7 +28,7 @@ public struct PublishingContext<Site: Website> {
     /// The sections that the website contains.
     public var sections = SectionMap<Site>() { didSet { tagCache.tags = nil } }
     /// The free-form pages that the website contains.
-    public private(set) var pages = [Path : Page]()
+    public private(set) var pages = [Path : Page<Site>]()
     /// A set containing all tags that are currently being used website-wide.
     public var allTags: Set<Tag> { tagCache.tags ?? gatherAllTags() }
     /// Any date when the website was last generated.
@@ -230,7 +230,7 @@ public extension PublishingContext {
 
     /// Add a page to the website programmatically.
     /// - parameter page: The page to add.
-    mutating func addPage(_ page: Page) {
+    mutating func addPage(_ page: Page<Site>) {
         pages[page.path] = page
     }
 
@@ -249,8 +249,8 @@ public extension PublishingContext {
     /// - throws: An error in case the page couldn't be found, or
     ///   if the mutation close itself threw an error.
     mutating func mutatePage(at path: Path,
-                             matching predicate: Predicate<Page> = .any,
-                             using mutations: Mutations<Page>) throws {
+                             matching predicate: Predicate<Page<Site>> = .any,
+                             using mutations: Mutations<Page<Site>>) throws {
         guard var page = pages[path] else {
             throw ContentError(path: path, reason: .pageNotFound)
         }

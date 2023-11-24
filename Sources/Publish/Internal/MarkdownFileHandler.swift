@@ -98,7 +98,7 @@ internal struct MarkdownFileHandler<Site: Website> {
 
 private extension MarkdownFileHandler {
     enum FolderResult {
-        case pages([Page])
+        case pages([Page<Site>])
         case section(id: Site.SectionID, content: Content?, items: [Item<Site>])
     }
 
@@ -107,8 +107,8 @@ private extension MarkdownFileHandler {
         recursively: Bool,
         parentPath: Path,
         factory: MarkdownContentFactory<Site>
-    ) async throws -> [Page] {
-        let pages: [Page] = try await folder.files.concurrentCompactMap { file in
+    ) async throws -> [Page<Site>] {
+        let pages: [Page<Site>] = try await folder.files.concurrentCompactMap { file in
             guard file.isMarkdown else { return nil }
 
             if file.nameExcludingExtension == "index", !recursively {

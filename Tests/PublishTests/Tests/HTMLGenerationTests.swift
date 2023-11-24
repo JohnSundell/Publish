@@ -10,7 +10,7 @@ import Plot
 import Files
 
 final class HTMLGenerationTests: PublishTestCase {
-    private var htmlFactory: HTMLFactoryMock<WebsiteStub.WithoutItemMetadata>!
+    private var htmlFactory: HTMLFactoryMock<WebsiteStub.WithoutMetadata>!
 
     override func setUp() {
         super.setUp()
@@ -115,6 +115,7 @@ final class HTMLGenerationTests: PublishTestCase {
             additionalSteps: [
                 .addPage(Page(
                     path: "path/to/page3",
+                    metadata: WebsiteStub.WithoutMetadata.PageMetadata(),
                     content: Content(title: "Page 3")
                 ))
             ],
@@ -235,7 +236,7 @@ final class HTMLGenerationTests: PublishTestCase {
     }
 
     func testNotGeneratingTagHTMLWhenDisabled() throws {
-        let site = WebsiteStub.WithoutItemMetadata()
+        let site = WebsiteStub.WithoutMetadata()
         site.tagHTMLConfig = nil
 
         try publishWebsite(site,

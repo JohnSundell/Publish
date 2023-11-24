@@ -34,7 +34,7 @@ private extension SiteMapGenerator {
         })
     }
 
-    func makeSiteMap(for sections: [Section<Site>], pages: [Page], site: Site) -> SiteMap {
+    func makeSiteMap(for sections: [Section<Site>], pages: [Page<Site>], site: Site) -> SiteMap {
         SiteMap(
             .forEach(sections) { section in
                 guard shouldIncludePath(section.path) else {

@@ -14,7 +14,7 @@ public struct Theme<Site: Website> {
     internal let makeIndexHTML: (Index, PublishingContext<Site>) throws -> HTML
     internal let makeSectionHTML: (Section<Site>, PublishingContext<Site>) throws -> HTML
     internal let makeItemHTML: (Item<Site>, PublishingContext<Site>) throws -> HTML
-    internal let makePageHTML: (Page, PublishingContext<Site>) throws -> HTML
+    internal let makePageHTML: (Page<Site>, PublishingContext<Site>) throws -> HTML
     internal let makeTagListHTML: (TagListPage, PublishingContext<Site>) throws -> HTML?
     internal let makeTagDetailsHTML: (TagDetailsPage, PublishingContext<Site>) throws -> HTML?
     internal let resourcePaths: Set<Path>
