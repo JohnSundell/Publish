@@ -8,7 +8,7 @@ import XCTest
 import Publish
 
 final class WebsiteTests: PublishTestCase {
-    private var website: WebsiteStub.WithoutItemMetadata!
+    private var website: WebsiteStub.WithoutMetadata!
 
     override func setUp() {
         super.setUp()
@@ -74,7 +74,7 @@ final class WebsiteTests: PublishTestCase {
     }
 
     func testURLForLocation() {
-        let page = Page(path: "mypage", content: Content())
+        let page = Page<WebsiteStub.WithoutMetadata>(path: "mypage", metadata: WebsiteStub.WithoutMetadata.PageMetadata(), content: Content())
 
         XCTAssertEqual(
             website.url(for: page),

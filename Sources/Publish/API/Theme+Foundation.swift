@@ -81,7 +81,7 @@ private struct FoundationHTMLFactory<Site: Website>: HTMLFactory {
         )
     }
 
-    func makePageHTML(for page: Page,
+    func makePageHTML(for page: Page<Site>,
                       context: PublishingContext<Site>) throws -> HTML {
         HTML(
             .lang(context.site.language),

@@ -41,11 +41,12 @@ internal struct MarkdownContentFactory<Site: Website> {
         )
     }
 
-    func makePage(fromFile file: File, at path: Path) throws -> Page {
+    func makePage(fromFile file: File, at path: Path) throws -> Page<Site> {
         let markdown = try parser.parse(file.readAsString())
         let decoder = makeMetadataDecoder(for: markdown)
+        let metadata = try Site.PageMetadata(from: decoder)
         let content = try makeContent(fromMarkdown: markdown, file: file, decoder: decoder)
-        return Page(path: path, content: content)
+        return Page(path: path, metadata: metadata, content: content)
     }
 }
 

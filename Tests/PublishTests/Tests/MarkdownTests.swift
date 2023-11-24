@@ -78,7 +78,7 @@ final class MarkdownTests: PublishTestCase {
     }
 
     func testParsingFileWithCustomMetadata() throws {
-        struct Metadata: WebsiteItemMetadata {
+        struct ItemMetadata: WebsiteItemMetadata {
             struct Nested: WebsiteItemMetadata {
                 var string: String
                 var url: URL
@@ -95,7 +95,7 @@ final class MarkdownTests: PublishTestCase {
         }
 
         let item = try generateItem(
-            withMetadataType: Metadata.self,
+            withMetadataType: ItemMetadata.self,
             fromMarkdown: """
             ---
             string: Hello, world!

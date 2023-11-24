@@ -174,12 +174,12 @@ final class RSSFeedGenerationTests: PublishTestCase {
 }
 
 private extension RSSFeedGenerationTests {
-    typealias Site = WebsiteStub.WithoutItemMetadata
+    typealias Site = WebsiteStub.WithoutMetadata
 
     func generateFeed(
         in folder: Folder,
         config: RSSFeedConfiguration = .default,
-        itemPredicate: Predicate<Item<Site>>? = nil,
+        itemPredicate: Publish.Predicate<Item<Site>>? = nil,
         generationSteps: [PublishingStep<Site>] = [
             .addMarkdownFiles()
         ],

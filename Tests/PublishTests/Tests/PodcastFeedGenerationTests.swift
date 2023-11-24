@@ -197,7 +197,7 @@ private extension PodcastFeedGenerationTests {
     func generateFeed(
         in folder: Folder,
         config: Configuration? = nil,
-        itemPredicate: Predicate<Item<Site>>? = nil,
+        itemPredicate: Publish.Predicate<Item<Site>>? = nil,
         generationSteps: [PublishingStep<Site>] = [
             .addMarkdownFiles()
         ],

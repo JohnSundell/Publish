@@ -12,8 +12,8 @@ import Ink
 final class PlotComponentTests: PublishTestCase {
     func testStylesheetPaths() {
         let html = Node.head(
-            for: Page(path: "path", content: Content()),
-            on: WebsiteStub.WithoutItemMetadata(),
+            for: Page<WebsiteStub.WithoutMetadata>(path: "path", metadata: WebsiteStub.WithoutMetadata.PageMetadata(), content: Content()),
+            on: WebsiteStub.WithoutMetadata(),
             stylesheetPaths: [
                 "local-1.css",
                 "/local-2.css",

@@ -7,12 +7,13 @@
 import Foundation
 import Publish
 
-extension Page: Stubbable {
+extension Page: Stubbable where Site == WebsiteStub.WithoutMetadata {
     private static let defaultDate = Date()
 
     static func stub(withPath path: Path) -> Self {
         Page(
             path: path,
+            metadata: Site.PageMetadata(),
             content: Content(
                 date: defaultDate,
                 lastModified: defaultDate

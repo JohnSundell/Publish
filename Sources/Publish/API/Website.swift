@@ -12,6 +12,7 @@ import Dispatch
 public protocol WebsiteSectionID: Decodable, Hashable, CaseIterable, RawRepresentable where RawValue == String {}
 /// Protocol that all `Website.ItemMetadata` implementations must conform to.
 public typealias WebsiteItemMetadata = Decodable & Hashable
+public typealias WebsitePageMetadata = Decodable & Hashable
 
 /// Protocol used to define a Publish-based website.
 /// You conform to this protocol using a custom type, which is then used to
@@ -23,8 +24,10 @@ public typealias WebsiteItemMetadata = Decodable & Hashable
 public protocol Website {
     /// The enum type used to represent the website's section IDs.
     associatedtype SectionID: WebsiteSectionID
-    /// The type that defines any custom metadata for the website.
+    /// The type that defines any custom metadata for the website's items.
     associatedtype ItemMetadata: WebsiteItemMetadata
+    /// The type that defines any custom metadata for the website's pages.
+    associatedtype PageMetadata: WebsitePageMetadata
 
     /// The absolute URL that the website will be hosted at.
     var url: URL { get }

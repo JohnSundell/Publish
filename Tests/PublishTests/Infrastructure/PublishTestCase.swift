@@ -13,9 +13,9 @@ class PublishTestCase: XCTestCase {
     @discardableResult
     func publishWebsite(
         in folder: Folder? = nil,
-        using steps: [PublishingStep<WebsiteStub.WithoutItemMetadata>],
+        using steps: [PublishingStep<WebsiteStub.WithoutMetadata>],
         content: [Path : String] = [:]
-    ) throws -> PublishedWebsite<WebsiteStub.WithoutItemMetadata> {
+    ) throws -> PublishedWebsite<WebsiteStub.WithoutMetadata> {
         try performWebsitePublishing(
             in: folder,
             using: steps,
@@ -25,12 +25,12 @@ class PublishTestCase: XCTestCase {
     }
 
     func publishWebsite(
-        _ site: WebsiteStub.WithoutItemMetadata = .init(),
+        _ site: WebsiteStub.WithoutMetadata = .init(),
         in folder: Folder? = nil,
-        using theme: Theme<WebsiteStub.WithoutItemMetadata>,
+        using theme: Theme<WebsiteStub.WithoutMetadata>,
         content: [Path : String] = [:],
-        additionalSteps: [PublishingStep<WebsiteStub.WithoutItemMetadata>] = [],
-        plugins: [Plugin<WebsiteStub.WithoutItemMetadata>] = [],
+        additionalSteps: [PublishingStep<WebsiteStub.WithoutMetadata>] = [],
+        plugins: [Plugin<WebsiteStub.WithoutMetadata>] = [],
         expectedHTML: [Path : String],
         allowWhitelistedOutputFiles: Bool = true,
         file: StaticString = #file,
@@ -133,11 +133,12 @@ class PublishTestCase: XCTestCase {
     }
 
     @discardableResult
-    func publishWebsite<T: WebsiteItemMetadata>(
-        withItemMetadataType itemMetadataType: T.Type,
-        using steps: [PublishingStep<WebsiteStub.WithItemMetadata<T>>],
+    func publishWebsite<IT: WebsiteItemMetadata, PT: WebsitePageMetadata>(
+        withItemMetadataType itemMetadataType: IT.Type,
+        pageMetadataType: PT.Type,
+        using steps: [PublishingStep<WebsiteStub.WithItemMetadata<IT, PT>>],
         content: [Path : String] = [:]
-    ) throws -> PublishedWebsite<WebsiteStub.WithItemMetadata<T>> {
+    ) throws -> PublishedWebsite<WebsiteStub.WithItemMetadata<IT, PT>> {
         try performWebsitePublishing(
             using: steps,
             files: content,
@@ -149,7 +150,7 @@ class PublishTestCase: XCTestCase {
         in section: WebsiteStub.SectionID = .one,
         fromMarkdown markdown: String,
         fileName: String = "markdown.md"
-    ) throws -> Item<WebsiteStub.WithoutItemMetadata> {
+    ) throws -> Item<WebsiteStub.WithoutMetadata> {
         let site = try publishWebsite(
             using: [
                 .addMarkdownFiles()
@@ -161,15 +162,17 @@ class PublishTestCase: XCTestCase {
 
         return try require(site.sections[section].items.first)
     }
-
-    func generateItem<T: WebsiteItemMetadata>(
-        withMetadataType metadataType: T.Type,
+    
+    struct EmptyPageMetadata: WebsitePageMetadata {}
+    func generateItem<IT: WebsiteItemMetadata>(
+        withMetadataType metadataType: IT.Type,
         in section: WebsiteStub.SectionID = .one,
         fromMarkdown markdown: String,
         fileName: String = "markdown.md"
-    ) throws -> Item<WebsiteStub.WithItemMetadata<T>> {
+    ) throws -> Item<WebsiteStub.WithItemMetadata<IT, EmptyPageMetadata>> {
         let site = try publishWebsite(
-            withItemMetadataType: T.self,
+            withItemMetadataType: IT.self,
+            pageMetadataType: EmptyPageMetadata.self,
             using: [
                 .addMarkdownFiles()
             ],

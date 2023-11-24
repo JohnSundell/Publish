@@ -35,7 +35,7 @@ public protocol HTMLFactory {
     /// Create the HTML to use for a page.
     /// - parameter page: The page to generate HTML for.
     /// - parameter context: The current publishing context.
-    func makePageHTML(for page: Page,
+    func makePageHTML(for page: Page<Site>,
                       context: PublishingContext<Site>) throws -> HTML
 
     /// Create the HTML to use for the website's list of tags, if supported.

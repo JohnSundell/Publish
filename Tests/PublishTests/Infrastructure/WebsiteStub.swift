@@ -29,15 +29,17 @@ class WebsiteStub {
 }
 
 extension WebsiteStub {
-    final class WithItemMetadata<ItemMetadata: WebsiteItemMetadata>: WebsiteStub, Website {}
+    final class WithItemMetadata<ItemMetadata: WebsiteItemMetadata, PageMetadata: WebsitePageMetadata>: WebsiteStub, Website {}
 
     final class WithPodcastMetadata: WebsiteStub, Website {
         struct ItemMetadata: PodcastCompatibleWebsiteItemMetadata {
             var podcast: PodcastEpisodeMetadata?
         }
+        struct PageMetadata: WebsitePageMetadata {}
     }
 
-    final class WithoutItemMetadata: WebsiteStub, Website {
+    final class WithoutMetadata: WebsiteStub, Website {
         struct ItemMetadata: WebsiteItemMetadata {}
+        struct PageMetadata: WebsitePageMetadata {}
     }
 }
