@@ -62,8 +62,8 @@ final class DeploymentTests: PublishTestCase {
 
         try shellOut(to: [
             "git init",
-            // Not all git installations init with a master branch.
-            "git checkout master || git checkout -b master",
+            // Not all git installations init with a main branch.
+            "git checkout main || git checkout -b main",
             "git config --local receive.denyCurrentBranch updateInstead"
         ], at: remote.path)
 
@@ -91,12 +91,12 @@ final class DeploymentTests: PublishTestCase {
         try shellOut(
           to: [
             "git init",
-            // Not all git installations init with a master branch.
-            "git checkout master || git checkout -b master"
+            // Not all git installations init with a main branch.
+            "git checkout main || git checkout -b main"
           ],
           at: remote.path
         )
-        
+
         // First generate
         try publishWebsite(in: repo, using: [
             .generateHTML(withTheme: .foundation)
