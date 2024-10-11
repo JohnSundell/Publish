@@ -24,8 +24,38 @@ internal struct WebsiteRunner {
         print("""
         🌍 Starting web server at http://localhost:\(portNumber)
 
-        Press ENTER to stop the server and exit
+        Press CTRL+C to stop the server and exit
         """)
+
+
+      signal(SIGINT, SIG_IGN)
+      let interruptSignalSource = DispatchSource.makeSignalSource(signal: SIGINT)
+      interruptSignalSource.setEventHandler {
+        // cancel the trap?
+        interruptSignalSource.cancel()
+
+        // terminate the server process
+        serverProcess.terminate()
+
+        // Install the default signal handler.
+        var action = sigaction()
+#if canImport(Darwin) || os(OpenBSD)
+        action.__sigaction_u.__sa_handler = SIG_DFL
+#elseif canImport(Musl)
+        action.__sa_handler.sa_handler = SIG_DFL
+#elseif os(Android)
+        action.sa_handler = SIG_DFL
+#else
+        action.__sigaction_handler = unsafeBitCast(
+          SIG_DFL,
+          to: sigaction.__Unnamed_union___sigaction_handler.self
+        )
+#endif
+        sigaction(SIGINT, &action, nil)
+        kill(getpid(), SIGINT)
+      }
+
+      interruptSignalSource.resume()
 
         serverQueue.async {
             do {
