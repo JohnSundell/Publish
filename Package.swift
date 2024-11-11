@@ -1,4 +1,4 @@
-// swift-tools-version:5.5
+// swift-tools-version:6.0
 
 /**
 *  Publish
@@ -24,7 +24,7 @@ let package = Package(
         .package(
             name: "Plot",
             url: "https://github.com/johnsundell/plot.git",
-            from: "0.9.0"
+            from: "0.13.0"
         ),
         .package(
             name: "Files",
