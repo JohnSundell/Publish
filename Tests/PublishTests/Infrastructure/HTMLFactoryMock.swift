@@ -7,15 +7,31 @@
 import Publish
 import Plot
 
-final class HTMLFactoryMock<Site: Website>: HTMLFactory {
-    typealias Closure<T> = (T, PublishingContext<Site>) throws -> HTML
+struct HTMLFactoryMock<Site: Website>: HTMLFactory {
+    typealias Closure<T> = @Sendable (T, PublishingContext<Site>) throws -> HTML
 
-    var makeIndexHTML: Closure<Index> = { _, _ in HTML(.body()) }
-    var makeSectionHTML: Closure<Section<Site>> = { _, _ in HTML(.body()) }
-    var makeItemHTML: Closure<Item<Site>> = { _, _ in HTML(.body()) }
-    var makePageHTML: Closure<Page> = { _, _ in HTML(.body()) }
-    var makeTagListHTML: Closure<TagListPage>? = { _, _ in HTML(.body()) }
-    var makeTagDetailsHTML: Closure<TagDetailsPage>? = { _, _ in HTML(.body()) }
+    init(
+        makeIndexHTML: @escaping Closure<Index> = { _, _ in HTML(.body()) },
+        makeSectionHTML: @escaping Closure<Section<Site>> = { _, _ in HTML(.body()) },
+        makeItemHTML: @escaping Closure<Item<Site>> = { _, _ in HTML(.body()) },
+        makePageHTML: @escaping Closure<Page> = { _, _ in HTML(.body()) },
+        makeTagListHTML: Closure<TagListPage>? = { _, _ in HTML(.body()) },
+        makeTagDetailsHTML: Closure<TagDetailsPage>? = { _, _ in HTML(.body()) },
+    ) {
+        self.makeIndexHTML = makeIndexHTML
+        self.makeSectionHTML = makeSectionHTML
+        self.makeItemHTML = makeItemHTML
+        self.makePageHTML = makePageHTML
+        self.makeTagListHTML = makeTagListHTML
+        self.makeTagDetailsHTML = makeTagDetailsHTML
+    }
+
+    let makeIndexHTML: Closure<Index>
+    let makeSectionHTML: Closure<Section<Site>>
+    let makeItemHTML: Closure<Item<Site>>
+    let makePageHTML: Closure<Page>
+    let makeTagListHTML: Closure<TagListPage>?
+    let makeTagDetailsHTML: Closure<TagDetailsPage>?
 
     func makeIndexHTML(for index: Index,
                        context: PublishingContext<Site>) throws -> HTML {

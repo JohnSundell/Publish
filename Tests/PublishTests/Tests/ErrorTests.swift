@@ -4,24 +4,25 @@
 *  MIT license, see LICENSE file for details
 */
 
-import XCTest
+import Testing
 import Publish
+import Foundation
 
-final class ErrorTests: PublishTestCase {
-    func testErrorForInvalidRootPath() throws {
-        assertErrorThrown(
-            try WebsiteStub.WithoutItemMetadata().publish(
+@Suite("Error", .serialized) struct ErrorTests: PublishTestCase {
+    @Test func testErrorForInvalidRootPath() throws {
+        #expect(throws: PublishingError(
+            path: "🤷‍♂️",
+            infoMessage: "Could not find the requested root folder"
+        )) {
+            try WithoutItemMetadata().publish(
                 at: "🤷‍♂️",
-                using: []
-            ),
-            PublishingError(
-                path: "🤷‍♂️",
-                infoMessage: "Could not find the requested root folder"
+                using: [],
+                deploy: false
             )
-        )
+        }
     }
 
-    func testErrorForMissingMarkdownMetadata() throws {
+    @Test func testErrorForMissingMarkdownMetadata() throws {
         struct Metadata: WebsiteItemMetadata {
             let string: String
         }
@@ -32,140 +33,130 @@ final class ErrorTests: PublishTestCase {
         ---
         """
 
-        assertErrorThrown(
+        #expect(
+            throws: PublishingError(
+                stepName: "Add Markdown files from 'Content' folder",
+                path: "one/file.md",
+                infoMessage: "Missing metadata value for key 'string'"
+            )
+        ) {
             try generateItem(
                 withMetadataType: Metadata.self,
                 in: .one,
                 fromMarkdown: markdown,
                 fileName: "file.md"
-            ),
-            PublishingError(
-                stepName: "Add Markdown files from 'Content' folder",
-                path: "one/file.md",
-                infoMessage: "Missing metadata value for key 'string'"
             )
-        )
+        }
     }
 
-    func testErrorForInvalidMarkdownMetadata() throws {
+    @Test func testErrorForInvalidMarkdownMetadata() throws {
         let markdown = """
         ---
         audio.url: 🤷‍♂️
         ---
         """
-
-        assertErrorThrown(
-            try generateItem(
-                in: .one,
-                fromMarkdown: markdown,
-                fileName: "file.md"
-            ),
-            PublishingError(
+        #expect(
+            throws: PublishingError(
                 stepName: "Add Markdown files from 'Content' folder",
                 path: "one/file.md",
                 infoMessage: "Invalid metadata value for key 'audio.url'"
             )
-        )
+        ) {
+            try generateItem(
+                in: .one,
+                fromMarkdown: markdown,
+                fileName: "file.md"
+            )
+        }
     }
 
-    func testErrorForThrowingDuringItemMutation() throws {
+    @Test func testErrorForThrowingDuringItemMutation() throws {
         struct Error: LocalizedError {
             var errorDescription: String? { "An error" }
         }
 
-        assertErrorThrown(
+        #expect(throws: PublishingError(
+            stepName: "Mutate all items",
+            path: "one/path/to/item",
+            infoMessage: "Item mutation failed",
+            underlyingError: Error()
+        )) {
             try publishWebsite(using: [
                 .addItem(.stub(withPath: "path/to/item")),
                 .mutateAllItems { _ in
                     throw Error()
                 }
-            ]),
-            PublishingError(
-                stepName: "Mutate all items",
-                path: "one/path/to/item",
-                infoMessage: "Item mutation failed",
-                underlyingError: Error()
-            )
-        )
+            ])
+        }
     }
 
-    func testErrorForMissingPage() throws {
-        assertErrorThrown(
+    @Test func testErrorForMissingPage() throws {
+        #expect(throws: PublishingError(
+            stepName: "Mutate page at 'invalid/path'",
+            path: "invalid/path",
+            infoMessage: "Page not found"
+        )) {
             try publishWebsite(using: [
                 .mutatePage(at: "invalid/path") { _ in }
-            ]),
-            PublishingError(
-                stepName: "Mutate page at 'invalid/path'",
-                path: "invalid/path",
-                infoMessage: "Page not found"
-            )
-        )
+            ])
+        }
     }
 
-    func testErrorForThrowingDuringPageMutation() throws {
+    @Test func testErrorForThrowingDuringPageMutation() throws {
         struct Error: LocalizedError {
             var errorDescription: String? { "An error" }
         }
 
-        assertErrorThrown(
+        #expect(throws: PublishingError(
+            stepName: "Mutate all pages",
+            path: "page",
+            infoMessage: "Page mutation failed",
+            underlyingError: Error()
+        )) {
             try publishWebsite(using: [
                 .addPage(.stub(withPath: "page")),
                 .mutateAllPages { _ in
                     throw Error()
                 }
-            ]),
-            PublishingError(
-                stepName: "Mutate all pages",
-                path: "page",
-                infoMessage: "Page mutation failed",
-                underlyingError: Error()
-            )
-        )
+            ])
+        }
     }
 
-    func testErrorForMissingFolder() throws {
-        assertErrorThrown(
+    @Test func testErrorForMissingFolder() throws {
+        #expect(throws: PublishingError(
+            stepName: "Copy 'non/existing' files",
+            path: "non/existing",
+            infoMessage: "Folder not found"
+        )) {
             try publishWebsite(using: [
                 .copyFiles(at: "non/existing")
-            ]),
-            PublishingError(
-                stepName: "Copy 'non/existing' files",
-                path: "non/existing",
-                infoMessage: "Folder not found"
-            )
-        )
+            ])
+        }
     }
 
-    func testErrorForMissingFile() throws {
-        assertErrorThrown(
+    @Test func testErrorForMissingFile() throws {
+        #expect(throws: PublishingError(
+            stepName: "Copy file 'non/existing.png'",
+            path: "non/existing.png",
+            infoMessage: "File not found"
+        )) {
             try publishWebsite(using: [
                 .copyFile(at: "non/existing.png")
-            ]),
-            PublishingError(
-                stepName: "Copy file 'non/existing.png'",
-                path: "non/existing.png",
-                infoMessage: "File not found"
-            )
-        )
+            ])
+        }
     }
 
-    func testErrorForNoPublishingSteps() throws {
-        assertErrorThrown(
-            try publishWebsite(using: []),
-            PublishingError(
-                infoMessage: "WebsiteName has no generation steps."
-            )
-        )
+    @Test func testErrorForNoPublishingSteps() throws {
+        #expect(throws: PublishingError(
+            infoMessage: "WebsiteName has no generation steps."
+        )) {
+            try publishWebsite(using: [])
+        }
 
-        CommandLine.arguments.append("--deploy")
-
-        assertErrorThrown(
-            try publishWebsite(using: []),
-            PublishingError(
-                infoMessage: "WebsiteName has no deployment steps."
-            )
-        )
-
-        CommandLine.arguments.removeLast()
+        #expect(throws: PublishingError(
+            infoMessage: "WebsiteName has no deployment steps."
+        )) {
+            try publishWebsite(using: [], deploy: true)
+        }
     }
 }

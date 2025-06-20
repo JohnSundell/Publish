@@ -10,7 +10,7 @@ import Foundation
 /// when implementing general-purpose themes or utilities. It
 /// doesn't contain site-specific information, such as the item's
 /// metadata or section ID.
-public protocol AnyItem: Location {
+public protocol AnyItem: Location, Sendable {
     /// The item's tags. Items tagged with the same tag can be
     /// queried using either `Section` or `PublishingContext`.
     var tags: [Tag] { get }

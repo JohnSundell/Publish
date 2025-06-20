@@ -7,7 +7,7 @@
 import Foundation
 
 /// Properties that can be used to customize an item's RSS representation.
-public struct ItemRSSProperties: Codable, Hashable {
+public struct ItemRSSProperties: Codable, Hashable, Sendable {
     /// Any specific GUID that should be added for the item. When `nil`,
     /// the item's URL will be used and the `isPermaLink` attribute will
     /// be set to `true`, unless an explicit `link` was specified. If this

@@ -8,7 +8,7 @@ import Foundation
 
 /// Type used to implement Publish plugins, that can be used to customize
 /// the publishing process in any way.
-public struct Plugin<Site: Website> {
+public struct Plugin<Site: Website>: Sendable {
     /// Closure type used to install a plugin within the current context.
     public typealias Installer = PublishingStep<Site>.Closure
 

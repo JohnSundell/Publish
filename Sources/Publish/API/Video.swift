@@ -9,7 +9,7 @@ import Plot
 
 /// A representation of a location's video data. Can be used to implement
 /// inline video players using the `videoPlayer` Plot component.
-public enum Video: Hashable {
+public enum Video: Hashable, Sendable {
     /// A self-hosted video located at a given URL.
     case hosted(url: URL, format: HTMLVideoFormat = .mp4)
     /// A YouTube video with a given ID.

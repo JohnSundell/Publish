@@ -7,13 +7,13 @@
 /// Configuration type used to customize how a website's
 /// tag page gets rendered. To use a default implementation,
 /// use `TagHTMLConfiguration.default`.
-public struct TagHTMLConfiguration {
+public struct TagHTMLConfiguration: Sendable {
     /// The based path of all of the site's tag HTML.
     public var basePath: Path
     /// Any content that should be added to the site's tag list page.
     public var listContent: Content?
     /// Any closure used to resolve content for each tag details page.
-    public var detailsContentResolver: (Tag) -> Content?
+    public var detailsContentResolver: @Sendable (Tag) -> Content?
 
     /// Initialize a new configuration instance.
     /// - Parameter basePath: The based path of all of the site's tag HTML.
@@ -23,7 +23,7 @@ public struct TagHTMLConfiguration {
     public init(
         basePath: Path = .defaultForTagHTML,
         listContent: Content? = nil,
-        detailsContentResolver: @escaping (Tag) -> Content? = { _ in nil }
+        detailsContentResolver: @escaping @Sendable (Tag) -> Content? = { _ in nil }
     ) {
         self.basePath = basePath
         self.listContent = listContent

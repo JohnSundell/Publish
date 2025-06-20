@@ -11,7 +11,7 @@ import Foundation
 /// or lists of pages, that should be organized within sections, use `Section`
 /// and `Item` instead. Pages can either be added programmatically, or through
 /// Markdown files placed within the root of the website's content folder.
-public struct Page: Location, Equatable {
+public struct Page: Location, Equatable, Sendable {
     public var path: Path
     public var content: Content
 

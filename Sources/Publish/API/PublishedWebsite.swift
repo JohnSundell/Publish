@@ -9,7 +9,7 @@ import Foundation
 /// Type representing a fully published website. An instance of this type
 /// is returned from every call to `Website.publish()`, and can be used
 /// to implement additional tooling on top of Publish.
-public struct PublishedWebsite<Base: Website> {
+public struct PublishedWebsite<Base: Website>: Sendable {
     /// The main website index that was published.
     public let index: Index
     /// The sections that were published.

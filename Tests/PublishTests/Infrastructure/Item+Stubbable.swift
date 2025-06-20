@@ -7,7 +7,7 @@
 import Foundation
 import Publish
 
-extension Item: Stubbable where Site == WebsiteStub.WithoutItemMetadata {
+extension Item: Stubbable where Site == WithoutItemMetadata {
     private static let defaultDate = Date()
 
     static func stub(withPath path: Path) -> Self {
@@ -23,11 +23,11 @@ extension Item: Stubbable where Site == WebsiteStub.WithoutItemMetadata {
         )
     }
 
-    static func stub(withSectionID sectionID: WebsiteStub.SectionID) -> Self {
+    static func stub(withSectionID sectionID: Site.SectionID) -> Self {
         stub(withPath: Path(.unique()), sectionID: sectionID)
     }
 
-    static func stub(withPath path: Path, sectionID: WebsiteStub.SectionID) -> Self {
+    static func stub(withPath path: Path, sectionID: Site.SectionID) -> Self {
         Item(
             path: path,
             sectionID: sectionID,

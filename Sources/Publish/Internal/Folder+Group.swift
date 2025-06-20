@@ -7,7 +7,7 @@
 import Files
 
 internal extension Folder {
-    struct Group {
+    struct Group: Sendable {
         let root: Folder
         let output: Folder
         let `internal`: Folder

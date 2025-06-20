@@ -4,23 +4,19 @@
 *  MIT license, see LICENSE file for details
 */
 
-import XCTest
+import Testing
 import Publish
 import Plot
 import Files
 
-final class HTMLGenerationTests: PublishTestCase {
-    private var htmlFactory: HTMLFactoryMock<WebsiteStub.WithoutItemMetadata>!
+@Suite("HTML Generation", .serialized) struct HTMLGenerationTests: PublishTestCase {
 
-    override func setUp() {
-        super.setUp()
-        htmlFactory = HTMLFactoryMock()
-    }
-
-    func testGeneratingIndexHTML() throws {
-        htmlFactory.makeIndexHTML = { content, _ in
-            HTML(.body(.text(content.title)))
-        }
+    @Test func testGeneratingIndexHTML() throws {
+        let htmlFactory: HTMLFactoryMock<WithoutItemMetadata> = .init(
+            makeIndexHTML: { content, _ in
+                HTML(.body(.text(content.title)))
+            }
+        )
 
         try publishWebsite(
             using: Theme(htmlFactory: htmlFactory),
@@ -29,10 +25,12 @@ final class HTMLGenerationTests: PublishTestCase {
         )
     }
 
-    func testGeneratingSectionHTML() throws {
-        htmlFactory.makeSectionHTML = { section, _ in
-            HTML(.body(.text(section.title)))
-        }
+    @Test func testGeneratingSectionHTML() throws {
+        let htmlFactory: HTMLFactoryMock<WithoutItemMetadata> = .init(
+            makeSectionHTML: { section, _ in
+                HTML(.body(.text(section.title)))
+            }
+        )
 
         try publishWebsite(
             using: Theme(htmlFactory: htmlFactory),
@@ -47,14 +45,16 @@ final class HTMLGenerationTests: PublishTestCase {
         )
     }
 
-    func testGeneratingItemHTML() throws {
-        htmlFactory.makeItemHTML = { item, _ in
-            HTML(.body(
-                .unwrap(item.audio?.url, { .text($0.absoluteString) }),
-                .text(" "),
-                .text(item.title)
-            ))
-        }
+    @Test func testGeneratingItemHTML() throws {
+        let htmlFactory = HTMLFactoryMock<WithoutItemMetadata>(
+            makeItemHTML: { item, _ in
+                HTML(.body(
+                    .unwrap(item.audio?.url, { .text($0.absoluteString) }),
+                    .text(" "),
+                    .text(item.title)
+                ))
+            }
+        )
 
         try publishWebsite(
             using: Theme(htmlFactory: htmlFactory),
@@ -79,10 +79,13 @@ final class HTMLGenerationTests: PublishTestCase {
         )
     }
 
-    func testGeneratingNestedItemHTML() throws {
-        htmlFactory.makeItemHTML = { item, _ in
-            HTML(.body(.text(item.title)))
-        }
+    @Test func testGeneratingNestedItemHTML() throws {
+
+        let htmlFactory = HTMLFactoryMock<WithoutItemMetadata>(
+            makeItemHTML:{ item, _ in
+                HTML(.body(.text(item.title)))
+            }
+        )
 
         try publishWebsite(
             using: Theme(htmlFactory: htmlFactory),
@@ -101,10 +104,12 @@ final class HTMLGenerationTests: PublishTestCase {
         )
     }
 
-    func testGeneratingPageHTML() throws {
-        htmlFactory.makePageHTML = { page, _ in
-            HTML(.body(.text(page.title)))
-        }
+    @Test func testGeneratingPageHTML() throws {
+        let htmlFactory = HTMLFactoryMock<WithoutItemMetadata>(
+            makePageHTML:{ page, _ in
+                HTML(.body(.text(page.title)))
+            }
+        )
 
         try publishWebsite(
             using: Theme(htmlFactory: htmlFactory),
@@ -126,18 +131,19 @@ final class HTMLGenerationTests: PublishTestCase {
         )
     }
 
-    func testGeneratingTagHTML() throws {
-        htmlFactory.makeTagListHTML = { page, _ in
-            HTML(.body(.ul(
-                .forEach(page.tags.sorted()) {
-                    .li(.text($0.string))
-                }
-            )))
-        }
-
-        htmlFactory.makeTagDetailsHTML = { page, _ in
-            HTML(.body(.text(page.tag.string)))
-        }
+    @Test func testGeneratingTagHTML() throws {
+        let htmlFactory = HTMLFactoryMock<WithoutItemMetadata>(
+            makeTagListHTML:{ page, _ in
+                HTML(.body(.ul(
+                    .forEach(page.tags.sorted()) {
+                        .li(.text($0.string))
+                    }
+                )))
+            },
+            makeTagDetailsHTML:{ page, _ in
+                HTML(.body(.text(page.tag.string)))
+            }
+        )
 
         try publishWebsite(
             using: Theme(htmlFactory: htmlFactory),
@@ -166,10 +172,12 @@ final class HTMLGenerationTests: PublishTestCase {
         )
     }
 
-    func testCleaningUpOldHTMLFiles() throws {
-        htmlFactory.makePageHTML = { page, _ in
-            HTML(.body(.text(page.title)))
-        }
+    @Test func testCleaningUpOldHTMLFiles() throws {
+        let htmlFactory = HTMLFactoryMock<WithoutItemMetadata>(
+            makePageHTML:{ page, _ in
+                HTML(.body(.text(page.title)))
+            }
+        )
 
         let folder = try Folder.createTemporary()
 
@@ -196,10 +204,12 @@ final class HTMLGenerationTests: PublishTestCase {
         )
     }
 
-    func testAlwaysGeneratingIndexPageForAllSections() throws {
-        htmlFactory.makeSectionHTML = { section, _ in
-            HTML(.body(.text(section.id.rawValue)))
-        }
+    @Test func testAlwaysGeneratingIndexPageForAllSections() throws {
+        let htmlFactory = HTMLFactoryMock<WithoutItemMetadata>(
+            makeSectionHTML:{ section, _ in
+                HTML(.body(.text(section.id.rawValue)))
+            }
+        )
 
         try publishWebsite(
             using: Theme(htmlFactory: htmlFactory),
@@ -213,9 +223,11 @@ final class HTMLGenerationTests: PublishTestCase {
     }
     
 
-    func testNotGeneratingTagHTMLForIncompatibleTheme() throws {
-        htmlFactory.makeTagListHTML = nil
-        htmlFactory.makeTagDetailsHTML = nil
+    @Test func testNotGeneratingTagHTMLForIncompatibleTheme() throws {
+        let htmlFactory = HTMLFactoryMock<WithoutItemMetadata>(
+            makeTagListHTML: nil,
+            makeTagDetailsHTML: nil,
+        )
 
         try publishWebsite(
             using: Theme(htmlFactory: htmlFactory),
@@ -234,9 +246,12 @@ final class HTMLGenerationTests: PublishTestCase {
         )
     }
 
-    func testNotGeneratingTagHTMLWhenDisabled() throws {
-        let site = WebsiteStub.WithoutItemMetadata()
-        site.tagHTMLConfig = nil
+    @Test func testNotGeneratingTagHTMLWhenDisabled() throws {
+        let site = WithoutItemMetadata(
+            tagHTMLConfig: nil
+        )
+
+        let htmlFactory = HTMLFactoryMock<WithoutItemMetadata>()
 
         try publishWebsite(site,
             using: Theme(htmlFactory: htmlFactory),
@@ -255,7 +270,8 @@ final class HTMLGenerationTests: PublishTestCase {
         )
     }
 
-    func testGeneratingStandAloneHTMLFiles() throws {
+    @Test func testGeneratingStandAloneHTMLFiles() throws {
+        let htmlFactory = HTMLFactoryMock<WithoutItemMetadata>()
         let folder = try Folder.createTemporary()
         let theme = Theme(htmlFactory: htmlFactory)
 
@@ -282,7 +298,7 @@ final class HTMLGenerationTests: PublishTestCase {
         )
     }
 
-    func testFoundationTheme() throws {
+    @Test func testFoundationTheme() throws {
         let folder = try Folder.createTemporary()
 
         try publishWebsite(
@@ -304,23 +320,23 @@ final class HTMLGenerationTests: PublishTestCase {
         )
 
         let siteIndex = try folder.file(at: "Output/index.html")
-        XCTAssertTrue(try siteIndex.readAsString().contains("WebsiteName"))
+        #expect(try siteIndex.readAsString().contains("WebsiteName"))
 
         let sectionIndex = try folder.file(at: "Output/one/index.html")
-        XCTAssertTrue(try sectionIndex.readAsString().contains("SectionTitle"))
+        #expect(try sectionIndex.readAsString().contains("SectionTitle"))
 
         let item = try folder.file(at: "Output/one/item/index.html")
-        XCTAssertTrue(try item.readAsString().contains("ItemTitle"))
+        #expect(try item.readAsString().contains("ItemTitle"))
 
         let page = try folder.file(at: "Output/page/index.html")
-        XCTAssertTrue(try page.readAsString().contains("PageTitle"))
+        #expect(try page.readAsString().contains("PageTitle"))
 
         let tagList = try folder.file(at: "Output/tags/index.html")
         let tagListHTML = try tagList.readAsString()
-        XCTAssertTrue(tagListHTML.contains("tagA"))
-        XCTAssertTrue(tagListHTML.contains("tagB"))
+        #expect(tagListHTML.contains("tagA"))
+        #expect(tagListHTML.contains("tagB"))
 
         let tagDetails = try folder.file(at: "Output/tags/taga/index.html")
-        XCTAssertTrue(try tagDetails.readAsString().contains("tagA"))
+        #expect(try tagDetails.readAsString().contains("tagA"))
     }
 }

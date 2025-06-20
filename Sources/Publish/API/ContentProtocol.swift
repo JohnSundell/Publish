@@ -7,7 +7,7 @@
 import Foundation
 
 /// Protocol adopted by types that represent the content for a location.
-public protocol ContentProtocol {
+public protocol ContentProtocol: Sendable {
     /// The location's title. When parsing a location from Markdown,
     /// the top-level H1 heading will be used as the location's title,
     /// which can also be overridden using the `title` metadata key.

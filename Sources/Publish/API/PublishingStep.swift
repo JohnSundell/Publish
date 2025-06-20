@@ -13,9 +13,9 @@ import Plot
 /// be combined into groups, and conditionally executed. Publish ships with many
 /// built-in steps, and new ones can easily be defined using `step(named:body:)`.
 /// Steps are added when calling `Website.publish`.
-public struct PublishingStep<Site: Website> {
+public struct PublishingStep<Site: Website>: Sendable {
     /// Closure type used to define the main body of a publishing step.
-    public typealias Closure = (inout PublishingContext<Site>) async throws -> Void
+    public typealias Closure = @Sendable (inout PublishingContext<Site>) async throws -> Void
 
     internal let kind: Kind
     internal let body: Body
@@ -98,7 +98,7 @@ public extension PublishingStep {
 
     /// Add a sequence of items to website programmatically.
     /// - parameter sequence: The items to add.
-    static func addItems<S: Sequence>(
+    static func addItems<S: Sequence & Sendable>(
         in sequence: S
     ) -> Self where S.Element == Item<Site> {
         step(named: "Add items in sequence") { context in
@@ -116,7 +116,7 @@ public extension PublishingStep {
 
     /// Add a sequence of pages to website programmatically.
     /// - parameter sequence: The pages to add.
-    static func addPages<S: Sequence>(
+    static func addPages<S: Sequence & Sendable>(
         in sequence: S
     ) -> Self where S.Element == Page {
         step(named: "Add pages in sequence") { context in
@@ -145,13 +145,7 @@ public extension PublishingStep {
         let nameSuffix = section.map { " in '\($0)'" } ?? ""
 
         return step(named: "Remove items" + nameSuffix) { context in
-            if let section = section {
-                context.sections[section].removeItems(matching: predicate)
-            } else {
-                for section in context.sections.ids {
-                    context.sections[section].removeItems(matching: predicate)
-                }
-            }
+            context.removeAllItems(in: section, matching: predicate)
         }
     }
 
@@ -191,9 +185,11 @@ public extension PublishingStep {
         }
         
         return step(named: stepName) { context in
-            for section in sections {
-                try await context.sections[section].replaceItems(
-                    with: context.sections[section].items.concurrentMap { item in
+            try await context.mutateAllSections { section in
+                guard sections.contains(section.id) else { return }
+
+                try await section.replaceItems(
+                    with: section.items.concurrentMap { item in
                         guard predicate.matches(item) else {
                             return item
                         }
@@ -224,7 +220,7 @@ public extension PublishingStep {
         using mutations: @escaping Mutations<Item<Site>>
     ) -> Self {
         step(named: "Mutate item at '\(path)' in \(section)") { context in
-            try context.sections[section].mutateItem(at: path, using: mutations)
+            try context.mutateItem(at: path, in: section, using: mutations)
         }
     }
 
@@ -264,21 +260,17 @@ public extension PublishingStep {
     /// - parameter order: The order to use when sorting.
     static func sortItems<T: Comparable>(
         in section: Site.SectionID? = nil,
-        by keyPath: KeyPath<Item<Site>, T>,
+        by keyPath: KeyPath<Item<Site>, T> & Sendable,
         order: SortOrder = .ascending
     ) -> Self {
         let nameSuffix = section.map { " in '\($0)'" } ?? ""
 
         return step(named: "Sort items" + nameSuffix) { context in
-            let sorter = order.makeSorter(forKeyPath: keyPath)
-
-            if let section = section {
-                context.sections[section].sortItems(by: sorter)
-            } else {
-                for section in context.sections {
-                    context.sections[section.id].sortItems(by: sorter)
-                }
-            }
+            context.sortItems(
+                in: section,
+                by: keyPath,
+                order: order
+            )
         }
     }
 }

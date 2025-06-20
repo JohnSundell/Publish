@@ -7,7 +7,7 @@
 import Foundation
 
 /// Enum describing various ways that HTML files may be generated.
-public enum HTMLFileMode {
+public enum HTMLFileMode: Sendable {
     /// Stand-alone HTML files should be generated, so that `section/item`
     /// becomes `section/item.html`.
     case standAloneFiles

@@ -7,7 +7,7 @@
 import Foundation
 
 /// A representation of a page that contains details about a given tag.
-public struct TagDetailsPage: Location {
+public struct TagDetailsPage: Location, Sendable {
     /// The tag that the details page is for.
     public var tag: Tag
     public let path: Path

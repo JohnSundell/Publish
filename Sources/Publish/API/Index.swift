@@ -7,7 +7,7 @@
 import Foundation
 
 /// A representation of a website's main index page
-public struct Index: Location {
+public struct Index: Location, Sendable {
     public var path: Path { "" }
     public var content = Content()
 }

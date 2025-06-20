@@ -6,8 +6,8 @@
 
 import Foundation
 import Plot
-import Ink
 import Sweep
+import MarkdownParser
 
 // MARK: - Nodes and Attributes
 
@@ -94,8 +94,8 @@ public extension Node where Context: HTML.BodyContext {
     /// - parameter parser: The Markdown parser to use. Pass `context.markdownParser` to
     ///   use the same Markdown parser as the main publishing process is using.
     static func markdown(_ markdown: String,
-                         using parser: MarkdownParser = .init()) -> Node {
-        .raw(parser.html(from: markdown))
+                         using parser: MarkdownParser = .init()) -> Node<HTML.BodyContext> {
+        parser.parse(markdown).body
     }
 
     /// Add an inline audio player within the current context.
@@ -218,7 +218,7 @@ public extension AudioPlayer {
 /// You can control what `MarkdownParser` that's used for parsing
 /// using the `markdownParser` environment key, or by applying the
 /// `markdownParser` modifier to a component.
-public struct Markdown: Component {
+public struct MarkdownComponent: Component {
     /// The Markdown string to render.
     public var string: String
 

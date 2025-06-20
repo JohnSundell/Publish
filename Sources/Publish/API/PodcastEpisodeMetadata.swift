@@ -7,7 +7,7 @@
 import Codextended
 
 /// Type used to describe metadata for a podcast episode.
-public struct PodcastEpisodeMetadata: Hashable {
+public struct PodcastEpisodeMetadata: Hashable, Sendable {
     /// The episode's number.
     public var episodeNumber: Int?
     /// The number of the episode's season.

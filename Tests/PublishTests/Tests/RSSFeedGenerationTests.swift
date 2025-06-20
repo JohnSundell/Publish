@@ -4,13 +4,15 @@
 *  MIT license, see LICENSE file for details
 */
 
-import XCTest
+import Testing
+import Synchronization
+import Foundation
 import Publish
 import Files
 import Sweep
 
-final class RSSFeedGenerationTests: PublishTestCase {
-    func testOnlyIncludingSpecifiedSections() throws {
+@Suite("RSSFeedGeneration", .serialized) struct RSSFeedGenerationTests: PublishTestCase {
+    @Test func testOnlyIncludingSpecifiedSections() throws {
         let folder = try Folder.createTemporary()
 
         try generateFeed(in: folder, content: [
@@ -19,11 +21,11 @@ final class RSSFeedGenerationTests: PublishTestCase {
         ])
 
         let feed = try folder.file(at: "Output/feed.rss").readAsString()
-        XCTAssertTrue(feed.contains("Included"))
-        XCTAssertFalse(feed.contains("Not included"))
+        #expect(feed.contains("Included"))
+        #expect(!feed.contains("Not included"))
     }
 
-    func testOnlyIncludingItemsMatchingPredicate() throws {
+    @Test func testOnlyIncludingItemsMatchingPredicate() throws {
         let folder = try Folder.createTemporary()
 
         try generateFeed(
@@ -36,11 +38,11 @@ final class RSSFeedGenerationTests: PublishTestCase {
         )
 
         let feed = try folder.file(at: "Output/feed.rss").readAsString()
-        XCTAssertTrue(feed.contains("Included"))
-        XCTAssertFalse(feed.contains("Not included"))
+        #expect(feed.contains("Included"))
+        #expect(!feed.contains("Not included"))
     }
 
-    func testConvertingRelativeLinksToAbsolute() throws {
+    @Test func testConvertingRelativeLinksToAbsolute() throws {
         let folder = try Folder.createTemporary()
 
         try generateFeed(in: folder, content: [
@@ -52,14 +54,14 @@ final class RSSFeedGenerationTests: PublishTestCase {
         let feed = try folder.file(at: "Output/feed.rss").readAsString()
         let substring = feed.firstSubstring(between: "BEGIN ", and: " END")
 
-        XCTAssertEqual(substring, """
+        #expect(substring ==  """
         <a href="https://swiftbysundell.com/page">Link</a> \
         <img src=\"https://swiftbysundell.com/image.png\" alt=\"Image\"/> \
         <a href="https://apple.com">Link</a>
         """)
     }
 
-    func testItemTitlePrefixAndSuffix() throws {
+    @Test func testItemTitlePrefixAndSuffix() throws {
         let folder = try Folder.createTemporary()
 
         try generateFeed(in: folder, content: [
@@ -73,10 +75,10 @@ final class RSSFeedGenerationTests: PublishTestCase {
         ])
 
         let feed = try folder.file(at: "Output/feed.rss").readAsString()
-        XCTAssertTrue(feed.contains("<title>PrefixTitleSuffix</title>"))
+        #expect(feed.contains("<title>PrefixTitleSuffix</title>"))
     }
 
-    func testItemBodyPrefixAndSuffix() throws {
+    @Test func testItemBodyPrefixAndSuffix() throws {
         let folder = try Folder.createTemporary()
 
         try generateFeed(in: folder, content: [
@@ -91,12 +93,12 @@ final class RSSFeedGenerationTests: PublishTestCase {
 
         let feed = try folder.file(at: "Output/feed.rss").readAsString()
 
-        XCTAssertTrue(feed.contains("""
+        #expect(feed.contains("""
         <content:encoded><![CDATA[Prefix<p>Body</p>Suffix]]></content:encoded>
         """))
     }
 
-    func testCustomItemLink() throws {
+    @Test func testCustomItemLink() throws {
         let folder = try Folder.createTemporary()
 
         try generateFeed(in: folder, content: [
@@ -110,14 +112,14 @@ final class RSSFeedGenerationTests: PublishTestCase {
 
         let feed = try folder.file(at: "Output/feed.rss").readAsString()
 
-        XCTAssertTrue(feed.contains("<link>custom.link</link>"))
+        #expect(feed.contains("<link>custom.link</link>"))
 
-        XCTAssertTrue(feed.contains("""
+        #expect(feed.contains("""
         <guid isPermaLink="false">https://swiftbysundell.com/one/item</guid>
         """))
     }
 
-    func testReusingPreviousFeedIfNoItemsWereModified() throws {
+    @Test func testReusingPreviousFeedIfNoItemsWereModified() throws {
         let folder = try Folder.createTemporary()
         let contentFile = try folder.createFile(at: "Content/one/item.md")
 
@@ -128,16 +130,16 @@ final class RSSFeedGenerationTests: PublishTestCase {
         try generateFeed(in: folder, date: newDate)
         let feedB = try folder.file(at: "Output/feed.rss").readAsString()
 
-        XCTAssertEqual(feedA, feedB)
+        #expect(feedA ==  feedB)
 
         try contentFile.append("New content")
         try generateFeed(in: folder, date: newDate)
         let feedC = try folder.file(at: "Output/feed.rss").readAsString()
 
-        XCTAssertNotEqual(feedB, feedC)
+        #expect(feedB != feedC)
     }
 
-    func testNotReusingPreviousFeedIfConfigChanged() throws {
+    @Test func testNotReusingPreviousFeedIfConfigChanged() throws {
         let folder = try Folder.createTemporary()
         try folder.createFile(at: "Content/one/item.md")
 
@@ -149,10 +151,10 @@ final class RSSFeedGenerationTests: PublishTestCase {
         try generateFeed(in: folder, config: newConfig, date: newDate)
         let feedB = try folder.file(at: "Output/feed.rss").readAsString()
 
-        XCTAssertNotEqual(feedA, feedB)
+        #expect(feedA != feedB)
     }
 
-    func testNotReusingPreviousFeedIfItemWasAdded() throws {
+    @Test func testNotReusingPreviousFeedIfItemWasAdded() throws {
         let folder = try Folder.createTemporary()
         let itemA = Item.stub()
         let itemB = Item.stub().setting(\.lastModified, to: itemA.lastModified)
@@ -169,17 +171,17 @@ final class RSSFeedGenerationTests: PublishTestCase {
         ])
 
         let feedB = try folder.file(at: "Output/feed.rss").readAsString()
-        XCTAssertNotEqual(feedA, feedB)
+        #expect(feedA != feedB)
     }
 }
 
 private extension RSSFeedGenerationTests {
-    typealias Site = WebsiteStub.WithoutItemMetadata
+    typealias Site = WithoutItemMetadata
 
     func generateFeed(
         in folder: Folder,
         config: RSSFeedConfiguration = .default,
-        itemPredicate: Predicate<Item<Site>>? = nil,
+        itemPredicate: Publish.Predicate<Item<Site>>? = nil,
         generationSteps: [PublishingStep<Site>] = [
             .addMarkdownFiles()
         ],

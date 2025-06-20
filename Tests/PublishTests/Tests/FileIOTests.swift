@@ -4,12 +4,14 @@
 *  MIT license, see LICENSE file for details
 */
 
-import XCTest
+import Testing
+import Foundation
 import Publish
 import Files
+import Synchronization
 
-final class FileIOTests: PublishTestCase {
-    func testCopyingFile() throws {
+@Suite("FileIO", .serialized) struct FileIOTests: PublishTestCase {
+    @Test func testCopyingFile() throws {
         let folder = try Folder.createTemporary()
         try folder.createFile(named: "File").write("Hello, world!")
 
@@ -18,10 +20,10 @@ final class FileIOTests: PublishTestCase {
         ])
 
         let file = try folder.file(at: "Output/File")
-        XCTAssertEqual(try file.readAsString(), "Hello, world!")
+        #expect(try file.readAsString() ==  "Hello, world!")
     }
 
-    func testCopyingFileToSpecificFolder() throws {
+    @Test func testCopyingFileToSpecificFolder() throws {
         let folder = try Folder.createTemporary()
         try folder.createFile(named: "File").write("Hello, world!")
 
@@ -30,10 +32,10 @@ final class FileIOTests: PublishTestCase {
         ])
 
         let file = try folder.file(at: "Output/Custom/Path/File")
-        XCTAssertEqual(try file.readAsString(), "Hello, world!")
+        #expect(try file.readAsString() ==  "Hello, world!")
     }
 
-    func testCopyingFolder() throws {
+    @Test func testCopyingFolder() throws {
         let folder = try Folder.createTemporary()
         try folder.createSubfolder(named: "Subfolder")
 
@@ -43,10 +45,10 @@ final class FileIOTests: PublishTestCase {
             }
         ])
 
-        XCTAssertNotNil(try? folder.subfolder(at: "Output/Subfolder"))
+        _ = try folder.subfolder(at: "Output/Subfolder")
     }
 
-    func testCopyingResourcesWithFolder() throws {
+    @Test func testCopyingResourcesWithFolder() throws {
         let folder = try Folder.createTemporary()
         let resourcesFolder = try folder.createSubfolder(named: "Resources")
         try resourcesFolder.createFile(named: "File").write("Hello")
@@ -59,11 +61,11 @@ final class FileIOTests: PublishTestCase {
 
         let rootFile = try folder.file(at: "Output/Resources/File")
         let nestedFile = try folder.file(at: "Output/Resources/Subfolder/Nested")
-        XCTAssertEqual(try rootFile.readAsString(), "Hello")
-        XCTAssertEqual(try nestedFile.readAsString(), "World!")
+        #expect(try rootFile.readAsString() ==  "Hello")
+        #expect(try nestedFile.readAsString() ==  "World!")
     }
 
-    func testCopyingResourcesWithoutFolder() throws {
+    @Test func testCopyingResourcesWithoutFolder() throws {
         let folder = try Folder.createTemporary()
         let resourcesFolder = try folder.createSubfolder(named: "Resources")
         try resourcesFolder.createFile(named: "File").write("Hello")
@@ -76,11 +78,11 @@ final class FileIOTests: PublishTestCase {
 
         let rootFile = try folder.file(at: "Output/File")
         let nestedFile = try folder.file(at: "Output/Subfolder/Nested")
-        XCTAssertEqual(try rootFile.readAsString(), "Hello")
-        XCTAssertEqual(try nestedFile.readAsString(), "World!")
+        #expect(try rootFile.readAsString() ==  "Hello")
+        #expect(try nestedFile.readAsString() ==  "World!")
     }
 
-    func testCreatingRootLevelFolder() throws {
+    @Test func testCreatingRootLevelFolder() throws {
         let folder = try Folder.createTemporary()
 
         try publishWebsite(in: folder, using: [
@@ -90,40 +92,42 @@ final class FileIOTests: PublishTestCase {
             }
         ])
 
-        XCTAssertNotNil(try? folder.subfolder(named: "A"))
-        XCTAssertNotNil(try? folder.file(at: "B/file"))
+        _ = try folder.subfolder(named: "A")
+        _ = try folder.file(at: "B/file")
     }
 
-    func testRetrievingOutputFolder() throws {
+    @Test func testRetrievingOutputFolder() throws {
         let folder = try Folder.createTemporary()
-        var firstSectionFolder: Folder?
+        let firstSectionFolder = Mutex<Folder?>(nil as Folder?)
 
         try publishWebsite(in: folder, using: [
             .generateHTML(withTheme: .foundation),
             .step(named: "Get output folder") { context in
-                firstSectionFolder = try context.outputFolder(at: "one")
+                try firstSectionFolder.withLock { $0 = try context.outputFolder(at: "one") }
             }
         ])
 
-        XCTAssertEqual(firstSectionFolder?.name, "one")
+        let firstSectionFolderName = firstSectionFolder.withLock(\.?.name)
+        #expect(firstSectionFolderName ==  "one")
     }
 
-    func testRetrievingOutputFile() throws {
+    @Test func testRetrievingOutputFile() throws {
         let folder = try Folder.createTemporary()
-        var itemFile: File?
+        let itemFile = Mutex<File?>(nil)
 
         try publishWebsite(in: folder, using: [
             .addItem(.stub(withPath: "item")),
             .generateHTML(withTheme: .foundation),
             .step(named: "Get output file") { context in
-                itemFile = try context.outputFile(at: "one/item/index.html")
+                try itemFile.withLock { $0 = try context.outputFile(at: "one/item/index.html") }
             }
         ])
 
-        XCTAssertEqual(itemFile?.name, "index.html")
+        let itemFileName = itemFile.withLock(\.?.name)
+        #expect(itemFileName ==  "index.html")
     }
 
-    func testCleaningHiddenFilesInOutputFolder() throws {
+    @Test func testCleaningHiddenFilesInOutputFolder() throws {
         let folder = try Folder.createTemporary()
         try folder.createFile(at: "Output/.hidden")
 
@@ -131,6 +135,6 @@ final class FileIOTests: PublishTestCase {
             .step(named: "Do nothing") { _ in }
         ])
 
-        XCTAssertFalse(folder.containsFile(named: "Output/.hidden"))
+        #expect(folder.containsFile(named: "Output/.hidden") == false)
     }
 }

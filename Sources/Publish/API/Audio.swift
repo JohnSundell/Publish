@@ -11,7 +11,7 @@ import Codextended
 /// A representation of a location's audio data. Can be used to
 /// implement podcast feeds, or inline audio players using the
 /// `audioPlayer` Plot component.
-public struct Audio: Hashable {
+public struct Audio: Hashable, Sendable {
     /// The URL of the audio. Should be an absolute URL.
     public var url: URL
     /// The format of the audio. See `HTMLAudioFormat`.
@@ -39,7 +39,7 @@ public struct Audio: Hashable {
 
 public extension Audio {
     /// A representation of an audio file's duration.
-    struct Duration: Hashable {
+    struct Duration: Hashable, Sendable {
         /// The duration's number of hours.
         public var hours: Int
         /// The duration's number of minutes.

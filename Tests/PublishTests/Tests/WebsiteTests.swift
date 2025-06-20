@@ -4,80 +4,76 @@
 *  MIT license, see LICENSE file for details
 */
 
-import XCTest
+import Testing
 import Publish
+import Foundation
 
-final class WebsiteTests: PublishTestCase {
-    private var website: WebsiteStub.WithoutItemMetadata!
+@Suite("Website", .serialized) struct WebsiteTests: PublishTestCase {
+    var website: WithoutItemMetadata = .init()
 
-    override func setUp() {
-        super.setUp()
-        website = .init()
+    @Test func testDefaultTagListPath() {
+        #expect(WithoutItemMetadata().tagListPath == "tags")
     }
 
-    func testDefaultTagListPath() {
-        XCTAssertEqual(website.tagListPath, "tags")
-    }
-
-    func testCustomTagListPath() {
+    @Test mutating func testCustomTagListPath() {
         website.tagHTMLConfig = TagHTMLConfiguration(basePath: "custom")
-        XCTAssertEqual(website.tagListPath, "custom")
+        #expect(website.tagListPath == "custom")
     }
 
-    func testPathForSectionID() {
-        XCTAssertEqual(website.path(for: .one), "one")
+    @Test func testPathForSectionID() {
+        #expect(website.path(for: .one) == "one")
     }
     
-    func testPathForSectionIDWithRawValue() {
-        XCTAssertEqual(website.path(for: .customRawValue), "custom-raw-value")
+    @Test func testPathForSectionIDWithRawValue() {
+        #expect(website.path(for: .customRawValue) == "custom-raw-value")
     }
 
-    func testDefaultPathForTag() {
+    @Test func testDefaultPathForTag() {
         let tag = Tag("some tag")
-        XCTAssertEqual(website.path(for: tag), "tags/some-tag")
+        #expect(website.path(for: tag) == "tags/some-tag")
     }
 
-    func testCustomPathForTag() {
+    @Test mutating func testCustomPathForTag() {
         website.tagHTMLConfig = TagHTMLConfiguration(basePath: "custom")
         let tag = Tag("some tag")
-        XCTAssertEqual(website.path(for: tag), "custom/some-tag")
+        #expect(website.path(for: tag) == "custom/some-tag")
     }
 
-    func testDefaultURLForTag() {
-        XCTAssertEqual(
-            website.url(for: Tag("some tag")),
+    @Test func testDefaultURLForTag() {
+        #expect(
+            website.url(for: Tag("some tag")) ==
             URL(string: "https://swiftbysundell.com/tags/some-tag")
         )
     }
 
-    func testCustomURLForTag() {
+    @Test mutating func testCustomURLForTag() {
         website.tagHTMLConfig = TagHTMLConfiguration(basePath: "custom")
 
-        XCTAssertEqual(
-            website.url(for: Tag("some tag")),
+        #expect(
+            website.url(for: Tag("some tag")) ==
             URL(string: "https://swiftbysundell.com/custom/some-tag")
         )
     }
 
-    func testURLForRelativePath() {
-        XCTAssertEqual(
-            website.url(for: Path("a/path")),
+    @Test func testURLForRelativePath() {
+        #expect(
+            website.url(for: Path("a/path")) ==
             URL(string: "https://swiftbysundell.com/a/path")
         )
     }
 
-    func testURLForAbsolutePath() {
-        XCTAssertEqual(
-            website.url(for: Path("/a/path")),
+    @Test func testURLForAbsolutePath() {
+        #expect(
+            website.url(for: Path("/a/path")) ==
             URL(string: "https://swiftbysundell.com/a/path")
         )
     }
 
-    func testURLForLocation() {
+    @Test func testURLForLocation() {
         let page = Page(path: "mypage", content: Content())
 
-        XCTAssertEqual(
-            website.url(for: page),
+        #expect(
+            website.url(for: page) ==
             URL(string: "https://swiftbysundell.com/mypage")
         )
     }

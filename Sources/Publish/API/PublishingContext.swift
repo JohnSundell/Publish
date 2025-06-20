@@ -5,54 +5,96 @@
 */
 
 import Foundation
-import Ink
 import Plot
 import Files
 import Codextended
+import MarkdownParser
+import Synchronization
 
 /// Type that represents the context in which a website is being published.
 /// It can be used to manipulate the state of the website in various ways,
 /// including mutating and adding new content, creating new files and folders,
 /// and so on. Each `PublishingStep` gets access to the current context.
-public struct PublishingContext<Site: Website> {
+public final class PublishingContext<Site: Website>: Sendable {
     /// The website that this context is for.
     public let site: Site
     /// The Markdown parser that this publishing session is using. You can
     /// add modifiers to it to customize how each Markdown string is rendered.
-    public var markdownParser = MarkdownParser()
+    public var markdownParser: MarkdownParser {
+        state.withLock(\.markdownParser)
+    }
     /// The date formatter that this publishing session is using when parsing
     /// dates from Markdown files.
-    public var dateFormatter: DateFormatter
-    /// A representation of the website's main index page.
-    public var index = Index()
-    /// The sections that the website contains.
-    public var sections = SectionMap<Site>() { didSet { tagCache.tags = nil } }
-    /// The free-form pages that the website contains.
-    public private(set) var pages = [Path : Page]()
+    public let dateFormatter: DateFormatter
+
+    /// Mutable State in PublishingContext
+    public struct State {
+        public var markdownParser: MarkdownParser = .init()
+
+        /// A representation of the website's main index page.
+        public var index = Index()
+        /// The sections that the website contains.
+        public var sections = SectionMap<Site>() {
+            didSet { tagCache = nil }
+        }
+
+        /// The free-form pages that the website contains.
+        public fileprivate(set) var pages = [Path : Page]()
+
+        /// Any date when the website was last generated.
+        public fileprivate(set) var lastGenerationDate: Date?
+
+        fileprivate var tagCache: Set<Tag>?
+        fileprivate var stepName: String
+    }
+
+    public var index: Index { state.withLock(\.index) }
+
+    public var sections: SectionMap<Site> { state.withLock(\.sections) }
+
+    public var pages: [Path: Page] { state.withLock(\.pages) }
+
+    public var lastGenerationDate: Date? { state.withLock(\.lastGenerationDate) }
+
     /// A set containing all tags that are currently being used website-wide.
-    public var allTags: Set<Tag> { tagCache.tags ?? gatherAllTags() }
-    /// Any date when the website was last generated.
-    public private(set) var lastGenerationDate: Date?
+    public var allTags: Set<Tag> { state.withLock(\.tagCache) ?? gatherAllTags() }
+
+    public let state: Mutex<State>
 
     private let folders: Folder.Group
-    private var tagCache = TagCache()
-    private var stepName: String
 
     internal init(site: Site,
                   folders: Folder.Group,
-                  firstStepName: String) {
+                  firstStepName: String,
+                  dateFormat: String = "yyyy-MM-dd HH:mm"
+    ) {
         self.site = site
         self.folders = folders
-        self.stepName = firstStepName
+        self.state = .init(.init(stepName: firstStepName))
 
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm"
+        dateFormatter.dateFormat = dateFormat
         dateFormatter.timeZone = .current
         self.dateFormatter = dateFormatter
     }
 }
 
 public extension PublishingContext {
+    func addModifier(
+        for target: Modifier.Target,
+        modifier: @escaping Modifier.Closure,
+        file: StaticString = #file,
+        line: Int = #line
+    ) {
+        state.withLock {
+            $0.markdownParser.addModifier(for: target, modifier: modifier, file: file, line: line)
+        }
+    }
+
+    func index(content: Content) {
+        state.withLock { $0.index.content = content }
+    }
+
     /// Retrieve a folder at a given path, starting from the website's root folder.
     /// - parameter path: The path to retrieve a folder for.
     /// - throws: An error in case the folder couldn't be found.
@@ -182,7 +224,7 @@ public extension PublishingContext {
     /// - parameter name: The name of the cache file to return.
     /// - throws: An error in case a new file couldn't be created.
     func cacheFile(named name: String) throws -> File {
-        let folderName = stepName.normalized()
+        let folderName = state.withLock(\.stepName).normalized()
         let folder = try folders.caches.createSubfolderIfNeeded(withName: folderName)
         return try folder.createFileIfNeeded(withName: name.normalized())
     }
@@ -191,10 +233,10 @@ public extension PublishingContext {
     /// - parameter sortingKeyPath: The key path to sort the items by.
     /// - parameter order: The order to use when sorting the items.
     func allItems<T: Comparable>(
-        sortedBy sortingKeyPath: KeyPath<Item<Site>, T>,
+        sortedBy sortingKeyPath: KeyPath<Item<Site>, T> & Sendable,
         order: SortOrder = .ascending
     ) -> [Item<Site>] {
-        let items = sections.flatMap { $0.items }
+        let items = state.withLock { $0.sections.flatMap { $0.items } }
 
         return items.sorted(
             by: order.makeSorter(forKeyPath: sortingKeyPath)
@@ -204,7 +246,14 @@ public extension PublishingContext {
     /// Return all items that were tagged with a given tag.
     /// - parameter tag: The tag to return all items for.
     func items(taggedWith tag: Tag) -> [Item<Site>] {
-        sections.flatMap { $0.items(taggedWith: tag) }
+        state.withLock {
+            let sections = $0.sections
+            let items = sections.flatMap {
+                $0.items(taggedWith: tag)
+            }
+
+            return items
+        }
     }
 
     /// Return all items that were tagged with a given tag, sorted by
@@ -214,7 +263,7 @@ public extension PublishingContext {
     /// - parameter order: The order to use when sorting the items.
     func items<T: Comparable>(
         taggedWith tag: Tag,
-        sortedBy sortingKeyPath: KeyPath<Item<Site>, T>,
+        sortedBy sortingKeyPath: KeyPath<Item<Site>, T> & Sendable,
         order: SortOrder = .ascending
     ) -> [Item<Site>] {
         items(taggedWith: tag).sorted(
@@ -224,22 +273,72 @@ public extension PublishingContext {
 
     /// Add an item to the website programmatically.
     /// - parameter item: The item to add.
-    mutating func addItem(_ item: Item<Site>) {
-        sections[item.sectionID].addItem(item)
+    func addItem(_ item: Item<Site>) {
+        state.withLock { $0.sections[item.sectionID].addItem(item) }
     }
+
+    /// Add an item to this section.
+    /// - parameter path: The relative path to add an item at.
+    /// - parameter metadata: The item's site-specific metadata.
+    /// - parameter configure: A closure used to configure the new item.
+    func addItem(
+        to sectionId: Site.SectionID,
+        at path: Path,
+        withMetadata metadata: Site.ItemMetadata,
+        configure: (inout Item<Site>) throws -> Void
+    ) rethrows {
+        try state.withLock {
+            try $0.sections[sectionId].addItem(at: path, withMetadata: metadata, configure: configure)
+        }
+    }
+
 
     /// Add a page to the website programmatically.
     /// - parameter page: The page to add.
-    mutating func addPage(_ page: Page) {
-        pages[page.path] = page
+    func addPage(_ page: Page) {
+        state.withLock {
+            $0.pages[page.path] = page
+        }
+    }
+
+    /// Mutate a section
+    /// - parameter id: The section that will be mutated
+    /// - parameter mutations: The mutations to apply to the section
+    func mutateSection(id: Site.SectionID, using mutations: Mutations<Section<Site>>) rethrows {
+        try state.withLock {
+            try mutations(&$0.sections[id])
+        }
+    }
+    /// Mutate an item at a given path within a section.
+    /// - parameter path: The relative path of the item to mutate.
+    /// - parameter section: The section that the item belongs to.
+    /// - parameter mutations: The mutations to apply to the item.
+    func mutateItem(at path: Path, in section: Site.SectionID, using mutations: Mutations<Item<Site>>) throws {
+        try state.withLock {
+            try $0.sections[section].mutateItem(at: path, using: mutations)
+        }
     }
 
     /// Mutate all of the website's sections using a closure.
     /// - parameter mutations: The mutations to apply to each section.
-    mutating func mutateAllSections(using mutations: Mutations<Section<Site>>) rethrows {
-        for id in sections.ids {
-            try mutations(&sections[id])
+    func mutateAllSections(using mutations: Mutations<Section<Site>>) rethrows {
+        try state.withLock {
+            for id in $0.sections.ids {
+                try mutations(&$0.sections[id])
+            }
         }
+    }
+    /// Mutate all of the website's sections using an asynchronous closure.
+    /// - parameter mutations: The mutations to apply to each section.
+    func mutateAllSections(using mutations: AsyncMutations<Section<Site>>) async rethrows {
+        // TODO: Probably want to do something to ensure that `sections` hasn't been mutated.
+        var sections = state.withLock(\.sections)
+
+        for id in sections.ids {
+            try await mutations(&sections[id])
+        }
+
+        state.withLock { $0.sections = sections }
     }
 
     /// Mutate one of the website's existing pages.
@@ -248,40 +347,78 @@ public extension PublishingContext {
     /// - parameter mutations: The mutations to apply to the page.
     /// - throws: An error in case the page couldn't be found, or
     ///   if the mutation close itself threw an error.
-    mutating func mutatePage(at path: Path,
-                             matching predicate: Predicate<Page> = .any,
-                             using mutations: Mutations<Page>) throws {
-        guard var page = pages[path] else {
-            throw ContentError(path: path, reason: .pageNotFound)
-        }
-
-        guard predicate.matches(page) else {
-            return
-        }
-
-        do {
-            try mutations(&page)
-            pages[page.path] = page
-
-            if page.path != path {
-                pages[path] = nil
+    func mutatePage(at path: Path,
+                    matching predicate: Predicate<Page> = .any,
+                    using mutations: Mutations<Page>) throws {
+        try state.withLock {
+            guard var page = $0.pages[path] else {
+                throw ContentError(path: path, reason: .pageNotFound)
             }
-        } catch {
-            throw ContentError(
-                path: page.path,
-                reason: .pageMutationFailed(error)
-            )
+
+            guard predicate.matches(page) else {
+                return
+            }
+
+            do {
+                try mutations(&page)
+                $0.pages[page.path] = page
+
+                if page.path != path {
+                    $0.pages[path] = nil
+                }
+            } catch {
+                throw ContentError(
+                    path: page.path,
+                    reason: .pageMutationFailed(error)
+                )
+            }
+        }
+    }
+
+    /// Remove all items matching a predicate, optionally within a specific section.
+    /// - parameter section: Any specific section to remove all items within.
+    /// - parameter predicate: Any predicate to filter the items using.
+    func removeAllItems(
+        in section: Site.SectionID? = nil,
+        matching predicate: Predicate<Item<Site>> = .any
+    ) {
+        if let section {
+            state.withLock { state in
+                state.sections[section].removeItems(matching: predicate)
+            }
+        } else {
+            mutateAllSections { $0.removeItems(matching: predicate) }
+        }
+    }
+
+    /// Sort all items, using a keypath, optionally within a specific section.
+    /// - parameter section: Any specific section to sort all items within.
+    /// - parameter keyPath: The key path to use when sorting.
+    /// - parameter order: The order to use when sorting.
+    func sortItems<T: Comparable>(
+        in section: Site.SectionID? = nil,
+        by keyPath: _SendableKeyPath<Item<Site>, T>,
+        order: SortOrder = .ascending
+    ) {
+        let sorter = order.makeSorter(forKeyPath: keyPath)
+
+        if let section {
+            state.withLock { state in
+                state.sections[section].sortItems(by: sorter)
+            }
+        } else {
+            mutateAllSections { $0.sortItems(by: sorter) }
         }
     }
 }
 
 internal extension PublishingContext {
-    mutating func generationWillBegin() {
+    func generationWillBegin() {
         try? updateLastGenerationDate()
     }
 
-    mutating func prepareForStep(named name: String) {
-        stepName = name
+    func prepareForStep(named name: String) {
+        state.withLock { $0.stepName = name }
     }
 
     func makeMarkdownContentFactory() -> MarkdownContentFactory<Site> {
@@ -311,19 +448,17 @@ internal extension PublishingContext {
 }
 
 private extension PublishingContext {
-    final class TagCache {
-        var tags: Set<Tag>?
-    }
-
-    mutating func updateLastGenerationDate() throws {
+    func updateLastGenerationDate() throws {
         let fileName = "lastGenerationDate"
         let newString = String(Date().timeIntervalSince1970)
 
         if let file = try? folders.internal.file(named: fileName) {
             let oldInterval = try TimeInterval(file.readAsString())
 
-            lastGenerationDate = oldInterval.map {
-                Date(timeIntervalSince1970: $0)
+            state.withLock {
+                $0.lastGenerationDate = oldInterval.map {
+                    Date(timeIntervalSince1970: $0)
+                }
             }
 
             try file.write(newString)
@@ -334,14 +469,16 @@ private extension PublishingContext {
     }
 
     func gatherAllTags() -> Set<Tag> {
-        var tags = Set<Tag>()
+        state.withLock {
+            var tags = Set<Tag>()
 
-        for section in sections {
-            tags.formUnion(section.allTags)
+            for section in $0.sections {
+                tags.formUnion(section.allTags)
+            }
+
+            $0.tagCache = tags
+            return tags
         }
-
-        tagCache.tags = tags
-        return tags
     }
 
     func copyLocationToOutput<T: Files.Location>(

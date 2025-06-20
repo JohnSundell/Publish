@@ -4,22 +4,24 @@
 *  MIT license, see LICENSE file for details
 */
 
-import XCTest
+import Testing
 import Publish
+import Synchronization
 
-final class PublishingContextTests: PublishTestCase {
-    func testSectionIterationOrder() throws {
-        let expectedOrder = WebsiteStub.SectionID.allCases
-        var actualOrder = [WebsiteStub.SectionID]()
+@Suite("PublishingContext", .serialized) struct PublishingContextTests: PublishTestCase {
+    @Test func testSectionIterationOrder() throws {
+        let expectedOrder = WithoutItemMetadata.SectionID.allCases
+        let actualOrder = Mutex([WithoutItemMetadata.SectionID]())
 
         try publishWebsite(using: [
             .step(named: "Step") { context in
                 context.sections.forEach { section in
-                    actualOrder.append(section.id)
+                    actualOrder.withLock { $0.append(section.id) }
                 }
             }
         ])
 
-        XCTAssertEqual(expectedOrder, actualOrder)
+        let order = actualOrder.withLock( \.self )
+        #expect(expectedOrder == order)
     }
 }

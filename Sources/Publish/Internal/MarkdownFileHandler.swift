@@ -16,7 +16,7 @@ internal struct MarkdownFileHandler<Site: Website> {
 
         if let indexFile = try? folder.file(named: "index.md") {
             do {
-                context.index.content = try factory.makeContent(fromFile: indexFile)
+                context.index(content: try factory.makeContent(fromFile: indexFile))
             } catch {
                 throw wrap(error, forPath: "\(folder.path)index.md")
             }
@@ -74,7 +74,7 @@ internal struct MarkdownFileHandler<Site: Website> {
                 }
             case .section(let id, let content, let items):
                 if let content = content {
-                    context.sections[id].content = content
+                    context.mutateSection(id: id) { $0.content = content }
                 }
 
                 for item in items {
@@ -108,7 +108,8 @@ private extension MarkdownFileHandler {
         parentPath: Path,
         factory: MarkdownContentFactory<Site>
     ) async throws -> [Page] {
-        let pages: [Page] = try await folder.files.concurrentCompactMap { file in
+        let pages: [Page] =
+        try await folder.files.concurrentCompactMap { file in
             guard file.isMarkdown else { return nil }
 
             if file.nameExcludingExtension == "index", !recursively {

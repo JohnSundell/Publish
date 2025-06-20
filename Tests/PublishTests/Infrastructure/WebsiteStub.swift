@@ -8,36 +8,54 @@ import Foundation
 import Publish
 import Plot
 
-class WebsiteStub {
+struct WithItemMetadata<ItemMetadata: WebsiteItemMetadata>: Website {
     enum SectionID: String, WebsiteSectionID {
         case one, two, three, customRawValue = "custom-raw-value"
     }
 
-    var url = URL(string: "https://swiftbysundell.com")!
-    var name = "WebsiteName"
-    var description = "Description"
-    var language = Language.english
-    var imagePath: Path? = nil
-    var faviconPath: Path? = nil
+    var url: URL = URL(string: "https://swiftbysundell.com")!
+    var name: String = "WebsiteName"
+    var description: String = "Description"
+    var language: Plot.Language = .english
+    var imagePath: Publish.Path? = nil
+    var faviconPath: Favicon? = nil
     var tagHTMLConfig: TagHTMLConfiguration? = .default
 
-    required init() {}
-
-    func title(for sectionID: WebsiteStub.SectionID) -> String {
+    func title(for sectionID: SectionID) -> String {
         sectionID.rawValue
     }
 }
 
-extension WebsiteStub {
-    final class WithItemMetadata<ItemMetadata: WebsiteItemMetadata>: WebsiteStub, Website {}
-
-    final class WithPodcastMetadata: WebsiteStub, Website {
-        struct ItemMetadata: PodcastCompatibleWebsiteItemMetadata {
-            var podcast: PodcastEpisodeMetadata?
-        }
+struct WithPodcastMetadata: Website {
+    enum SectionID: String, WebsiteSectionID {
+        case one, two, three, customRawValue = "custom-raw-value"
     }
 
-    final class WithoutItemMetadata: WebsiteStub, Website {
-        struct ItemMetadata: WebsiteItemMetadata {}
+    struct ItemMetadata: PodcastCompatibleWebsiteItemMetadata {
+        var podcast: PodcastEpisodeMetadata?
     }
+
+    var url: URL = URL(string: "https://swiftbysundell.com")!
+    var name: String = "WebsiteName"
+    var description: String = "Description"
+    var language: Plot.Language = .english
+    var imagePath: Publish.Path? = nil
+    var faviconPath: Favicon? = nil
+    var tagHTMLConfig: TagHTMLConfiguration? = .default
+}
+
+struct WithoutItemMetadata: Website {
+    var url: URL = URL(string: "https://swiftbysundell.com")!
+    var name: String = "WebsiteName"
+    var description: String = "Description"
+    var language: Plot.Language = .english
+    var imagePath: Publish.Path? = nil
+    var faviconPath: Favicon? = nil
+    var tagHTMLConfig: TagHTMLConfiguration? = .default
+
+    enum SectionID: String, WebsiteSectionID {
+        case one, two, three, customRawValue = "custom-raw-value"
+    }
+
+    struct ItemMetadata: WebsiteItemMetadata {}
 }

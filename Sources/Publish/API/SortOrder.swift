@@ -6,7 +6,7 @@
 
 /// Enum describing various orders that can be used when
 /// performing sorting operations.
-public enum SortOrder {
+public enum SortOrder: Sendable {
     /// Sort the collection in ascending order.
     case ascending
     /// Sort the collection in descending order.
@@ -15,8 +15,8 @@ public enum SortOrder {
 
 internal extension SortOrder {
     func makeSorter<T, V: Comparable>(
-        forKeyPath keyPath: KeyPath<T, V>
-    ) -> (T, T) -> Bool {
+        forKeyPath keyPath: _SendableKeyPath<T, V>
+    ) -> @Sendable (T, T) -> Bool {
         switch self {
         case .ascending:
             return {

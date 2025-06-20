@@ -8,7 +8,7 @@ import Plot
 
 /// Protocol used to implement a website theme's underlying factory,
 /// that creates HTML for a site's various locations using the Plot DSL.
-public protocol HTMLFactory {
+public protocol HTMLFactory: Sendable {
     /// The website that the factory is for. Generic constraints may be
     /// applied to this type to require that a website fulfills certain
     /// requirements in order to use this factory.

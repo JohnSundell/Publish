@@ -9,31 +9,37 @@ import Publish
 import Plot
 import Files
 
-class PublishTestCase: XCTestCase {
+protocol PublishTestCase {}
+
+extension PublishTestCase {
     @discardableResult
     func publishWebsite(
         in folder: Folder? = nil,
-        using steps: [PublishingStep<WebsiteStub.WithoutItemMetadata>],
+        using steps: [PublishingStep<WithoutItemMetadata>],
+        deploy: Bool = false,
         content: [Path : String] = [:]
-    ) throws -> PublishedWebsite<WebsiteStub.WithoutItemMetadata> {
+    ) throws -> PublishedWebsite<WithoutItemMetadata> {
         try performWebsitePublishing(
+            site: WithoutItemMetadata(),
             in: folder,
             using: steps,
+            deploy: deploy,
             files: content,
-            filePathPrefix: "Content/"
+            filePathPrefix: "Content/",
         )
     }
 
     func publishWebsite(
-        _ site: WebsiteStub.WithoutItemMetadata = .init(),
+        _ site: WithoutItemMetadata = .init(),
         in folder: Folder? = nil,
-        using theme: Theme<WebsiteStub.WithoutItemMetadata>,
+        using theme: Theme<WithoutItemMetadata>,
         content: [Path : String] = [:],
-        additionalSteps: [PublishingStep<WebsiteStub.WithoutItemMetadata>] = [],
-        plugins: [Plugin<WebsiteStub.WithoutItemMetadata>] = [],
+        additionalSteps: [PublishingStep<WithoutItemMetadata>] = [],
+        plugins: [Plugin<WithoutItemMetadata>] = [],
         expectedHTML: [Path : String],
         allowWhitelistedOutputFiles: Bool = true,
-        file: StaticString = #file,
+        deploy: Bool = false,
+        file: StaticString = #filePath,
         line: UInt = #line
     ) throws {
         let folder = try folder ?? Folder.createTemporary()
@@ -49,7 +55,8 @@ class PublishTestCase: XCTestCase {
             at: Path(folder.path),
             rssFeedSections: [],
             additionalSteps: additionalSteps,
-            plugins: plugins
+            plugins: plugins,
+            deploy: deploy,
         )
 
         try verifyOutput(
@@ -63,14 +70,17 @@ class PublishTestCase: XCTestCase {
 
     func publishWebsiteWithPodcast(
         in folder: Folder? = nil,
-        using steps: [PublishingStep<WebsiteStub.WithPodcastMetadata>],
+        using steps: [PublishingStep<WithPodcastMetadata>],
         content: [Path : String] = [:],
+        deploy: Bool = false,
         file: StaticString = #file,
         line: UInt = #line
     ) throws {
         try performWebsitePublishing(
+            site: WithPodcastMetadata(),
             in: folder,
             using: steps,
+            deploy: deploy,
             files: content,
             filePathPrefix: "Content/"
         )
@@ -79,7 +89,7 @@ class PublishTestCase: XCTestCase {
     func verifyOutput(in folder: Folder,
                       expectedHTML: [Path : String],
                       allowWhitelistedFiles: Bool = true,
-                      file: StaticString = #file,
+                      file: StaticString = #filePath,
                       line: UInt = #line) throws {
         let outputFolder = try folder.subfolder(named: "Output")
 
@@ -135,21 +145,24 @@ class PublishTestCase: XCTestCase {
     @discardableResult
     func publishWebsite<T: WebsiteItemMetadata>(
         withItemMetadataType itemMetadataType: T.Type,
-        using steps: [PublishingStep<WebsiteStub.WithItemMetadata<T>>],
-        content: [Path : String] = [:]
-    ) throws -> PublishedWebsite<WebsiteStub.WithItemMetadata<T>> {
+        using steps: [PublishingStep<WithItemMetadata<T>>],
+        content: [Path : String] = [:],
+        deploy: Bool = false
+    ) throws -> PublishedWebsite<WithItemMetadata<T>> {
         try performWebsitePublishing(
+            site: .init(),
             using: steps,
+            deploy: deploy,
             files: content,
             filePathPrefix: "Content/"
         )
     }
 
     func generateItem(
-        in section: WebsiteStub.SectionID = .one,
+        in section: WithoutItemMetadata.SectionID = .one,
         fromMarkdown markdown: String,
         fileName: String = "markdown.md"
-    ) throws -> Item<WebsiteStub.WithoutItemMetadata> {
+    ) throws -> Item<WithoutItemMetadata> {
         let site = try publishWebsite(
             using: [
                 .addMarkdownFiles()
@@ -164,10 +177,10 @@ class PublishTestCase: XCTestCase {
 
     func generateItem<T: WebsiteItemMetadata>(
         withMetadataType metadataType: T.Type,
-        in section: WebsiteStub.SectionID = .one,
+        in section: WithItemMetadata<T>.SectionID = .one,
         fromMarkdown markdown: String,
         fileName: String = "markdown.md"
-    ) throws -> Item<WebsiteStub.WithItemMetadata<T>> {
+    ) throws -> Item<WithItemMetadata<T>> {
         let site = try publishWebsite(
             withItemMetadataType: T.self,
             using: [
@@ -193,9 +206,11 @@ private extension PublishTestCase {
     }
 
     @discardableResult
-    func performWebsitePublishing<T: WebsiteStub>(
+    func performWebsitePublishing<T: Website>(
+        site: T,
         in folder: Folder? = nil,
         using steps: [PublishingStep<T>],
+        deploy: Bool,
         files: [Path : String],
         filePathPrefix: String = ""
     ) throws -> PublishedWebsite<T> {
@@ -203,9 +218,10 @@ private extension PublishTestCase {
 
         try addFiles(withContent: files, to: folder, pathPrefix: filePathPrefix)
 
-        return try T().publish(
+        return try site.publish(
             at: Path(folder.path),
-            using: steps
+            using: steps,
+            deploy: deploy
         )
     }
 }

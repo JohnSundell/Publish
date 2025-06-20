@@ -9,9 +9,9 @@ import Plot
 import Dispatch
 
 /// Protocol that all `Website.SectionID` implementations must conform to.
-public protocol WebsiteSectionID: Decodable, Hashable, CaseIterable, RawRepresentable where RawValue == String {}
+public protocol WebsiteSectionID: Decodable, Hashable, CaseIterable, RawRepresentable, Sendable where RawValue == String, AllCases: Sendable {}
 /// Protocol that all `Website.ItemMetadata` implementations must conform to.
-public typealias WebsiteItemMetadata = Decodable & Hashable
+public typealias WebsiteItemMetadata = Decodable & Hashable & Sendable
 
 /// Protocol used to define a Publish-based website.
 /// You conform to this protocol using a custom type, which is then used to
@@ -20,7 +20,7 @@ public typealias WebsiteItemMetadata = Decodable & Hashable
 /// up of `PublishingStep` values, which is constructed using the `publish` method.
 /// To generate the necessary bootstrapping for conforming to this protocol, use
 /// the `publish new` command line tool.
-public protocol Website {
+public protocol Website: Sendable {
     /// The enum type used to represent the website's section IDs.
     associatedtype SectionID: WebsiteSectionID
     /// The type that defines any custom metadata for the website.
@@ -75,6 +75,7 @@ public extension Website {
                  deployedUsing deploymentMethod: DeploymentMethod<Self>? = nil,
                  additionalSteps: [PublishingStep<Self>] = [],
                  plugins: [Plugin<Self>] = [],
+                 deploy: Bool,
                  file: StaticString = #file) throws -> PublishedWebsite<Self> {
         try publish(
             at: path,
@@ -94,6 +95,7 @@ public extension Website {
                 .generateSiteMap(indentedBy: indentation),
                 .unwrap(deploymentMethod, PublishingStep.deploy)
             ],
+            deploy: deploy,
             file: file
         )
     }
@@ -106,10 +108,12 @@ public extension Website {
     @discardableResult
     func publish(at path: Path? = nil,
                  using steps: [PublishingStep<Self>],
+                 deploy: Bool,
                  file: StaticString = #file) throws -> PublishedWebsite<Self> {
         let pipeline = PublishingPipeline(
             steps: steps,
-            originFilePath: Path("\(file)")
+            originFilePath: Path("\(file)"),
+            deploy: deploy
         )
 
         let semaphore = DispatchSemaphore(value: 0)
@@ -153,6 +157,7 @@ public extension Website {
                  deployedUsing deploymentMethod: DeploymentMethod<Self>? = nil,
                  additionalSteps: [PublishingStep<Self>] = [],
                  plugins: [Plugin<Self>] = [],
+                 deploy: Bool,
                  file: StaticString = #file) async throws -> PublishedWebsite<Self> {
         try await publish(
             at: path,
@@ -172,6 +177,7 @@ public extension Website {
                 .generateSiteMap(indentedBy: indentation),
                 .unwrap(deploymentMethod, PublishingStep.deploy)
             ],
+            deploy: deploy,
             file: file
         )
     }
@@ -184,10 +190,12 @@ public extension Website {
     @discardableResult
     func publish(at path: Path? = nil,
                  using steps: [PublishingStep<Self>],
+                 deploy: Bool,
                  file: StaticString = #file) async throws -> PublishedWebsite<Self> {
         let pipeline = PublishingPipeline(
             steps: steps,
-            originFilePath: Path("\(file)")
+            originFilePath: Path("\(file)"),
+            deploy: deploy
         )
         return try await pipeline.execute(for: self, at: path)
     }

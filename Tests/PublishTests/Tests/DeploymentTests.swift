@@ -4,58 +4,54 @@
 *  MIT license, see LICENSE file for details
 */
 
-import XCTest
+import Testing
+import Foundation
 import Publish
 import Files
 import ShellOut
+import Synchronization
 
-final class DeploymentTests: PublishTestCase {
-    private var defaultCommandLineArguments: [String]!
-
-    override func setUp() {
-        super.setUp()
-        defaultCommandLineArguments = CommandLine.arguments
-    }
-
-    override func tearDown() {
-        CommandLine.arguments = defaultCommandLineArguments
-        super.tearDown()
-    }
-
-    func testDeploymentSkippedByDefault() throws {
-        var deployed = false
+@Suite("Deployment", .serialized) struct DeploymentTests: PublishTestCase {
+    @Test func testDeploymentSkippedByDefault() throws {
+        let deployed = Mutex(false)
 
         try publishWebsite(using: [
             .step(named: "Custom") { _ in },
             .deploy(using: DeploymentMethod(name: "Deploy") { _ in
-                deployed = true
+                deployed.withLock { $0 = true }
             })
         ])
 
-        XCTAssertFalse(deployed)
+        let isDeployed = deployed.withLock(\.self)
+        #expect(!isDeployed)
     }
 
-    func testGenerationStepsAndPluginsSkippedWhenDeploying() throws {
-        CommandLine.arguments.append("--deploy")
+    @Test func testGenerationStepsAndPluginsSkippedWhenDeploying() throws {
 
-        var generationPerformed = false
-        var pluginInstalled = false
+        let generationPerformed = Mutex(false)
+        let pluginInstalled = Mutex(false)
 
-        try publishWebsite(using: [
-            .step(named: "Skipped") { _ in
-                generationPerformed = true
-            },
-            .installPlugin(Plugin(name: "Skipped") { _ in
-                pluginInstalled = true
-            }),
-            .deploy(using: DeploymentMethod(name: "Deploy") { _ in })
-        ])
+        try publishWebsite(
+            using: [
+                .step(named: "Skipped") { _ in
+                    generationPerformed.withLock { $0 = true }
+                },
+                .installPlugin(Plugin(name: "Skipped") { _ in
+                    pluginInstalled.withLock { $0 = true }
+                }),
+                .deploy(using: DeploymentMethod(name: "Deploy") { _ in })
+            ],
+            deploy: true
+        )
 
-        XCTAssertFalse(generationPerformed)
-        XCTAssertFalse(pluginInstalled)
+        let isGenerationPerformed = generationPerformed.withLock(\.self)
+        #expect(isGenerationPerformed == false)
+
+        let isPluginInstalled = pluginInstalled.withLock(\.self)
+        #expect(isPluginInstalled == false)
     }
 
-    func testGitDeploymentMethod() throws {
+    @Test func testGitDeploymentMethod() throws {
         let container = try Folder.createTemporary()
         let remote = try container.createSubfolder(named: "Remote.git")
         let repo = try container.createSubfolder(named: "Repo")
@@ -73,17 +69,19 @@ final class DeploymentTests: PublishTestCase {
         ])
 
         // Then deploy
-        CommandLine.arguments.append("--deploy")
-
-        try publishWebsite(in: repo, using: [
-            .deploy(using: .git(remote.path))
-        ])
+        try publishWebsite(
+            in: repo,
+            using: [
+                .deploy(using: .git(remote.path))
+            ],
+            deploy: true
+        )
 
         let indexFile = try remote.file(named: "index.html")
-        XCTAssertFalse(try indexFile.readAsString().isEmpty)
+        #expect(try !indexFile.readAsString().isEmpty)
     }
 
-	func testGitDeploymentMethodWithError() throws {
+	@Test func testGitDeploymentMethodWithError() throws {
         let container = try Folder.createTemporary()
         let remote = try container.createSubfolder(named: "Remote.git")
         let repo = try container.createSubfolder(named: "Repo")
@@ -103,14 +101,13 @@ final class DeploymentTests: PublishTestCase {
         ])
 
         // Then deploy
-        CommandLine.arguments.append("--deploy")
-
         var thrownError: PublishingError?
 
         do {
             try publishWebsite(
                 in: repo,
-                using: [.deploy(using: .git(remote.path))]
+                using: [.deploy(using: .git(remote.path))],
+                deploy: true
             )
         } catch {
             thrownError = error as? PublishingError
@@ -120,11 +117,11 @@ final class DeploymentTests: PublishTestCase {
         // Git phrases its error messages here, so we just perform
         // a few basic checks to make sure we have some form of output:
         let infoMessage = try require(thrownError?.infoMessage)
-        XCTAssertTrue(infoMessage.contains("receive.denyCurrentBranch"))
-        XCTAssertTrue(infoMessage.contains("[remote rejected]"))
+        #expect(infoMessage.contains("receive.denyCurrentBranch"))
+        #expect(infoMessage.contains("[remote rejected]"))
     }
 
-    func testDeployingUsingCustomOutputFolder() throws {
+    @Test func testDeployingUsingCustomOutputFolder() throws {
         let container = try Folder.createTemporary()
 
         // First generate
@@ -136,22 +133,26 @@ final class DeploymentTests: PublishTestCase {
         ])
 
         // Then deploy
-        CommandLine.arguments.append("--deploy")
+        let outputFolder = Mutex<Folder?>(nil)
 
-        var outputFolder: Folder?
+        try publishWebsite(
+            in: container,
+            using: [
+                .deploy(using: DeploymentMethod(name: "Test") { context in
+                    try outputFolder.withLock {
+                        $0 = try context.createDeploymentFolder(
+                            withPrefix: "Test",
+                            outputFolderPath: "CustomOutput",
+                            configure: { _ in }
+                        )
+                    }
+                })
+            ],
+            deploy: true
+        )
 
-        try publishWebsite(in: container, using: [
-            .deploy(using: DeploymentMethod(name: "Test") { context in
-                outputFolder = try context.createDeploymentFolder(
-                    withPrefix: "Test",
-                    outputFolderPath: "CustomOutput",
-                    configure: { _ in }
-                )
-            })
-        ])
-
-        let folder = try require(outputFolder)
+        let folder = try require(outputFolder.withLock(\.self))
         let subfolder = try folder.subfolder(named: "CustomOutput")
-        XCTAssertTrue(subfolder.containsSubfolder(at: "one/a"))
+        #expect(subfolder.containsSubfolder(at: "one/a"))
     }
 }

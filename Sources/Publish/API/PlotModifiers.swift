@@ -4,8 +4,8 @@
 *  MIT license, see LICENSE file for details
 */
 
-import Ink
 import Plot
+import MarkdownParser
 
 public extension Component {
     /// Assign what `MarkdownParser` to use when rendering `Markdown` components

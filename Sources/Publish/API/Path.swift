@@ -8,7 +8,7 @@ import Foundation
 
 /// Type used to express a path within a website, either to a
 /// location or to a resource, such as a file or image.
-public struct Path: StringWrapper {
+public struct Path: StringWrapper, Sendable {
     public var string: String
 
     public init(_ string: String) {

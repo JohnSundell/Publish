@@ -8,7 +8,7 @@ import Foundation
 
 /// A map type containing all sections within a given website.
 /// You access an instance of this type through the current `PublishingContext`.
-public struct SectionMap<Site: Website> {
+public struct SectionMap<Site: Website>: Sendable {
     /// The IDs of all the sections contained within this map, in the order
     /// they were defined within the site's `SectionID` enum.
     public var ids: Site.SectionID.AllCases { Site.SectionID.allCases }

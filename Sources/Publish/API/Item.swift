@@ -11,7 +11,7 @@ import Foundation
 /// article lists, podcasts, and so on. To implement free-form pages, use
 /// the `Page` type. Items can either be added programmatically, or through
 /// Markdown files placed in their corresponding section's folder.
-public struct Item<Site: Website>: AnyItem, Hashable {
+public struct Item<Site: Website>: AnyItem, Hashable, Sendable {
     /// The ID of the section that the item belongs to, as defined by the
     /// `Website` that this item is for.
     public internal(set) var sectionID: Site.SectionID

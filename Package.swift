@@ -1,4 +1,4 @@
-// swift-tools-version:5.5
+// swift-tools-version:6.1
 
 /**
 *  Publish
@@ -10,54 +10,63 @@ import PackageDescription
 
 let package = Package(
     name: "Publish",
-    platforms: [.macOS(.v12)],
+    platforms: [.macOS(.v15), .iOS(.v16)],
     products: [
         .library(name: "Publish", targets: ["Publish"]),
+        .library(name: "MarkdownParser", targets: ["MarkdownParser"]),
         .executable(name: "publish-cli", targets: ["PublishCLI"])
     ],
     dependencies: [
         .package(
-            name: "Ink",
-            url: "https://github.com/johnsundell/ink.git",
-            from: "0.2.0"
+            url: "https://github.com/peterkovacs/plot",
+            branch: "swift-6"
         ),
         .package(
-            name: "Plot",
-            url: "https://github.com/johnsundell/plot.git",
-            from: "0.9.0"
+            url: "https://github.com/peterkovacs/files",
+            branch: "master"
         ),
         .package(
-            name: "Files",
-            url: "https://github.com/johnsundell/files.git",
-            from: "4.0.0"
-        ),
-        .package(
-            name: "Codextended",
             url: "https://github.com/johnsundell/codextended.git",
             from: "0.1.0"
         ),
         .package(
-            name: "ShellOut",
             url: "https://github.com/johnsundell/shellout.git",
             from: "2.3.0"
         ),
         .package(
-            name: "Sweep",
             url: "https://github.com/johnsundell/sweep.git",
             from: "0.4.0"
         ),
         .package(
-            name: "CollectionConcurrencyKit",
             url: "https://github.com/johnsundell/collectionConcurrencyKit.git",
             from: "0.1.0"
-        )
+        ),
+        .package(url: "https://github.com/swiftlang/swift-markdown.git", from: "0.6.0"),
+        .package(url: "https://github.com/pointfreeco/swift-parsing.git", from: "0.12.0"),
+        .package(url: "https://github.com/apple/swift-nio.git", from: "2.83.0"),
     ],
     targets: [
         .target(
             name: "Publish",
             dependencies: [
-                "Ink", "Plot", "Files", "Codextended",
-                "ShellOut", "Sweep", "CollectionConcurrencyKit"
+                .product(name: "Plot", package: "plot"),
+                .product(name: "Files", package: "files"),
+                .product(name: "Codextended", package: "codextended"),
+                .product(name: "ShellOut", package: "shellout"),
+                .product(name: "Sweep", package: "sweep"),
+                .product(name: "CollectionConcurrencyKit", package: "collectionConcurrencyKit"),
+                .product(name: "NIO", package: "swift-nio"),
+                .product(name: "NIOHTTP1", package: "swift-nio"),
+                .product(name: "_NIOFileSystem", package: "swift-nio"),
+                "MarkdownParser",
+            ]
+        ),
+        .target(
+            name: "MarkdownParser",
+            dependencies: [
+                .product(name: "Plot", package: "plot"),
+                .product(name: "Markdown", package: "swift-markdown"),
+                .product(name: "Parsing", package: "swift-parsing")
             ]
         ),
         .executableTarget(
@@ -70,7 +79,15 @@ let package = Package(
         ),
         .testTarget(
             name: "PublishTests",
-            dependencies: ["Publish", "PublishCLICore"]
+            dependencies: ["Publish", "PublishCLICore"],
+            swiftSettings: [
+//                .define("INCLUDE_CLI")
+            ]
+        ),
+        .testTarget(
+            name: "MarkdownParserTests",
+            dependencies: ["MarkdownParser", "Publish"]
         )
+
     ]
 )

@@ -7,7 +7,7 @@
 import Foundation
 
 /// Error type thrown as part of the website publishing process.
-public struct PublishingError: Equatable {
+public struct PublishingError: Equatable, Sendable {
     /// Any step that the error was encountered during.
     public var stepName: String?
     /// Any path that the error was encountered at.

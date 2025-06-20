@@ -10,13 +10,13 @@ import Plot
 /// When implementing reusable themes that are vended as frameworks or APIs,
 /// it's recommended to create them using static factory methods, just like
 /// how the built-in `foundation` theme is implemented.
-public struct Theme<Site: Website> {
-    internal let makeIndexHTML: (Index, PublishingContext<Site>) throws -> HTML
-    internal let makeSectionHTML: (Section<Site>, PublishingContext<Site>) throws -> HTML
-    internal let makeItemHTML: (Item<Site>, PublishingContext<Site>) throws -> HTML
-    internal let makePageHTML: (Page, PublishingContext<Site>) throws -> HTML
-    internal let makeTagListHTML: (TagListPage, PublishingContext<Site>) throws -> HTML?
-    internal let makeTagDetailsHTML: (TagDetailsPage, PublishingContext<Site>) throws -> HTML?
+public struct Theme<Site: Website>: Sendable {
+    internal let makeIndexHTML: @Sendable (Index, PublishingContext<Site>) throws -> HTML
+    internal let makeSectionHTML: @Sendable (Section<Site>, PublishingContext<Site>) throws -> HTML
+    internal let makeItemHTML: @Sendable (Item<Site>, PublishingContext<Site>) throws -> HTML
+    internal let makePageHTML: @Sendable (Page, PublishingContext<Site>) throws -> HTML
+    internal let makeTagListHTML: @Sendable (TagListPage, PublishingContext<Site>) throws -> HTML?
+    internal let makeTagDetailsHTML: @Sendable (TagDetailsPage, PublishingContext<Site>) throws -> HTML?
     internal let resourcePaths: Set<Path>
     internal let creationPath: Path
 
@@ -30,7 +30,7 @@ public struct Theme<Site: Website> {
     public init<T: HTMLFactory>(
         htmlFactory factory: T,
         resourcePaths resources: Set<Path> = [],
-        file: StaticString = #file
+        file: StaticString = #filePath
     ) where T.Site == Site {
         makeIndexHTML = factory.makeIndexHTML
         makeSectionHTML = factory.makeSectionHTML

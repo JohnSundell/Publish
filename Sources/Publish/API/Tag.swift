@@ -8,7 +8,7 @@ import Foundation
 
 /// Type used to represent a content tag. Items may be tagged, and then
 /// retrieved based on any tag that they were associated with.
-public struct Tag: StringWrapper {
+public struct Tag: StringWrapper, Sendable {
     public var string: String
 
     public init(_ string: String) {

@@ -4,12 +4,12 @@
 *  MIT license, see LICENSE file for details
 */
 
-import XCTest
+import Testing
 import Publish
 import Files
 
-final class SiteMapGenerationTests: PublishTestCase {
-    func testGeneratingSiteMap() throws {
+@Suite("SiteMapGeneration", .serialized) struct SiteMapGenerationTests: PublishTestCase {
+    @Test func testGeneratingSiteMap() throws {
         let folder = try Folder.createTemporary()
 
         try publishWebsite(in: folder, using: [
@@ -28,11 +28,11 @@ final class SiteMapGenerationTests: PublishTestCase {
         ]
 
         for location in expectedLocations {
-            XCTAssertTrue(siteMap.contains("<loc>\(location)</loc>"))
+            #expect(siteMap.contains("<loc>\(location)</loc>"))
         }
     }
 
-    func testExcludingPathsFromSiteMap() throws {
+    @Test func testExcludingPathsFromSiteMap() throws {
         let folder = try Folder.createTemporary()
 
         let site = try publishWebsite(in: folder, using: [
@@ -72,17 +72,17 @@ final class SiteMapGenerationTests: PublishTestCase {
         ]
 
         for location in expectedLocations {
-            XCTAssertTrue(siteMap.contains("<loc>\(location)</loc>"))
+            #expect(siteMap.contains("<loc>\(location)</loc>"))
         }
 
         for location in unexpectedLocations {
-            XCTAssertFalse(siteMap.contains("<loc>\(location)</loc>"))
+            #expect(!siteMap.contains("<loc>\(location)</loc>"))
         }
 
-        XCTAssertNotNil(site.sections[.one].item(at: "itemB"))
-        XCTAssertNotNil(site.sections[.two].item(at: "itemC"))
-        XCTAssertNotNil(site.sections[.two].item(at: "itemD"))
-        XCTAssertNotNil(site.sections[.three].item(at: "itemE"))
-        XCTAssertNotNil(site.pages["pageB"])
+        #expect(site.sections[.one].item(at: "itemB") != nil)
+        #expect(site.sections[.two].item(at: "itemC") != nil)
+        #expect(site.sections[.two].item(at: "itemD") != nil)
+        #expect(site.sections[.three].item(at: "itemE") != nil)
+        #expect(site.pages["pageB"] != nil)
     }
 }

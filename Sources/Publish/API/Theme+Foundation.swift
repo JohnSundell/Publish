@@ -23,9 +23,9 @@ private struct FoundationHTMLFactory<Site: Website>: HTMLFactory {
         HTML(
             .lang(context.site.language),
             .head(for: index, on: context.site),
-            .body {
+            .body { [index] in
                 SiteHeader(context: context, selectedSectionID: nil)
-                Wrapper {
+                Wrapper { [index] in
                     H1(index.title)
                     Paragraph(context.site.description)
                         .class("description")

@@ -8,7 +8,7 @@ import Foundation
 
 /// Protocol adopted by types that can act as a location
 /// that a user can navigate to within a web browser.
-public protocol Location: ContentProtocol {
+public protocol Location: ContentProtocol, Sendable {
     /// The absolute path of the location within the website,
     /// excluding its base URL. For example, an item "article"
     /// contained within a section "mySection" will have the

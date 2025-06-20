@@ -10,7 +10,7 @@ import Foundation
 /// its `SectionID` type. Each section can contain content of its own,
 /// as well as a list of items. To modify a given section, access it
 /// through the `sections` property on the current `PublishingContext`.
-public struct Section<Site: Website>: Location {
+public struct Section<Site: Website>: Location, Sendable {
     /// The section's ID, as defined by its `Website` implementation.
     public let id: Site.SectionID
     /// The items contained within the section.

@@ -11,7 +11,8 @@ public protocol StringWrapper: CustomStringConvertible,
                                ExpressibleByStringInterpolation,
                                Codable,
                                Hashable,
-                               Comparable {
+                               Comparable,
+                               Sendable {
     /// The underlying string value backing this instance.
     var string: String { get }
     /// Initialize a new instance with an underlying string value.

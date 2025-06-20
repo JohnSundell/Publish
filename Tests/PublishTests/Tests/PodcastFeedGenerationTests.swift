@@ -4,12 +4,14 @@
 *  MIT license, see LICENSE file for details
 */
 
-import XCTest
+import Testing
+import Foundation
+import Synchronization
 import Publish
 import Files
 
-final class PodcastFeedGenerationTests: PublishTestCase {
-    func testOnlyIncludingSpecifiedSection() throws {
+@Suite("PodcastFeedGeneration", .serialized) struct PodcastFeedGenerationTests: PublishTestCase {
+    @Test func testOnlyIncludingSpecifiedSection() throws {
         let folder = try Folder.createTemporary()
 
         try generateFeed(in: folder, content: [
@@ -21,11 +23,11 @@ final class PodcastFeedGenerationTests: PublishTestCase {
         ])
 
         let feed = try folder.file(at: "Output/feed.rss").readAsString()
-        XCTAssertTrue(feed.contains("Included"))
-        XCTAssertFalse(feed.contains("Not included"))
+        #expect(feed.contains("Included"))
+        #expect(!feed.contains("Not included"))
     }
 
-    func testOnlyIncludingItemsMatchingPredicate() throws {
+    @Test func testOnlyIncludingItemsMatchingPredicate() throws {
         let folder = try Folder.createTemporary()
 
         try generateFeed(
@@ -41,11 +43,11 @@ final class PodcastFeedGenerationTests: PublishTestCase {
         )
 
         let feed = try folder.file(at: "Output/feed.rss").readAsString()
-        XCTAssertTrue(feed.contains("Included"))
-        XCTAssertFalse(feed.contains("Not included"))
+        #expect(feed.contains("Included"))
+        #expect(!feed.contains("Not included"))
     }
 
-    func testConvertingRelativeLinksToAbsolute() throws {
+    @Test func testConvertingRelativeLinksToAbsolute() throws {
         let folder = try Folder.createTemporary()
 
         try generateFeed(in: folder, content: [
@@ -58,14 +60,14 @@ final class PodcastFeedGenerationTests: PublishTestCase {
         let feed = try folder.file(at: "Output/feed.rss").readAsString()
         let substring = feed.substrings(between: "BEGIN ", and: " END").first
 
-        XCTAssertEqual(substring, """
+        #expect(substring == """
         <a href="https://swiftbysundell.com/page">Link</a> \
         <img src=\"https://swiftbysundell.com/image.png\" alt=\"Image\"/> \
         <a href="https://apple.com">Link</a>
         """)
     }
 
-    func testItemPrefixAndSuffix() throws {
+    @Test func testItemPrefixAndSuffix() throws {
         let folder = try Folder.createTemporary()
 
         let prefixSuffix = """
@@ -81,10 +83,10 @@ final class PodcastFeedGenerationTests: PublishTestCase {
         ])
 
         let feed = try folder.file(at: "Output/feed.rss").readAsString()
-        XCTAssertTrue(feed.contains("<title>PrefixTitleSuffix</title>"))
+        #expect(feed.contains("<title>PrefixTitleSuffix</title>"))
     }
 
-    func testReusingPreviousFeedIfNoItemsWereModified() throws {
+    @Test func testReusingPreviousFeedIfNoItemsWereModified() throws {
         let folder = try Folder.createTemporary()
         let contentFile = try folder.createFile(at: "Content/one/item.md")
         try contentFile.write(makeStubbedAudioMetadata())
@@ -96,16 +98,16 @@ final class PodcastFeedGenerationTests: PublishTestCase {
         try generateFeed(in: folder, date: newDate)
         let feedB = try folder.file(at: "Output/feed.rss").readAsString()
 
-        XCTAssertEqual(feedA, feedB)
+        #expect(feedA == feedB)
 
         try contentFile.append("New content")
         try generateFeed(in: folder, date: newDate)
         let feedC = try folder.file(at: "Output/feed.rss").readAsString()
 
-        XCTAssertNotEqual(feedB, feedC)
+        #expect(feedB != feedC)
     }
 
-    func testNotReusingPreviousFeedIfConfigChanged() throws {
+    @Test func testNotReusingPreviousFeedIfConfigChanged() throws {
         let folder = try Folder.createTemporary()
         let contentFile = try folder.createFile(at: "Content/one/item.md")
         try contentFile.write(makeStubbedAudioMetadata())
@@ -119,10 +121,10 @@ final class PodcastFeedGenerationTests: PublishTestCase {
         try generateFeed(in: folder, config: newConfig, date: newDate)
         let feedB = try folder.file(at: "Output/feed.rss").readAsString()
 
-        XCTAssertNotEqual(feedA, feedB)
+        #expect(feedA != feedB)
     }
 
-    func testNotReusingPreviousFeedIfItemWasAdded() throws {
+    @Test func testNotReusingPreviousFeedIfItemWasAdded() throws {
         let folder = try Folder.createTemporary()
 
         let audio = try Audio(
@@ -160,12 +162,12 @@ final class PodcastFeedGenerationTests: PublishTestCase {
         ])
 
         let feedB = try folder.file(at: "Output/feed.rss").readAsString()
-        XCTAssertNotEqual(feedA, feedB)
+        #expect(feedA != feedB)
     }
 }
 
 private extension PodcastFeedGenerationTests {
-    typealias Site = WebsiteStub.WithPodcastMetadata
+    typealias Site = WithPodcastMetadata
     typealias Configuration = PodcastFeedConfiguration<Site>
 
     func makeConfigStub() throws -> Configuration {
@@ -197,7 +199,7 @@ private extension PodcastFeedGenerationTests {
     func generateFeed(
         in folder: Folder,
         config: Configuration? = nil,
-        itemPredicate: Predicate<Item<Site>>? = nil,
+        itemPredicate: Publish.Predicate<Item<Site>>? = nil,
         generationSteps: [PublishingStep<Site>] = [
             .addMarkdownFiles()
         ],

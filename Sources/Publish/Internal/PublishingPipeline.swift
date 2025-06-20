@@ -13,25 +13,30 @@ import Cocoa
 internal struct PublishingPipeline<Site: Website> {
     let steps: [PublishingStep<Site>]
     let originFilePath: Path
+    fileprivate let kind: Step.Kind
+
+    init(steps: [PublishingStep<Site>], originFilePath: Path, deploy: Bool) {
+        self.steps = steps
+        self.originFilePath = originFilePath
+        self.kind = deploy ? .deployment : .generation
+    }
 }
 
 extension PublishingPipeline {
     func execute(for site: Site, at path: Path?) async throws -> PublishedWebsite<Site> {
-        let stepKind = resolveStepKind()
-
         let folders = try setUpFolders(
             withExplicitRootPath: path,
-            shouldEmptyOutputFolder: stepKind == .generation
+            shouldEmptyOutputFolder: kind == .generation
         )
 
         let steps = self.steps.flatMap { step in
-            runnableSteps(ofKind: stepKind, from: step)
+            runnableSteps(ofKind: kind, from: step)
         }
 
         guard let firstStep = steps.first else {
             throw PublishingError(
                 infoMessage: """
-                \(site.name) has no \(stepKind.rawValue) steps.
+                \(site.name) has no \(kind.rawValue) steps.
                 """
             )
         }
@@ -130,12 +135,6 @@ private extension PublishingPipeline {
 
         let originFile = try File(path: originFilePath.string)
         return try originFile.resolveSwiftPackageFolder()
-    }
-
-    func resolveStepKind() -> Step.Kind {
-        let deploymentFlags: Set<String> = ["--deploy", "-d"]
-        let shouldDeploy = CommandLine.arguments.contains(where: deploymentFlags.contains)
-        return shouldDeploy ? .deployment : .generation
     }
 
     func runnableSteps(ofKind kind: Step.Kind, from step: Step) -> [RunnableStep] {

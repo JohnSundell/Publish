@@ -13,11 +13,11 @@ import ShellOut
 /// frameworks or APIs, it's recommended to create them using static
 /// factory methods, just like how the built-in `git` and `gitHub`
 /// deployment methods are implemented.
-public struct DeploymentMethod<Site: Website> {
+public struct DeploymentMethod<Site: Website>: Sendable {
     /// Closure type used to implement the deployment method's main
     /// body. It's passed the `PublishingContext` of the current
     /// session, and can use that to create a dedicated deployment folder.
-    public typealias Body = (PublishingContext<Site>) throws -> Void
+    public typealias Body = @Sendable (PublishingContext<Site>) throws -> Void
 
     /// The human-readable name of the deployment method.
     public var name: String
