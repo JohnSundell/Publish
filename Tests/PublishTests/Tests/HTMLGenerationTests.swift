@@ -262,8 +262,8 @@ final class HTMLGenerationTests: PublishTestCase {
         try publishWebsite(in: folder, using: [
             .addItem(Item.stub(withPath: "item").setting(\.tags, to: ["tag"])),
             .addItem(Item.stub(withPath: "rawValueItem", sectionID: .customRawValue).setting(\.tags, to: ["tag"])),
-            .generateHTML(withTheme: theme, fileMode: .standAloneFiles)
-        ])
+            .generateHTML(withTheme: theme)
+        ],fileMode: .standAloneFiles)
 
         try verifyOutput(
             in: folder,

@@ -379,3 +379,14 @@ private extension PublishingContext {
         }
     }
 }
+
+
+public extension PublishingContext {
+    var fileMode: HTMLFileMode {
+        return site.fileMode
+    }
+    
+    func tag2htmlfileName(tag: Tag) -> String {
+        return site.tag2htmlfileName(tag: tag)
+    }
+}

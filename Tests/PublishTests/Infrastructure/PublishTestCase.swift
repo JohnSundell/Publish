@@ -14,13 +14,15 @@ class PublishTestCase: XCTestCase {
     func publishWebsite(
         in folder: Folder? = nil,
         using steps: [PublishingStep<WebsiteStub.WithoutItemMetadata>],
-        content: [Path : String] = [:]
+        content: [Path : String] = [:],
+        fileMode: HTMLFileMode = .foldersAndIndexFiles
     ) throws -> PublishedWebsite<WebsiteStub.WithoutItemMetadata> {
         try performWebsitePublishing(
             in: folder,
             using: steps,
             files: content,
-            filePathPrefix: "Content/"
+            filePathPrefix: "Content/",
+            fileMode : fileMode
         )
     }
 
@@ -197,13 +199,15 @@ private extension PublishTestCase {
         in folder: Folder? = nil,
         using steps: [PublishingStep<T>],
         files: [Path : String],
-        filePathPrefix: String = ""
+        filePathPrefix: String = "",
+        fileMode: HTMLFileMode = .foldersAndIndexFiles
     ) throws -> PublishedWebsite<T> {
         let folder = try folder ?? Folder.createTemporary()
 
         try addFiles(withContent: files, to: folder, pathPrefix: filePathPrefix)
-
-        return try T().publish(
+        var site = T()
+        site.fileMode = fileMode
+        return try site.publish(
             at: Path(folder.path),
             using: steps
         )

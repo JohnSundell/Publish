@@ -41,6 +41,8 @@ public protocol Website {
     /// The configuration to use when generating tag HTML for the website.
     /// If this is `nil`, then no tag HTML will be generated.
     var tagHTMLConfig: TagHTMLConfiguration? { get }
+    
+    var fileMode: HTMLFileMode {get}
 }
 
 // MARK: - Defaults
@@ -130,67 +132,67 @@ public extension Website {
         semaphore.wait()
         return try result!.get()
     }
-    
-    /// Publish this website using a default pipeline. To build a completely
-    /// custom pipeline, use the `publish(using:)` method.
-    /// - parameter theme: The HTML theme to generate the website using.
-    /// - parameter indentation: How to indent the generated files.
-    /// - parameter path: Any specific path to generate the website at.
-    /// - parameter rssFeedSections: What sections to include in the site's RSS feed.
-    /// - parameter rssFeedConfig: The configuration to use for the site's RSS feed.
-    /// - parameter deploymentMethod: How to deploy the website.
-    /// - parameter additionalSteps: Any additional steps to add to the publishing
-    ///   pipeline. Will be executed right before the HTML generation process begins.
-    /// - parameter plugins: Plugins to be installed at the start of the publishing process.
-    /// - parameter file: The file that this method is called from (auto-inserted).
-    /// - parameter line: The line that this method is called from (auto-inserted).
-    @discardableResult
-    func publish(withTheme theme: Theme<Self>,
-                 indentation: Indentation.Kind? = nil,
-                 at path: Path? = nil,
-                 rssFeedSections: Set<SectionID> = Set(SectionID.allCases),
-                 rssFeedConfig: RSSFeedConfiguration? = .default,
-                 deployedUsing deploymentMethod: DeploymentMethod<Self>? = nil,
-                 additionalSteps: [PublishingStep<Self>] = [],
-                 plugins: [Plugin<Self>] = [],
-                 file: StaticString = #file) async throws -> PublishedWebsite<Self> {
-        try await publish(
-            at: path,
-            using: [
-                .group(plugins.map(PublishingStep.installPlugin)),
-                .optional(.copyResources()),
-                .addMarkdownFiles(),
-                .sortItems(by: \.date, order: .descending),
-                .group(additionalSteps),
-                .generateHTML(withTheme: theme, indentation: indentation),
-                .unwrap(rssFeedConfig) { config in
-                    .generateRSSFeed(
-                        including: rssFeedSections,
-                        config: config
-                    )
-                },
-                .generateSiteMap(indentedBy: indentation),
-                .unwrap(deploymentMethod, PublishingStep.deploy)
-            ],
-            file: file
-        )
-    }
-    
-    /// Publish this website using a custom pipeline.
-    /// - parameter path: Any specific path to generate the website at.
-    /// - parameter steps: The steps to use to form the website's publishing pipeline.
-    /// - parameter file: The file that this method is called from (auto-inserted).
-    /// - parameter line: The line that this method is called from (auto-inserted).
-    @discardableResult
-    func publish(at path: Path? = nil,
-                 using steps: [PublishingStep<Self>],
-                 file: StaticString = #file) async throws -> PublishedWebsite<Self> {
-        let pipeline = PublishingPipeline(
-            steps: steps,
-            originFilePath: Path("\(file)")
-        )
-        return try await pipeline.execute(for: self, at: path)
-    }
+//    
+//    /// Publish this website using a default pipeline. To build a completely
+//    /// custom pipeline, use the `publish(using:)` method.
+//    /// - parameter theme: The HTML theme to generate the website using.
+//    /// - parameter indentation: How to indent the generated files.
+//    /// - parameter path: Any specific path to generate the website at.
+//    /// - parameter rssFeedSections: What sections to include in the site's RSS feed.
+//    /// - parameter rssFeedConfig: The configuration to use for the site's RSS feed.
+//    /// - parameter deploymentMethod: How to deploy the website.
+//    /// - parameter additionalSteps: Any additional steps to add to the publishing
+//    ///   pipeline. Will be executed right before the HTML generation process begins.
+//    /// - parameter plugins: Plugins to be installed at the start of the publishing process.
+//    /// - parameter file: The file that this method is called from (auto-inserted).
+//    /// - parameter line: The line that this method is called from (auto-inserted).
+//    @discardableResult
+//    func publish(withTheme theme: Theme<Self>,
+//                 indentation: Indentation.Kind? = nil,
+//                 at path: Path? = nil,
+//                 rssFeedSections: Set<SectionID> = Set(SectionID.allCases),
+//                 rssFeedConfig: RSSFeedConfiguration? = .default,
+//                 deployedUsing deploymentMethod: DeploymentMethod<Self>? = nil,
+//                 additionalSteps: [PublishingStep<Self>] = [],
+//                 plugins: [Plugin<Self>] = [],
+//                 file: StaticString = #file) async throws -> PublishedWebsite<Self> {
+//        try await publish(
+//            at: path,
+//            using: [
+//                .group(plugins.map(PublishingStep.installPlugin)),
+//                .optional(.copyResources()),
+//                .addMarkdownFiles(),
+//                .sortItems(by: \.date, order: .descending),
+//                .group(additionalSteps),
+//                .generateHTML(withTheme: theme, indentation: indentation),
+//                .unwrap(rssFeedConfig) { config in
+//                    .generateRSSFeed(
+//                        including: rssFeedSections,
+//                        config: config
+//                    )
+//                },
+//                .generateSiteMap(indentedBy: indentation),
+//                .unwrap(deploymentMethod, PublishingStep.deploy)
+//            ],
+//            file: file
+//        )
+//    }
+//    
+//    /// Publish this website using a custom pipeline.
+//    /// - parameter path: Any specific path to generate the website at.
+//    /// - parameter steps: The steps to use to form the website's publishing pipeline.
+//    /// - parameter file: The file that this method is called from (auto-inserted).
+//    /// - parameter line: The line that this method is called from (auto-inserted).
+//    @discardableResult
+//    func publish(at path: Path? = nil,
+//                 using steps: [PublishingStep<Self>],
+//                 file: StaticString = #file) async throws -> PublishedWebsite<Self> {
+//        let pipeline = PublishingPipeline(
+//            steps: steps,
+//            originFilePath: Path("\(file)")
+//        )
+//        return try await pipeline.execute(for: self, at: path)
+//    }
 }
 
 // MARK: - Paths and URLs
@@ -231,5 +233,20 @@ public extension Website {
     /// - parameter location: The location to return a URL for.
     func url(for location: Location) -> URL {
         url(for: location.path)
+    }
+}
+
+
+extension Website {
+    public func tag2htmlfileName(tag: Tag) -> String {
+        let result = self.fileMode.filePath(path: self.path(for: tag)).absoluteString
+        //debugPrint("tag2htmlfileName: \(tag) -> \(result)")
+        return result
+    }
+    
+    public func item2htmlfileName(item: Item<Self>) -> String {
+        let result = self.fileMode.filePath(path: item.path).absoluteString
+        //debugPrint("item2htmlfileName: \(item) -> \(result)")
+        return result
     }
 }
